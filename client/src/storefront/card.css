@@ -1,0 +1,43 @@
+/* ================= Product card: shared by the Shop grid and "You may also like" on product pages ================= */
+.pc{background:var(--surface);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 1px 0 var(--line),0 20px 40px -32px rgba(21,32,59,.4);transition:transform .25s,box-shadow .25s;animation:fade .35s ease both}
+.pc:hover{transform:translateY(-4px);box-shadow:0 1px 0 var(--line),0 30px 50px -30px rgba(21,32,59,.45)}
+.pc-stage{position:relative;display:block;aspect-ratio:1/1;max-width:100%;overflow:hidden}
+.pc-stage .art svg,.pc-stage .art img{transition:transform .45s ease}
+.pc:hover .pc-stage .art svg,.pc:hover .pc-stage .art img{transform:scale(1.08) rotate(-3deg)}
+.pc-stage .art .no{font-size:3.4rem;right:12px;bottom:4px}
+.pc-off{position:absolute;top:12px;left:12px;background:var(--marigold);color:var(--ink);font-weight:800;font-size:.78rem;padding:4px 10px;border-radius:999px;z-index:1;font-variant-numeric:tabular-nums}
+.pc .wish{position:absolute;top:10px;right:10px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;color:var(--muted);box-shadow:0 4px 12px rgba(21,32,59,.12);transition:transform .15s}
+.pc .wish svg{width:18px;height:18px}
+.pc .wish:hover{transform:scale(1.08)}
+.pc .wish[aria-pressed="true"]{color:var(--fashion)}
+.pc .wish[aria-pressed="true"] path{fill:currentColor}
+.pc-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.pc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pc-top .tag{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:999px}
+.pc-rate{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pc-rate b{color:var(--ink)}
+.pc-rate .st{color:var(--marigold)}
+.pc h3{font-family:var(--body);font-size:1.02rem;font-weight:700;line-height:1.35;letter-spacing:0}
+.pc h3 a:hover{text-decoration:underline;text-decoration-color:var(--marigold);text-decoration-thickness:2px;text-underline-offset:3px}
+.pc-desc,.pc-points{display:none}
+.pc .stock{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:700;color:var(--fashion);background:var(--fashion-bg);padding:2px 9px;border-radius:999px}
+.pc .stock::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.6s ease-in-out infinite}
+.pc-buy{margin-top:auto;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.pc-price{display:grid;line-height:1.15;font-variant-numeric:tabular-nums}
+.pc-price b{font-family:var(--display);font-size:1.35rem}
+.pc-price span{font-size:.82rem;color:var(--muted)}
+.pc-price span s{margin-right:6px}
+.pc-price em{font-style:normal;color:var(--ok);font-weight:700}
+.pc-add{padding:10px 14px;border-radius:12px;font-size:.9rem}
+.pc-add svg{width:16px;height:16px}
+.pc-add.added{background:var(--ok)}
+
+@media (max-width:560px){
+  .pc-body{padding:12px 12px 14px;gap:6px}
+  .pc h3{font-size:.92rem}
+  .pc-rate{display:none}
+  .pc-price b{font-size:1.1rem}
+  .pc-buy{flex-direction:column;align-items:stretch}
+  .pc-add{width:100%;justify-content:center}
+  .pc-stage .art .no{font-size:2.4rem}
+}

@@ -1,0 +1,93 @@
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div>
+        <a href="/" class="logo"><img class="logo-img" src="https://i0.wp.com/nawaratrend.com/wp-content/uploads/2022/12/NawaraTrend_Logo_500100.png?fit=500%2C100&amp;ssl=1" alt="NawaraTrend" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo-txt',textContent:'NawaraTrend'}))"></a>
+        <p class="about">A small, carefully chosen range of everyday products. Genuine, quality-checked and delivered across India.</p>
+        <div class="f-badges">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>100% genuine</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>Free delivery ₹999+</span>
+        </div>
+      </div>
+      <div><h4>Shop</h4><ul id="footCats"></ul></div>
+      <div><h4>Help</h4><ul>
+        <!-- same order as the page list on the help pages (PolicyPage.jsx) -->
+        <li><a href="/terms">Terms &amp; Conditions</a></li>
+        <li><a href="/privacy-policy">Privacy Policy</a></li>
+        <li><a href="/shipping-policy">Shipping Policy</a></li>
+        <li><a href="/refund-policy">Returns &amp; Refunds</a></li>
+        <li><a href="/faqs">FAQs</a></li>
+        <li><a href="/login">Track Order</a></li></ul></div>
+      <div><h4>Contact us</h4>
+        <div class="f-contact">
+          <a href="tel:+918960888231"><span class="ci" style="background:var(--marigold);color:var(--ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></span><span><small>Call us</small><b>+91 89608 88231</b></span></a>
+          <a href="https://wa.me/919807562620"><span class="ci" style="background:#25D366;color:#fff"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.7.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg></span><span><small>WhatsApp</small><b>+91 98075 62620</b></span></a>
+          <a href="/contact"><span class="ci" style="background:rgba(255,255,255,.12);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span><small>Visit or write to us</small><b>Contact page</b></span></a>
+        </div>
+      </div>
+    </div>
+    <div class="f-mark" aria-hidden="true">NawaraTrend</div>
+    <div class="f-bottom">
+      <span>© 2026 Nawara Trend. All rights reserved. · <a href="/privacy-policy#p-cookies">Cookies</a> · <button type="button" class="f-link" data-cookie-settings>Cookie settings</button></span>
+      <a href="#top" class="to-top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="wDrawer" aria-label="Your wishlist" aria-hidden="true">
+  <div class="d-head"><h3>Your wishlist</h3><button class="icon-btn" id="wishClose" aria-label="Close wishlist"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="d-items" id="wItems"></div>
+</aside>
+<aside class="drawer" id="drawer" aria-label="Your cart" aria-hidden="true">
+  <div class="d-head"><h3>Your cart</h3><button class="icon-btn" id="cartClose" aria-label="Close cart"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="ship" id="ship"></div>
+  <div class="d-items" id="dItems"></div>
+  <div class="d-foot">
+    <div class="d-total"><span>Subtotal</span><span id="dTotal">₹0</span></div>
+    <a class="btn btn-ink" href="/checkout" id="checkout">Proceed to checkout</a>
+  </div>
+</aside>
+
+<a class="wa" href="https://wa.me/919807562620" aria-label="Chat with us on WhatsApp" target="_blank" rel="noopener">
+  <span class="wa-tip" aria-hidden="true">Chat with us</span>
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.7.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>
+</a>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- cookie consent: banner until the visitor chooses, and the preferences window (storefront/consent.js) -->
+<section class="ck-banner" id="ckBanner" role="region" aria-label="Cookie consent" hidden>
+  <div class="ck-text">
+    <b>We value your privacy</b>
+    <p>We use necessary cookies to keep your cart, wishlist and sign-in working. With your permission we'd also like to use analytics cookies to understand how the site is used and improve it. Read more in our <a href="/privacy-policy#p-cookies">Privacy Policy</a>.</p>
+  </div>
+  <div class="ck-actions">
+    <button type="button" class="btn btn-line" id="ckCustom">Customise</button>
+    <button type="button" class="btn btn-line" id="ckReject">Reject non-essential</button>
+    <button type="button" class="btn btn-ink" id="ckAccept">Accept all</button>
+  </div>
+</section>
+
+<div class="ck-prefs" id="ckPrefs" hidden>
+  <div class="ck-box" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+    <div class="ck-head"><h3 id="ckTitle">Cookie preferences</h3><button type="button" class="icon-btn" id="ckClose" aria-label="Close">✕</button></div>
+    <p class="ck-intro">Choose which cookies we may use. You can change this any time from "Cookie settings" at the bottom of every page.</p>
+    <div class="ck-opt">
+      <div><b>Necessary</b><span>Cart, wishlist, sign-in, security and remembering this choice. The site can't work without these.</span></div>
+      <span class="ck-always">Always on</span>
+    </div>
+    <label class="ck-opt">
+      <div><b>Analytics</b><span>Anonymous statistics (Google Analytics) about which pages are visited, so we can improve the store.</span></div>
+      <input type="checkbox" class="ck-switch" id="ckAnalytics">
+    </label>
+    <label class="ck-opt">
+      <div><b>Marketing</b><span>Measuring our ads and showing you more relevant offers on other sites.</span></div>
+      <input type="checkbox" class="ck-switch" id="ckMarketing">
+    </label>
+    <div class="ck-foot">
+      <button type="button" class="btn btn-line" id="ckRejectAll">Reject all</button>
+      <button type="button" class="btn btn-line" id="ckSave">Save my choices</button>
+      <button type="button" class="btn btn-ink" id="ckAcceptAll">Accept all</button>
+    </div>
+  </div>
+</div>

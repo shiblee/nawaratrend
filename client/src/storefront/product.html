@@ -1,0 +1,117 @@
+<main id="top">
+
+<section class="pdp" id="pdp">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb" id="pCrumbs"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/shop">Shop</a></nav>
+
+    <div class="pdp-grid">
+      <div class="gallery">
+        <div class="g-main" id="gMain" tabindex="0" aria-roledescription="carousel" aria-label="Product photos">
+          <span class="g-off" id="gOff"></span>
+          <div class="g-tools">
+            <button type="button" class="g-btn wish" id="gWish" aria-pressed="false" aria-label="Save to wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2 0 3.4 1.1 5.2 3 1.8-1.9 3.2-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+            <button type="button" class="g-btn" id="gShare" aria-label="Copy link to this product"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
+          </div>
+          <div class="g-art" id="gArt"></div>
+          <button type="button" class="g-arrow prev" id="gPrev" aria-label="Previous photo" hidden>←</button>
+          <button type="button" class="g-arrow next" id="gNext" aria-label="Next photo" hidden>→</button>
+          <span class="g-count" id="gCount" aria-live="polite" hidden></span>
+        </div>
+        <div class="g-thumbs" id="gThumbs" role="group" aria-label="Choose a photo" hidden></div>
+      </div>
+
+      <div class="buybox">
+        <div class="bb-top"><a class="tag" id="pCat" href="/shop"></a><span class="mono" id="pCode"></span></div>
+        <h1 id="pName"></h1>
+        <a class="bb-rating" href="#tab-rv" id="pRating"></a>
+
+        <div class="bb-price">
+          <div class="pr-row"><b id="pPrice"></b><s id="pMrp"></s><span class="save" id="pSave"></span></div>
+          <small>Inclusive of all taxes</small>
+        </div>
+        <p class="bb-desc" id="pDesc"></p>
+
+        <div class="stock-line" id="pStock"></div>
+
+        <div class="opt" id="sizeBox" hidden>
+          <div class="opt-head"><b>Size</b><span id="sizeSel">Select a size</span></div>
+          <div class="sizes" id="sizes" role="radiogroup" aria-label="Size"></div>
+          <p class="opt-err" id="sizeErr" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></svg>Please choose a size first.</p>
+        </div>
+
+        <div class="opt">
+          <div class="opt-head"><b>Quantity</b></div>
+          <div class="qty big"><button type="button" id="qMinus" aria-label="Decrease quantity">−</button><output id="qOut">1</output><button type="button" id="qPlus" aria-label="Increase quantity">+</button></div>
+        </div>
+
+        <div class="bb-actions" id="mainActions">
+          <button type="button" class="btn btn-ink" id="pAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6"/></svg><span>Add to cart</span></button>
+          <button type="button" class="btn btn-gold" id="pBuy">Buy now</button>
+        </div>
+        <div class="ship-note" id="pShip"></div>
+
+        <ul class="perks">
+          <li><span class="pk" style="background:var(--electronics-bg);color:var(--electronics)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><div><b>Delivery across India</b><span>Tracking on every order</span></div></li>
+          <li><span class="pk" style="background:var(--home-bg);color:var(--home)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h11a5 5 0 0 1 0 10H8"/><path d="m8 4-4 4 4 4"/></svg></span><div><b>Easy returns</b><span><a href="/refund-policy">See return policy</a></span></div></li>
+          <li><span class="pk" style="background:var(--kids-bg);color:var(--kids)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><div><b>Secure payments</b><span>UPI, cards &amp; COD</span></div></li>
+          <li><span class="pk" style="background:var(--fashion-bg);color:var(--fashion)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span><div><b>100% genuine</b><span>Quality-checked</span></div></li>
+        </ul>
+
+        <a class="ask" id="pAsk" href="https://wa.me/919807562620"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.7.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg><span><b>Have a question about this product?</b><small>Ask us on WhatsApp</small></span><i aria-hidden="true">→</i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pd-info">
+  <div class="wrap">
+    <nav class="pd-tabs" role="tablist" aria-label="Product information">
+      <button role="tab" id="tab-hl" aria-selected="true" aria-controls="panel-hl">Highlights</button>
+      <button role="tab" id="tab-dt" aria-selected="false" aria-controls="panel-dt">Details</button>
+      <button role="tab" id="tab-rv" aria-selected="false" aria-controls="panel-rv">Reviews</button>
+    </nav>
+    <div class="pd-panel" role="tabpanel" id="panel-hl" aria-labelledby="tab-hl">
+      <h2>Why you'll like it</h2>
+      <ul class="hl" id="pPoints"></ul>
+    </div>
+    <div class="pd-panel" role="tabpanel" id="panel-dt" aria-labelledby="tab-dt" hidden>
+      <h2>Product details</h2>
+      <dl class="dt" id="pDetails"></dl>
+    </div>
+    <div class="pd-panel" role="tabpanel" id="panel-rv" aria-labelledby="tab-rv" hidden>
+      <h2>Customer reviews</h2>
+      <div class="rv">
+        <div class="rv-score"><b id="rvScore"></b><span class="st" id="rvStars"></span><small id="rvCount"></small></div>
+        <div class="rv-cta">
+          <p>Bought this product? Your feedback helps other shoppers decide.</p>
+          <a class="btn btn-wa" id="rvWrite" href="https://wa.me/919807562620">Share a review on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="related">
+  <div class="wrap">
+    <div class="rel-head"><h2>You may also like</h2><a href="/shop" class="more-link">Shop all products →</a></div>
+    <div class="rel-grid" id="related"></div>
+  </div>
+</section>
+
+<section class="notfound" id="notFound" hidden>
+  <div class="wrap">
+    <div class="nf-card">
+      <span class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8.5 11h5"/></svg></span>
+      <h1>We couldn't find that product</h1>
+      <p>It may have been removed or the link may be incorrect.</p>
+      <a class="btn btn-ink" href="/shop">Browse all products</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="sticky-buy" id="stickyBuy" aria-hidden="true">
+  <div class="sb-info"><b id="sbName"></b><span id="sbPrice"></span></div>
+  <button type="button" class="btn btn-ink" id="sbAdd" tabindex="-1">Add to cart</button>
+</div>

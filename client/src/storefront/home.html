@@ -1,0 +1,84 @@
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>We pick the best. <span>You skip the rest.</span></h1>
+      <p class="lede">A handpicked range of everyday essentials: genuine, quality-checked and fairly priced, with free delivery on orders over ₹999.</p>
+      <div class="cta">
+        <a href="#catalogue" class="btn btn-ink">Browse the catalogue ↓</a>
+      </div>
+    </div>
+
+    <article class="spot" aria-roledescription="carousel" aria-label="Our picks" id="spot">
+      <div class="spot-stage" id="spotStage">
+        <div class="art" id="spotArt"></div>
+        <div class="spot-head">
+          <span class="spot-label">Our picks <span class="mono" id="spotCount">1 / 8</span></span>
+          <div class="spot-nav"><button id="spotPrev" aria-label="Previous product">←</button><button id="spotNext" aria-label="Next product">→</button></div>
+        </div>
+        <span class="spot-off" id="spotOff"></span>
+        <div class="spot-prog" aria-hidden="true"><i id="spotProg"></i></div>
+      </div>
+      <div class="spot-body" id="spotBody" aria-live="polite"></div>
+    </article>
+  </div>
+</section>
+
+<section class="trust-band" aria-label="Why shop with us">
+<div class="wrap">
+  <div class="trust">
+    <div class="trust-item"><span class="ti" style="background:var(--electronics-bg);color:var(--electronics)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><div><b>Free delivery ₹999+</b><span>Across India</span></div></div>
+    <div class="trust-item"><span class="ti" style="background:var(--home-bg);color:var(--home)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h11a5 5 0 0 1 0 10H8"/><path d="m8 4-4 4 4 4"/></svg></span><div><b>Easy returns</b><span>Shop risk-free</span></div></div>
+    <div class="trust-item"><span class="ti" style="background:var(--kids-bg);color:var(--kids)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><div><b>Secure payments</b><span>UPI, cards &amp; COD</span></div></div>
+    <div class="trust-item"><span class="ti" style="background:var(--fashion-bg);color:var(--fashion)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span><div><b>100% genuine</b><span>Quality-checked products</span></div></div>
+  </div>
+</div>
+</section>
+
+<section class="cat-sec" id="catalogue">
+  <div class="wrap">
+    <div class="cat-title">
+      <h2>The catalogue</h2>
+    </div>
+    <nav class="chipbar" id="chipbar" aria-label="Jump to category"></nav>
+    <div class="catalogue">
+      <aside class="index" aria-label="Catalogue index">
+        <div class="ix-top"><span class="mono">Index</span><span class="mono" id="ixCount"></span></div>
+        <div class="ix-bar" aria-hidden="true"><i id="ixBar"></i></div>
+        <ol id="index"></ol>
+      </aside>
+      <div id="groups"></div>
+    </div>
+  </div>
+</section>
+
+<!-- REPLACE: sample reviews. Swap in real customer reviews before going live, then remove the "Sample" labels. -->
+<section class="sec reviews-sec">
+  <div class="wrap">
+    <div class="rev-head">
+      <h2>What our customers say</h2>
+      <div class="rev-nav"><button id="revPrev" aria-label="Previous review">←</button><button id="revNext" aria-label="Next review">→</button></div>
+    </div>
+    <div class="reviews" id="reviews">
+      <figure class="review"><span class="q" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19v-6.5C4 8 6.5 5.2 10.5 4.5l.6 1.9C8.8 7.2 7.7 8.8 7.6 11H11v8zm9 0v-6.5c0-4.5 2.5-7.3 6.5-8l.6 1.9c-2.3.8-3.4 2.4-3.5 4.6H20v8z"/></svg></span><span class="sample">Sample</span>
+        <div class="stars" aria-label="5 out of 5">★★★★★</div>
+        <blockquote>Ordered earbuds and the cookware set together. Both arrived well packed and exactly as described.</blockquote>
+        <a class="bought" href="/product/earbuds" style="background:var(--electronics-bg);color:var(--electronics)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Bought: Wireless Earbuds</a>
+        <figcaption><span class="av" style="background:var(--fashion-bg);color:var(--fashion)">PS</span><span><b>Priya Sharma</b><small>Lucknow</small></span></figcaption></figure>
+      <figure class="review"><span class="q" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19v-6.5C4 8 6.5 5.2 10.5 4.5l.6 1.9C8.8 7.2 7.7 8.8 7.6 11H11v8zm9 0v-6.5c0-4.5 2.5-7.3 6.5-8l.6 1.9c-2.3.8-3.4 2.4-3.5 4.6H20v8z"/></svg></span><span class="sample">Sample</span>
+        <div class="stars" aria-label="5 out of 5">★★★★★</div>
+        <blockquote>Small range but good quality. I like that I don't have to scroll through hundreds of options.</blockquote>
+        <a class="bought" href="/product/shirt" style="background:var(--fashion-bg);color:var(--fashion)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Bought: Cotton Shirt</a>
+        <figcaption><span class="av" style="background:var(--home-bg);color:var(--home)">RP</span><span><b>Rajesh Patel</b><small>Ahmedabad</small></span></figcaption></figure>
+      <figure class="review"><span class="q" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 19v-6.5C4 8 6.5 5.2 10.5 4.5l.6 1.9C8.8 7.2 7.7 8.8 7.6 11H11v8zm9 0v-6.5c0-4.5 2.5-7.3 6.5-8l.6 1.9c-2.3.8-3.4 2.4-3.5 4.6H20v8z"/></svg></span><span class="sample">Sample</span>
+        <div class="stars" aria-label="5 out of 5">★★★★★</div>
+        <blockquote>My son loves the building blocks. Good quality pieces and the storage box is really handy.</blockquote>
+        <a class="bought" href="/product/blocks" style="background:var(--kids-bg);color:var(--kids)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Bought: Building Blocks Set</a>
+        <figcaption><span class="av" style="background:var(--electronics-bg);color:var(--electronics)">SR</span><span><b>Sneha Reddy</b><small>Hyderabad</small></span></figcaption></figure>
+    </div>
+    <div class="rev-cta"><a href="https://wa.me/919807562620">Bought from us? We'd love your feedback <span>Share a review</span></a></div>
+  </div>
+</section>
+
+</main>
