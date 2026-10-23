@@ -118,6 +118,8 @@ Sign in at `/admin/login`. The first owner is `admin@nawaratrend.com` / `Admin@1
 
 ## Going live (production)
 
+**On GoDaddy cPanel, follow [DEPLOY.md](DEPLOY.md)**: `./scripts/build-deploy.sh` makes a ready-to-upload package. The general setup is:
+
 ```bash
 cd client && VITE_API_URL=/api npm run build      # the shop calls the API on its own domain
 cd ../server && SERVE_CLIENT=1 NODE_ENV=production npm start

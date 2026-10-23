@@ -6,3 +6,6 @@ __pycache__/
 .env
 *.log
 .DS_Store
+
+# deployment package and production secrets (scripts/build-deploy.sh)
+deploy/

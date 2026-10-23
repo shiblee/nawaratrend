@@ -1,8 +1,7 @@
 /* Creates every table the store needs and seeds starting data.
    Safe to run again: tables are created only if missing, and seed data only goes into empty tables.
    Usage: npm run init-db */
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";   // first, so the database settings below come from .env
 
 import bcrypt from "bcryptjs";
 import { pool } from "./db.js";
@@ -181,7 +180,7 @@ const SETTINGS = {
   whatsapp_message: "Hi NawaraTrend, I have a question.",
 
   // SEO (edited on the admin SEO page)
-  "seo.site_url": "http://localhost:3001",
+  "seo.site_url": process.env.SITE_URL || "http://localhost:3001",
   "seo.title_template": "%s | NawaraTrend",
   "seo.default_title": "NawaraTrend | Handpicked Quality Products Across India",
   "seo.default_description": "Shop a small, handpicked range of electronics, fashion, home, beauty, kids and accessories. 100% genuine, quality-checked, free delivery on orders ₹999+.",

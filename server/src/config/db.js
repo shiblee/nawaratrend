@@ -1,3 +1,4 @@
+import "dotenv/config";   // the pool reads DB_* settings as soon as this file loads
 import mysql from "mysql2/promise";
 
 export const pool = mysql.createPool({

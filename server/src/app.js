@@ -15,6 +15,20 @@ import { HttpError } from "./lib/http.js";
 const app = express();
 app.disable("x-powered-by");
 
+// On cPanel / behind a proxy the visitor's real IP is in X-Forwarded-For (used by rate limits and the activity log)
+if (process.env.TRUST_PROXY) app.set("trust proxy", Number(process.env.TRUST_PROXY) || 1);
+
+// One address for every page (good for SEO): https, and without "www." (or with, if CANONICAL_HOST says so)
+const canonicalHost = process.env.CANONICAL_HOST;
+if (canonicalHost) {
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/")) return next();
+    const proto = req.get("x-forwarded-proto") || req.protocol;
+    if (req.hostname !== canonicalHost || proto !== "https") return res.redirect(301, `https://${canonicalHost}${req.originalUrl}`);
+    next();
+  });
+}
+
 // Only the storefront/admin website may call this API from a browser.
 const origins = (process.env.CLIENT_ORIGIN || "http://localhost:3000,http://localhost:3001").split(",").map((s) => s.trim());
 // Content Security Policy: only what the storefront needs (Google Fonts, product images from https,
