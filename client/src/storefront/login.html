@@ -33,7 +33,7 @@
 
       <form class="lg-form" id="formIn" role="tabpanel" aria-labelledby="tabIn" novalidate>
         <div class="fld"><label for="inContact">Mobile number or email</label><input id="inContact" autocomplete="username" maxlength="80"><p class="err"></p></div>
-        <div class="fld"><label for="inPass">Password</label><input id="inPass" type="password" autocomplete="current-password" maxlength="64"><p class="err"></p></div>
+        <div class="fld"><label for="inPass">Password</label><div class="pw"><input id="inPass" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="pw-show" aria-controls="inPass" aria-pressed="false">Show</button></div><p class="err"></p></div>
         <p class="form-msg" role="alert"></p>
         <button type="submit" class="btn btn-ink"><span class="lbl">Sign in</span><span class="spin" aria-hidden="true"></span></button>
         <p class="lg-alt">Forgot your password? <a class="link" href="https://wa.me/919807562620">Message us on WhatsApp</a></p>
@@ -42,7 +42,7 @@
       <form class="lg-form" id="formUp" role="tabpanel" aria-labelledby="tabUp" novalidate hidden>
         <div class="fld"><label for="upName">Full name</label><input id="upName" autocomplete="name" maxlength="60"><p class="err"></p></div>
         <div class="fld"><label for="upContact">Mobile number or email</label><input id="upContact" autocomplete="username" maxlength="80"><p class="err"></p></div>
-        <div class="fld"><label for="upPass">Password <small>(8+ characters, with a letter and a number)</small></label><input id="upPass" type="password" autocomplete="new-password" maxlength="64"><p class="err"></p></div>
+        <div class="fld"><label for="upPass">Password <small>(8+ characters, with a letter and a number)</small></label><div class="pw"><input id="upPass" type="password" autocomplete="new-password" maxlength="64"><button type="button" class="pw-show" aria-controls="upPass" aria-pressed="false">Show</button></div><p class="err"></p></div>
         <p class="form-msg" role="alert"></p>
         <button type="submit" class="btn btn-ink"><span class="lbl">Create account</span><span class="spin" aria-hidden="true"></span></button>
         <p class="lg-alt">By creating an account you agree to our <a class="link" href="/terms">Terms</a> and <a class="link" href="/privacy-policy">Privacy Policy</a>.</p>

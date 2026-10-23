@@ -16,6 +16,7 @@ export default function Profile() {
   const [pw, setPw] = useState({ current: "", next: "", again: "" });
   const [msg, setMsg] = useState({ profile: "", password: "" });
   const [busy, setBusy] = useState("");
+  const [showPw, setShowPw] = useState(false);
   useEffect(() => { if (admin) setP({ name: admin.name, email: admin.email }); }, [admin]);
 
   const saveProfile = async (e) => {
@@ -70,14 +71,17 @@ export default function Profile() {
         <CardHeader title="Change password" sub="Changing it signs you out on every other device." />
         <form onSubmit={savePassword} className="space-y-4 p-5">
           <Alert>{msg.password}</Alert>
-          <Field label="Current password"><Input type="password" autoComplete="current-password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required /></Field>
+          <Field label="Current password"><Input type={showPw ? "text" : "password"} autoComplete="current-password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required /></Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="New password"><Input type="password" autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required /></Field>
-            <Field label="New password again"><Input type="password" autoComplete="new-password" value={pw.again} onChange={(e) => setPw({ ...pw, again: e.target.value })} required /></Field>
+            <Field label="New password"><Input type={showPw ? "text" : "password"} autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required /></Field>
+            <Field label="New password again"><Input type={showPw ? "text" : "password"} autoComplete="new-password" value={pw.again} onChange={(e) => setPw({ ...pw, again: e.target.value })} required /></Field>
           </div>
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            {checks(pw.next).map(([l, ok]) => <li key={l} className={ok ? "text-emerald-700" : "text-slate-400"}>{ok ? "✓" : "○"} {l}</li>)}
-          </ul>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+              {checks(pw.next).map(([l, ok]) => <li key={l} className={ok ? "text-emerald-700" : "text-slate-400"}>{ok ? "✓" : "○"} {l}</li>)}
+            </ul>
+            <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} className="text-xs font-semibold text-slate-500 hover:text-slate-900">{showPw ? "Hide passwords" : "Show passwords"}</button>
+          </div>
           <Button loading={busy === "password"} disabled={!checks(pw.next).every(([, ok]) => ok)}>Change password</Button>
         </form>
       </Card>

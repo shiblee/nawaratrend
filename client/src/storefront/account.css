@@ -30,6 +30,10 @@
 .fld.invalid input,.fld.invalid select{border-color:var(--fashion);background:#FFF8F6}
 .fld .err{margin:0;font-size:.82rem;font-weight:600;color:var(--fashion)}
 .fld .err:empty{display:none}
+.pw{position:relative}
+.fld .pw input{padding-right:74px}
+.pw-show{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;border-radius:8px;padding:8px 10px;font:inherit;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer}
+.pw-show:hover,.pw-show:focus-visible{color:var(--ink);background:var(--bg)}
 .form-msg{margin:0;font-weight:600;font-size:.92rem;color:var(--fashion);background:var(--fashion-bg);border-radius:12px;padding:12px 14px}
 .form-msg:empty{display:none}
 .btn .spin{display:none;width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .7s linear infinite}

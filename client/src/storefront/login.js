@@ -84,6 +84,13 @@ export function initLogin({ navigate }){
   };
   Object.keys(RULES).forEach(id => $(id).addEventListener("input", () => { if($(id).closest(".fld").classList.contains("invalid")) check(id); }));
 
+  // "Show" button next to each password box
+  document.querySelectorAll(".pw-show").forEach(b => b.addEventListener("click", () => {
+    const input = $(b.getAttribute("aria-controls")), show = input.type === "password";
+    input.type = show ? "text" : "password";
+    b.textContent = show ? "Hide" : "Show"; b.setAttribute("aria-pressed", show);
+  }));
+
   const wire = (formId, ids, call) => {
     const form = $(formId), btn = form.querySelector("button[type=submit]"), msg = form.querySelector(".form-msg");
     form.addEventListener("submit", async e => {

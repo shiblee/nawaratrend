@@ -104,13 +104,20 @@ Open these in your browser:
 
 ## Updating the site later
 
-When you (or I) change the code:
+The site is live (since 24 Oct 2026) and updates go over SSH with one command, from the project folder on your Mac:
 
-1. On your Mac: `./scripts/build-deploy.sh`
-2. cPanel → File Manager → home folder → upload the new zip → **Extract** (say yes to overwrite) → delete the zip.
-3. Setup Node.js App → **Run NPM Install** → **Restart**.
+```bash
+./scripts/deploy.sh
+```
 
-Your products, orders and settings live in the database, so they're not affected by updates.
+It builds the shop, uploads it to `~/nawaratrend` on the server and restarts the app. Your products, orders and settings live in the database, so they're not affected.
+
+How the server is set up (different from Steps 4–6 above, because GoDaddy's "Setup Node.js App" has no Node.js versions on this server):
+
+- `~/nodejs/bin/node`: Node.js 22, installed in the account by hand
+- `~/nawaratrend/server`: the app (with `.env`), outside public_html
+- `~/public_html/nawaratrend.com/.htaccess`: Passenger settings that run the app for nawaratrend.com, plus `RewriteEngine Off` so the main site's WordPress rules in `public_html/.htaccess` don't break every page
+- SSH login: `ssh mjgykn3s9utp@184.168.114.12` with this Mac's key
 
 ## If something goes wrong
 
