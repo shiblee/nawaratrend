@@ -113,7 +113,14 @@ export const buyControl = (p, cls, label = "Add to cart") =>
   : p.sizes ? `<a class="btn btn-ink ${cls}" href="/product/${p.id}">Choose size</a>`
   : `<button type="button" class="btn btn-ink ${cls}" data-buy>${label}</button>`;
 
-const art = p => `<div class="art" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${p.img ? `<img src="${p.img}" alt="${p.name}">` : svg(p.cat)}<span class="no" aria-hidden="true">${pad(p.no)}</span></div>`;
+// a real photo fills the frame (over a blurred copy of itself, so any shape fits); otherwise the category icon on a plinth
+const cssUrl = u => `url("${String(u).replace(/["\\\n]/g, "")}")`;
+const art = p => p.img
+  ? `<div class="art has-photo" style="--ph:${cssUrl(p.img)}"><img src="${p.img}" alt="${p.name}" loading="lazy" decoding="async"></div>`
+  : `<div class="art" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${svg(p.cat)}<span class="no" aria-hidden="true">${pad(p.no)}</span></div>`;
+/** Star rating, or a "New" label while a product has no reviews yet (never show 0 stars). */
+export const ratingHtml = (p, long) => p.reviews > 0 && p.rate > 0
+  ? null : `<span class="new-badge">New${long ? " arrival" : ""}</span>`;
 
 // Cart and wishlist live at module level so they survive moving between pages, and are saved in the
 // browser so they survive a refresh. Cart keys are "productId" or "productId|size".
@@ -343,8 +350,8 @@ export function initStorefront(){
           <div class="info-top"><span class="tag" style="background:var(--${c.k}-bg);color:var(--${c.k})">${c.n}</span></div>
           <h4><a href="/product/${p.id}" class="pd-link">${p.name}</a></h4>
           <p class="desc">${p.desc}</p>
-          <ul>${p.points.map(x => `<li><span class="ck">${check}</span><span>${x}</span></li>`).join("")}</ul>
-          <div class="meta"><div class="rating"><span class="stars" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><span>(${p.reviews} reviews)</span></div>
+          <ul>${p.points.slice(0,3).map(x => `<li><span class="ck">${check}</span><span>${x}</span></li>`).join("")}</ul>
+          <div class="meta">${ratingHtml(p, true) || `<div class="rating"><span class="stars" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><span>(${p.reviews} reviews)</span></div>`}
           ${p.left ? `<span class="stock">Only ${p.left} left</span>` : ""}</div>
           <div class="buy">
             <div class="price"><b>${inr(p.price)}</b><s>${inr(p.mrp)}</s><span class="save">Save ${inr(p.mrp-p.price)}</span></div>

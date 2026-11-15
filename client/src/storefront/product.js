@@ -1,5 +1,5 @@
 /* Product detail page. Call after initStorefront with the product id from the URL; returns a cleanup function. */
-import { actions, ordered, inr, off, art, catName, check, stars, pad, wish } from "./storefront.js";
+import { actions, ordered, inr, off, art, catName, check, stars, pad, wish, ratingHtml } from "./storefront.js";
 import { productCard } from "./card.js";
 
 const $ = id => document.getElementById(id);
@@ -72,7 +72,9 @@ export function initProduct(id){
   catTag.style.background = `var(--${p.cat}-bg)`; catTag.style.color = `var(--${p.cat})`;
   $("pCode").textContent = `Product code NT-${pad(p.no)}`;
   $("pName").textContent = p.name;
-  $("pRating").innerHTML = `<span class="st" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><u>${p.reviews} reviews</u>`;
+  const fresh = !!ratingHtml(p);
+  $("pRating").innerHTML = fresh ? `${ratingHtml(p, true)}<u>Be the first to review</u>`
+    : `<span class="st" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><u>${p.reviews} reviews</u>`;
   $("pPrice").textContent = inr(p.price);
   $("pMrp").textContent = inr(p.mrp);
   $("pSave").textContent = `Save ${inr(p.mrp - p.price)} (${off(p)}%)`;
@@ -155,9 +157,8 @@ export function initProduct(id){
     .concat([["MRP", inr(p.mrp)], ["Our price", `${inr(p.price)} (${off(p)}% off)`], ["Ships from", "Lucknow, Uttar Pradesh"],
              ["Delivery", p.price >= 999 ? "Free delivery" : "Free on orders above ₹999"], ["Returns", `<a href="/refund-policy">7-day returns, see our policy</a>`]]);
   $("pDetails").innerHTML = rows.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
-  $("rvScore").textContent = p.rate;
-  $("rvStars").textContent = stars(p.rate);
-  $("rvCount").textContent = `Based on ${p.reviews} ratings`;
+  if(fresh){ $("rvScore").textContent = "New"; $("rvStars").textContent = ""; $("rvCount").textContent = "No reviews yet"; }
+  else { $("rvScore").textContent = p.rate; $("rvStars").textContent = stars(p.rate); $("rvCount").textContent = `Based on ${p.reviews} ratings`; }
   const tabs = [...document.querySelectorAll(".pd-tabs [role=tab]")];
   const showTab = t => tabs.forEach(x => { const on = x===t; x.setAttribute("aria-selected", on); $(x.getAttribute("aria-controls")).hidden = !on; });
   tabs.forEach(t => t.onclick = () => showTab(t));
