@@ -30,7 +30,11 @@ const products = [
   {id:"mens-premium-sage-green-shirt", cat:"fashion", name:"Men's Premium Sage Green Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A fresh sage green shirt with a sharp spread collar, breathable fabric and an embroidered horse-rider emblem, for workdays and weekends alike.",
    points:["Soft sage green shade that suits every season","Embroidered horse-rider emblem on the chest","Breathable fabric for all-day comfort"],
-   img:"https://nawaratrend.com/products/mens-sage-green-shirt/1.jpg"}
+   img:"https://nawaratrend.com/products/mens-sage-green-shirt/1.jpg"},
+  {id:"mens-premium-coffee-brown-shirt", cat:"fashion", name:"Men's Premium Coffee Brown Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+   desc:"A rich coffee brown shirt with our signature gold Nawara Trend crown embroidery, tan buttons and a sharp spread collar.",
+   points:["Rich coffee brown shade with tan buttons","Signature gold Nawara Trend crown embroidery on the chest","Woven Nawara Trend label at the neck"],
+   img:"https://nawaratrend.com/products/mens-coffee-brown-shirt/1.jpg"}
 ];
 
 const ICON = {
