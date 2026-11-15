@@ -116,7 +116,7 @@ export const buyControl = (p, cls, label = "Add to cart") =>
 // a real photo fills the frame (over a blurred copy of itself, so any shape fits); otherwise the category icon on a plinth
 const cssUrl = u => `url("${String(u).replace(/["\\\n]/g, "")}")`;
 const art = p => p.img
-  ? `<div class="art has-photo" style="--ph:${cssUrl(p.img)}"><img src="${p.img}" alt="${p.name}" loading="lazy" decoding="async"></div>`
+  ? `<div class="art has-photo" style="--ph:${cssUrl(p.img)}"><img src="${p.img}" alt="${p.name}" decoding="async"></div>`
   : `<div class="art" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${svg(p.cat)}<span class="no" aria-hidden="true">${pad(p.no)}</span></div>`;
 /** Star rating, or a "New" label while a product has no reviews yet (never show 0 stars). */
 export const ratingHtml = (p, long) => p.reviews > 0 && p.rate > 0
