@@ -34,7 +34,11 @@ const products = [
   {id:"mens-premium-coffee-brown-shirt", cat:"fashion", name:"Men's Premium Coffee Brown Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A rich coffee brown shirt with our signature gold Nawara Trend crown embroidery, tan buttons and a sharp spread collar.",
    points:["Rich coffee brown shade with tan buttons","Signature gold Nawara Trend crown embroidery on the chest","Woven Nawara Trend label at the neck"],
-   img:"https://nawaratrend.com/products/mens-coffee-brown-shirt/1.jpg"}
+   img:"https://nawaratrend.com/products/mens-coffee-brown-shirt/1.jpg"},
+  {id:"mens-premium-navy-blue-shirt", cat:"fashion", name:"Men's Premium Navy Blue Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+   desc:"A deep navy blue shirt with our signature gold Nawara Trend crown embroidery, a premium spread collar and tonal navy buttons.",
+   points:["Deep navy blue shade with tonal navy buttons","Signature gold Nawara Trend crown embroidery on the chest","Premium spread collar with woven Nawara Trend label"],
+   img:"https://nawaratrend.com/products/mens-navy-blue-shirt/1.jpg"}
 ];
 
 const ICON = {
