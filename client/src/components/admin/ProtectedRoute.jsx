@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children, roles }) {
   if (loading || (token && !admin)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-[#15203B]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-[#410309]" />
       </div>
     );
   }

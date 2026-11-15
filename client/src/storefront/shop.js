@@ -16,7 +16,7 @@ export function initShop(){
   try { const v = localStorage.getItem("nt-view"); if(v==="list"||v==="grid") state.view = v; } catch(e){}
 
   /* ---------- Category tabs ---------- */
-  const allIc = `<span class="ic" style="background:var(--marigold-soft);color:#A86B00"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>`;
+  const allIc = `<span class="ic" style="background:var(--marigold-soft);color:var(--gold-text)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>`;
   $("sCats").innerHTML = [{k:"all", n:"All"}].concat(used).map(c => {
     const ic = c.k==="all" ? allIc : `<span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.9)}</span>`;
     return `<button class="s-cat" role="tab" id="cat-${c.k}" data-cat="${c.k}" aria-selected="false">${ic}${c.n}</button>`;

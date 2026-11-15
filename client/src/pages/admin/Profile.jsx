@@ -46,7 +46,7 @@ export default function Profile() {
 
       <Card>
         <div className="flex items-center gap-4 p-5">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4A300] text-lg font-semibold text-[#15203B]">{initials(admin?.name)}</span>
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F2C12E] text-lg font-semibold text-[#410309]">{initials(admin?.name)}</span>
           <div className="text-sm">
             <div className="text-base font-semibold">{admin?.name}</div>
             <div className="text-slate-500">{ROLE[admin?.role]} · {admin?.email}</div>

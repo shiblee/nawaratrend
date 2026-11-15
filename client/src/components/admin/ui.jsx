@@ -1,4 +1,4 @@
-/* Shared building blocks for the admin panel (Tailwind). Brand colours: ink #15203B, marigold #F4A300. */
+/* Shared building blocks for the admin panel (Tailwind). Brand colours: ink #410309, marigold #F2C12E. */
 import { createContext, forwardRef, useCallback, useContext, useEffect, useState } from "react";
 
 /* ---------- formatting ---------- */
@@ -49,7 +49,7 @@ export function ToastProvider({ children }) {
       {children}
       <div className="fixed bottom-4 right-4 z-[60] flex flex-col gap-2" role="status" aria-live="polite">
         {items.map((t) => (
-          <div key={t.id} className={`rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg ${t.type === "error" ? "bg-red-600" : "bg-[#15203B]"}`}>{t.text}</div>
+          <div key={t.id} className={`rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg ${t.type === "error" ? "bg-red-600" : "bg-[#410309]"}`}>{t.text}</div>
         ))}
       </div>
     </ToastCtx.Provider>
@@ -60,8 +60,8 @@ export const useToast = () => useContext(ToastCtx);
 /* ---------- basics ---------- */
 export function Button({ variant = "primary", size = "md", className = "", loading, children, ...props }) {
   const v = {
-    primary: "bg-[#15203B] text-white hover:bg-[#22305A]",
-    gold: "bg-[#F4A300] text-[#15203B] hover:brightness-95",
+    primary: "bg-[#410309] text-white hover:bg-[#5E0B12]",
+    gold: "bg-[#F2C12E] text-[#410309] hover:brightness-95",
     outline: "border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50",
     danger: "bg-red-600 text-white hover:bg-red-700",
     ghost: "text-slate-600 hover:bg-slate-100",
@@ -105,7 +105,7 @@ export function Field({ label, hint, error, children, className = "" }) {
     </label>
   );
 }
-const inputCls = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#15203B] focus:ring-2 focus:ring-[#F4A300]/30 disabled:bg-slate-50";
+const inputCls = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#410309] focus:ring-2 focus:ring-[#F2C12E]/30 disabled:bg-slate-50";
 export const Input = forwardRef((p, ref) => <input ref={ref} {...p} className={`${inputCls} ${p.className || ""}`} />);
 export const Select = ({ children, ...p }) => <select {...p} className={`${inputCls} ${p.className || ""}`}>{children}</select>;
 export const Textarea = forwardRef((p, ref) => <textarea ref={ref} rows={3} {...p} className={`${inputCls} ${p.className || ""}`} />);
@@ -183,7 +183,7 @@ export function Tabs({ tabs, value, onChange }) {
     <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
       {tabs.map((t) => (
         <button key={t.value} onClick={() => onChange(t.value)}
-          className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition ${value === t.value ? "border-[#F4A300] text-slate-900" : "border-transparent text-slate-500 hover:text-slate-800"}`}>
+          className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition ${value === t.value ? "border-[#F2C12E] text-slate-900" : "border-transparent text-slate-500 hover:text-slate-800"}`}>
           {t.label}{t.count != null && <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{num(t.count)}</span>}
         </button>
       ))}

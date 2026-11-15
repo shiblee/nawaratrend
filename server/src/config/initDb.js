@@ -248,6 +248,10 @@ const TABLES = [
   )`,
 ];
 
+const SITE = (process.env.SITE_URL || "http://localhost:3001").replace(/\/+$/, "");
+// the old WordPress logo, replaced by the maroon & gold brand images in client/public/brand
+const OLD_WP_LOGO = "https://i0.wp.com/nawaratrend.com/wp-content/uploads/2022/12/NawaraTrend_Logo_500100.png?fit=500%2C100&ssl=1";
+
 const SETTINGS = {
   store_name: "NawaraTrend",
   free_shipping_threshold: "999",
@@ -260,12 +264,12 @@ const SETTINGS = {
   whatsapp_message: "Hi NawaraTrend, I have a question.",
 
   // SEO (edited on the admin SEO page)
-  "seo.site_url": process.env.SITE_URL || "http://localhost:3001",
+  "seo.site_url": SITE,
   "seo.title_template": "%s | NawaraTrend",
   "seo.default_title": "NawaraTrend | Handpicked Quality Products Across India",
   "seo.default_description": "Shop a small, handpicked range of electronics, fashion, home, beauty, kids and accessories. 100% genuine, quality-checked, free delivery on orders ₹999+.",
-  "seo.share_image": "https://i0.wp.com/nawaratrend.com/wp-content/uploads/2022/12/NawaraTrend_Logo_500100.png?fit=500%2C100&ssl=1",
-  "seo.logo_url": "https://i0.wp.com/nawaratrend.com/wp-content/uploads/2022/12/NawaraTrend_Logo_500100.png?fit=500%2C100&ssl=1",
+  "seo.share_image": `${SITE}/brand/og-image.jpg`,
+  "seo.logo_url": `${SITE}/brand/mark-gold.png`,
   "seo.twitter_handle": "",
   "seo.social_links": "",
   "seo.indexing": "1",
@@ -355,6 +359,10 @@ const run = async () => {
 
   for (const [key, value] of Object.entries(SETTINGS)) {
     await pool.query("INSERT IGNORE INTO settings (`key`, value) VALUES (?, ?)", [key, value]);
+  }
+  // rebrand: swap the old WordPress logo for the new images, but only where nobody has changed it
+  for (const key of ["seo.share_image", "seo.logo_url"]) {
+    await pool.query("UPDATE settings SET value = ? WHERE `key` = ? AND value = ?", [SETTINGS[key], key, OLD_WP_LOGO]);
   }
 
   if (await isEmpty("categories")) {

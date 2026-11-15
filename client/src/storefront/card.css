@@ -1,12 +1,12 @@
 /* ================= Product card: shared by the Shop grid and "You may also like" on product pages ================= */
-.pc{background:var(--surface);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 1px 0 var(--line),0 20px 40px -32px rgba(21,32,59,.4);transition:transform .25s,box-shadow .25s;animation:fade .35s ease both}
-.pc:hover{transform:translateY(-4px);box-shadow:0 1px 0 var(--line),0 30px 50px -30px rgba(21,32,59,.45)}
+.pc{background:var(--surface);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 1px 0 var(--line),0 20px 40px -32px rgba(65,3,9,.4);transition:transform .25s,box-shadow .25s;animation:fade .35s ease both}
+.pc:hover{transform:translateY(-4px);box-shadow:0 1px 0 var(--line),0 30px 50px -30px rgba(65,3,9,.45)}
 .pc-stage{position:relative;display:block;aspect-ratio:1/1;max-width:100%;overflow:hidden}
 .pc-stage .art svg,.pc-stage .art img{transition:transform .45s ease}
 .pc:hover .pc-stage .art svg,.pc:hover .pc-stage .art img{transform:scale(1.08) rotate(-3deg)}
 .pc-stage .art .no{font-size:3.4rem;right:12px;bottom:4px}
 .pc-off{position:absolute;top:12px;left:12px;background:var(--marigold);color:var(--ink);font-weight:800;font-size:.78rem;padding:4px 10px;border-radius:999px;z-index:1;font-variant-numeric:tabular-nums}
-.pc .wish{position:absolute;top:10px;right:10px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;color:var(--muted);box-shadow:0 4px 12px rgba(21,32,59,.12);transition:transform .15s}
+.pc .wish{position:absolute;top:10px;right:10px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;color:var(--muted);box-shadow:0 4px 12px rgba(65,3,9,.12);transition:transform .15s}
 .pc .wish svg{width:18px;height:18px}
 .pc .wish:hover{transform:scale(1.08)}
 .pc .wish[aria-pressed="true"]{color:var(--fashion)}

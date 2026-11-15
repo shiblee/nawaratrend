@@ -107,7 +107,7 @@ export default function OrderDetail() {
             <ol className="relative mx-5 my-4 space-y-5 border-l-2 border-slate-200 pl-5">
               {[...o.history].reverse().map((h) => (
                 <li key={h.id} className="relative">
-                  <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-white bg-[#15203B]" />
+                  <span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-white bg-[#410309]" />
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <OrderBadge status={h.status} />
                     {h.from_status && <span className="text-xs text-slate-400">from {ORDER_STATUS[h.from_status]?.[0] || h.from_status}</span>}
@@ -193,7 +193,7 @@ export default function OrderDetail() {
             <div className="px-5 py-4 text-sm">
               {o.customer ? (
                 <div className="flex items-start gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F4A300] font-semibold text-[#15203B]">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F2C12E] font-semibold text-[#410309]">
                     {o.customer.avatar ? <img src={assetUrl(o.customer.avatar)} alt="" className="h-full w-full object-cover" /> : initials(o.customer.name)}
                   </span>
                   <div className="min-w-0 space-y-0.5">

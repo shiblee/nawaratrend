@@ -72,7 +72,7 @@ export function CustomerDetail() {
       <div>
         <Link to="/admin/customers" className="text-sm text-slate-500 hover:text-slate-900">← All customers</Link>
         <div className="mt-2 flex items-center gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F4A300] text-lg font-semibold text-[#15203B]">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F2C12E] text-lg font-semibold text-[#410309]">
             {c.avatar ? <img src={BASE_URL.replace(/\/api\/?$/, "") + c.avatar} alt="" className="h-full w-full object-cover" /> : initials(c.name)}
           </span>
           <div>

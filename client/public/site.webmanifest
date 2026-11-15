@@ -1,11 +1,11 @@
 {
-  "name": "NawaraTrend",
+  "name": "Nawara Trend",
   "short_name": "NawaraTrend",
   "description": "Handpicked, quality-checked products, delivered across India.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#EEF0F3",
-  "theme_color": "#15203B",
+  "background_color": "#FAF5EC",
+  "theme_color": "#410309",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },

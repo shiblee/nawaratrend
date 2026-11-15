@@ -28,8 +28,8 @@ export const VAR_HELP = {
 export const RAW_HTML_VARS = ["order_items"];
 
 /* ---------- default wording ---------- */
-const BTN = "display:inline-block;background:#15203B;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:10px";
-const NOTE = "background:#FFF6E0;border-left:4px solid #F4A300;padding:12px 14px;border-radius:8px;margin:16px 0";
+const BTN = "display:inline-block;background:#410309;color:#FFF6E6;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:10px";
+const NOTE = "background:#FFF6E0;border-left:4px solid #E2B023;padding:12px 14px;border-radius:8px;margin:16px 0";
 const button = (url, label) => `<p style="margin:24px 0"><a href="{{${url}}}" style="${BTN}">${label}</a></p>`;
 const teamNote = `{{#if status_message}}<p style="${NOTE}">{{status_message}}</p>{{/if}}`;
 const tracking = `{{#if tracking_number}}<p><b>Courier:</b> {{courier_name}}<br><b>Tracking number:</b> {{tracking_number}}</p>{{/if}}
@@ -226,13 +226,13 @@ export function layout(bodyHtml, ctx) {
   const e = escapeHtml;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(ctx.subject)}</title>
-<style>h1{font-size:22px;line-height:1.3;margin:0 0 16px;color:#15203B}p{margin:0 0 12px}a{color:#15203B}</style></head>
-<body style="margin:0;padding:0;background:#F4F1EA;font-family:Arial,Helvetica,sans-serif;color:#1F2937;font-size:15px;line-height:1.6">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F4F1EA;padding:24px 12px"><tr><td align="center">
+<style>h1{font-size:22px;line-height:1.3;margin:0 0 16px;color:#410309;font-family:Georgia,'Times New Roman',serif}p{margin:0 0 12px}a{color:#410309}</style></head>
+<body style="margin:0;padding:0;background:#F6EFE3;font-family:Arial,Helvetica,sans-serif;color:#1F2937;font-size:15px;line-height:1.6">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F6EFE3;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden">
-<tr><td style="background:#15203B;padding:20px 28px"><a href="${e(ctx.site_url)}" style="color:#F4A300;font-size:22px;font-weight:800;text-decoration:none;letter-spacing:.3px">${e(ctx.store_name)}</a></td></tr>
+<tr><td style="background:#410309;padding:18px 28px;border-bottom:3px solid #F2C12E"><a href="${e(ctx.site_url)}" style="color:#F2C12E;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;text-decoration:none"><img src="${e(String(ctx.site_url).replace(/\/+$/, ""))}/brand/logo-email.png" width="208" height="48" alt="${e(ctx.store_name)}" style="display:block;border:0;height:48px;width:auto;color:#F2C12E;font-size:22px"></a></td></tr>
 <tr><td style="padding:28px">${bodyHtml}</td></tr>
-<tr><td style="background:#FAF8F3;padding:18px 28px;font-size:12px;color:#6B7280;line-height:1.6">
+<tr><td style="background:#FBF6EC;padding:18px 28px;font-size:12px;color:#6B7280;line-height:1.6">
 Questions? Reply to this email${ctx.support_phone ? ` or call ${e(ctx.support_phone)}` : ""}.<br>
 ${e(ctx.store_name)}${ctx.address ? ` · ${e(ctx.address)}` : ""}<br>
 <a href="${e(ctx.site_url)}" style="color:#6B7280">${e(String(ctx.site_url).replace(/^https?:\/\//, ""))}</a>

@@ -38,14 +38,14 @@ function SalesChart({ days }) {
               <g key={d.day} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
                 {/* the hit area is the full column, bigger than the bar */}
                 <rect x={x} y={padT} width={bw} height={H - padT - padB} fill="transparent" />
-                {d.revenue > 0 && <path d={`M${x + 1} ${H - padB} V${top + 4} q0 -4 4 -4 H${x + bw - 5} q4 0 4 4 V${H - padB} Z`} fill={hover === i ? "#F4A300" : "#15203B"} />}
+                {d.revenue > 0 && <path d={`M${x + 1} ${H - padB} V${top + 4} q0 -4 4 -4 H${x + bw - 5} q4 0 4 4 V${H - padB} Z`} fill={hover === i ? "#F2C12E" : "#410309"} />}
                 {(i % 5 === 4 || i === days.length - 1) && <text x={i === days.length - 1 ? W : x + bw / 2} y={H - 8} textAnchor={i === days.length - 1 ? "end" : "middle"} className="fill-slate-400 text-[11px]">{label(d.day)}</text>}
               </g>
             );
           })}
         </svg>
         {h && (
-          <div className="pointer-events-none absolute top-0 rounded-lg bg-[#15203B] px-3 py-2 text-xs text-white shadow-lg"
+          <div className="pointer-events-none absolute top-0 rounded-lg bg-[#410309] px-3 py-2 text-xs text-white shadow-lg"
             style={{ left: `clamp(0px, calc(${((padL + hover * bw + bw / 2) / W) * 100}% - 60px), calc(100% - 130px))` }}>
             <div className="font-semibold">{label(h.day)}</div>
             <div>{money(h.revenue)} · {h.orders} order{h.orders === 1 ? "" : "s"}</div>
@@ -74,7 +74,7 @@ function BarList({ rows, value, label, fmt = num, empty }) {
       {rows.map((r, i) => (
         <li key={i}>
           <div className="mb-1 flex justify-between gap-3 text-sm"><span className="truncate text-slate-700">{label(r)}</span><span className="shrink-0 font-semibold tabular-nums text-slate-900">{fmt(value(r))}</span></div>
-          <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-[#15203B]" style={{ width: `${(value(r) / max) * 100}%` }} /></div>
+          <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-[#410309]" style={{ width: `${(value(r) / max) * 100}%` }} /></div>
         </li>
       ))}
     </ul>
@@ -96,7 +96,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold text-slate-900">Welcome back, {admin?.name?.split(" ")[0]}</h2>
           <p className="mt-1 text-sm text-slate-500">Here's how the store is doing. Sales exclude cancelled and returned orders.</p>
         </div>
-        {toDo > 0 && <Link to="/admin/orders?status=pending" className="rounded-xl bg-[#F4A300] px-4 py-2 text-sm font-semibold text-[#15203B]">{toDo} order{toDo > 1 ? "s" : ""} waiting to be confirmed →</Link>}
+        {toDo > 0 && <Link to="/admin/orders?status=pending" className="rounded-xl bg-[#F2C12E] px-4 py-2 text-sm font-semibold text-[#410309]">{toDo} order{toDo > 1 ? "s" : ""} waiting to be confirmed →</Link>}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

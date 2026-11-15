@@ -51,25 +51,22 @@ export default function AdminLayout() {
         <div className="flex min-h-screen bg-slate-100 text-slate-900">
           {open && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setOpen(false)} />}
 
-          <aside className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-[#15203B] text-slate-200 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
-            <div className="flex items-center gap-3 px-6 py-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F4A300] font-bold text-[#15203B]">N</span>
-              <div>
-                <div className="text-sm font-semibold text-white">NawaraTrend</div>
-                <div className="text-xs text-slate-400">Admin panel</div>
-              </div>
+          <aside className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-[#410309] text-slate-200 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+            <div className="border-b border-[#F2C12E]/20 px-6 py-5">
+              <img src="/brand/logo-gold.png" alt="Nawara Trend" width="623" height="144" className="h-9 w-auto" />
+              <div className="mt-2 text-[11px] font-semibold uppercase tracking-[.18em] text-[#F2C12E]/70">Admin panel</div>
             </div>
 
             <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2" aria-label="Admin">
               {items.map((item, i) => item.section ? (
-                <div key={i} className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{item.section}</div>
+                <div key={i} className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-[#F2C12E]/55">{item.section}</div>
               ) : (
                 <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)}
-                  className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}>
+                  className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? "bg-[#F2C12E]/15 text-[#FFE27A] shadow-[inset_2px_0_0_#F2C12E]" : "text-[#E8D5CB]/75 hover:bg-white/5 hover:text-white"}`}>
                   {({ isActive }) => (<>
-                    <span className={isActive ? "text-[#F4A300]" : ""}><Svg d={item.icon} /></span>
+                    <span className={isActive ? "text-[#F2C12E]" : ""}><Svg d={item.icon} /></span>
                     <span className="flex-1">{item.label}</span>
-                    {item.badge && counts[item.badge] > 0 && <span className="rounded-full bg-[#F4A300] px-2 py-0.5 text-xs font-bold text-[#15203B]">{counts[item.badge]}</span>}
+                    {item.badge && counts[item.badge] > 0 && <span className="rounded-full bg-[#F2C12E] px-2 py-0.5 text-xs font-bold text-[#410309]">{counts[item.badge]}</span>}
                   </>)}
                 </NavLink>
               ))}
@@ -77,10 +74,10 @@ export default function AdminLayout() {
 
             <div className="border-t border-white/10 p-4">
               <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4A300] text-sm font-semibold text-[#15203B]">{initials(admin?.name)}</span>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F2C12E] text-sm font-semibold text-[#410309]">{initials(admin?.name)}</span>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium text-white">{admin?.name}</div>
-                  <div className="truncate text-xs text-slate-400">{ROLE[admin?.role]} · {admin?.email}</div>
+                  <div className="truncate text-xs text-[#E8D5CB]/60">{ROLE[admin?.role]} · {admin?.email}</div>
                 </div>
               </div>
               <button onClick={signOut} className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-red-400/40 hover:bg-red-500/10 hover:text-red-300">

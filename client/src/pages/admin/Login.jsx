@@ -25,13 +25,13 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#15203B] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#410309] px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A300] text-xl font-bold text-[#15203B]">N</span>
+          <img src="/brand/logo-gold.png" alt="" width="623" height="144" className="h-14 w-auto" />
           <div>
-            <h1 className="text-2xl font-semibold text-white">NawaraTrend Admin</h1>
-            <p className="mt-1 text-sm text-slate-400">Sign in to manage your store</p>
+            <h1 className="text-2xl font-semibold text-white">Nawara Trend Admin</h1>
+            <p className="mt-1 text-sm text-[#EBD6CB]/70">Sign in to manage your store</p>
           </div>
         </div>
 
@@ -40,17 +40,17 @@ export default function Login() {
           <label className="mb-4 block">
             <span className="mb-1.5 block text-sm font-medium text-slate-700">Email</span>
             <input type="email" required autoFocus autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 outline-none focus:border-[#15203B] focus:ring-2 focus:ring-[#F4A300]/30" />
+              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 outline-none focus:border-[#410309] focus:ring-2 focus:ring-[#F2C12E]/30" />
           </label>
           <label className="mb-6 block">
             <span className="mb-1.5 flex justify-between text-sm font-medium text-slate-700">Password
               <button type="button" onClick={() => setShow(!show)} className="text-xs font-semibold text-slate-500 hover:text-slate-900">{show ? "Hide" : "Show"}</button>
             </span>
             <input type={show ? "text" : "password"} required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 outline-none focus:border-[#15203B] focus:ring-2 focus:ring-[#F4A300]/30" />
+              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 outline-none focus:border-[#410309] focus:ring-2 focus:ring-[#F2C12E]/30" />
           </label>
           <button type="submit" disabled={submitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#15203B] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#22305A] disabled:opacity-60">
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#410309] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5E0B12] disabled:opacity-60">
             {submitting && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
             {submitting ? "Signing in…" : "Sign in"}
           </button>
