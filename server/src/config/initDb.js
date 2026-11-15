@@ -262,6 +262,10 @@ const SETTINGS = {
   cod_enabled: "1",
   whatsapp_enabled: "1",
   whatsapp_message: "Hi NawaraTrend, I have a question.",
+  home_banner_image: "",
+  home_banner_mobile: "",
+  home_banner_link: "",
+  home_banner_alt: "",
 
   // SEO (edited on the admin SEO page)
   "seo.site_url": SITE,

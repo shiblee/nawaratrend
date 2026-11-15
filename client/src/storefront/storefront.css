@@ -491,29 +491,42 @@ header.site .icon-btn:hover{background:rgba(255,255,255,.08)}
 .dd-all{background:linear-gradient(90deg,var(--ink),#5E0B12)}
 .mobile-nav{color:var(--ink);border-top-color:rgba(242,193,46,.4)}
 
-/* Home hero: a royal maroon stage */
-.hero{color:#FFF6E8;background:
-  radial-gradient(720px circle at 86% 22%,rgba(242,193,46,.20),transparent 60%),
-  radial-gradient(620px circle at 4% 100%,rgba(160,24,40,.55),transparent 62%),
-  linear-gradient(160deg,#4A040A 0%,#3A0307 55%,#2A0205 100%)}
-.hero::before{background-image:radial-gradient(rgba(242,193,46,.16) 1.1px,transparent 1.6px)}
-.hero::after{content:"";position:absolute;inset:auto 0 0;height:1px;background:linear-gradient(90deg,transparent,rgba(242,193,46,.55),transparent)}
-.hero .wrap{padding-block:72px 76px}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-hi);margin-bottom:22px}
-.hero-eyebrow::before,.hero-eyebrow::after{content:"";width:28px;height:1px;background:linear-gradient(90deg,transparent,var(--marigold))}
-.hero-eyebrow::after{background:linear-gradient(90deg,var(--marigold),transparent)}
-.hero h1{color:#FFF8EC;font-size:clamp(2.6rem,5.6vw,4.5rem);line-height:1.04}
-.hero h1 span{display:inline;background:var(--gold-grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic;padding-right:.06em}
-.hero .lede{color:rgba(255,238,224,.78)}
-.hero .btn-ink{background:var(--gold-grad);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 30px -12px rgba(242,193,46,.7)}
-.hero .btn-line{color:#FFF1DE;box-shadow:inset 0 0 0 1.5px rgba(242,193,46,.6)}
-.hero .btn-line:hover{background:rgba(242,193,46,.12);color:#fff}
-.hero-proof{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:34px;padding-top:24px;border-top:1px solid rgba(242,193,46,.18);font-size:.9rem;color:rgba(255,238,224,.72)}
+/* Home hero: light ivory and gold, centred; an admin banner can take its place */
+.hero{color:var(--ink);background:
+  radial-gradient(900px 440px at 50% -12%,rgba(242,193,46,.30),transparent 70%),
+  radial-gradient(520px circle at 0% 100%,rgba(160,24,40,.07),transparent 60%),
+  radial-gradient(520px circle at 100% 100%,rgba(160,24,40,.07),transparent 60%),
+  linear-gradient(180deg,#FFF9EF 0%,#FAF0DF 100%)}
+.hero::before{background-image:radial-gradient(rgba(154,107,0,.16) 1.1px,transparent 1.6px);
+  -webkit-mask-image:radial-gradient(ellipse 70% 80% at 50% 45%,transparent 35%,#000 85%);mask-image:radial-gradient(ellipse 70% 80% at 50% 45%,transparent 35%,#000 85%)}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,146,26,.6),transparent)}
+.hero .wrap.hero-welcome{display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;max-width:920px;padding-block:56px 64px}
+.hero-crest{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;margin-bottom:22px;
+  background:radial-gradient(circle at 50% 35%,#6A0C15,var(--ink) 70%);
+  box-shadow:0 0 0 3px #FFF9EF,0 0 0 4.5px var(--marigold),0 16px 32px -12px rgba(65,3,9,.55)}
+.hero-crest img{width:62%;height:auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-text);margin-bottom:18px}
+.hero-eyebrow::before,.hero-eyebrow::after{content:"";width:32px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-lo))}
+.hero-eyebrow::after{background:linear-gradient(90deg,var(--gold-lo),transparent)}
+.hero h1{color:var(--ink);font-size:clamp(2.5rem,5.6vw,4.4rem);line-height:1.05}
+.hero h1 span{display:inline-block;background:linear-gradient(135deg,#B47C0C 0%,#D9A520 45%,#9A6400 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic;padding-right:.06em}
+.hero .lede{color:var(--muted);margin-inline:auto;max-width:52ch}
+.hero .cta{justify-content:center}
+.hero-proof{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;margin-top:34px;padding-top:22px;border-top:1px solid rgba(200,146,26,.3);font-size:.9rem;color:var(--muted);position:relative}
+.hero-proof::before{content:"";position:absolute;top:-4.5px;left:50%;width:8px;height:8px;margin-left:-4px;background:var(--marigold);transform:rotate(45deg)}
 .hero-proof span{display:inline-flex;align-items:center;gap:8px}
-.hero-proof svg{width:17px;height:17px;color:var(--marigold);flex-shrink:0}
-.spot{box-shadow:0 0 0 1px rgba(242,193,46,.35),0 40px 80px -30px rgba(0,0,0,.65);color:var(--ink)}
+.hero-proof svg{width:17px;height:17px;color:var(--gold-text);flex-shrink:0}
+/* banner mode */
+.hero-banner:empty{display:none}
+.hero.has-banner .hero-welcome{display:none}
+.hero.has-banner{background:var(--bg)}
+.hero.has-banner::before{display:none}
+.hero-banner{max-width:var(--wrap);margin:0 auto;padding:24px max(16px,env(safe-area-inset-left,0px)) 28px}
+.hero-banner img{display:block;width:100%;height:auto;border-radius:24px;box-shadow:0 0 0 1px rgba(242,193,46,.45),0 30px 60px -30px rgba(65,3,9,.45)}
+.hb-link{display:block;border-radius:24px;transition:transform .3s}
+.hb-link:hover{transform:translateY(-3px)}
+@media (max-width:640px){.hero-banner{padding-block:14px 18px}.hero-banner img,.hb-link{border-radius:16px}.hero-crest{width:70px;height:70px}}
 .spot-off,.stage .off{background:var(--gold-grad);box-shadow:0 4px 12px -4px rgba(150,100,0,.5)}
-.spot-prog i{background:var(--gold-grad)}
 
 /* Trust band: maroon seals with gold icons */
 .trust-band{background:var(--surface);border-block:1px solid var(--line)}
@@ -562,4 +575,4 @@ footer h4{color:#FFF1DE}
 .ship .bar i{background:linear-gradient(90deg,var(--ink),#7A1220)}
 .toast{background:var(--ink);box-shadow:inset 3px 0 0 var(--marigold),0 14px 30px -10px rgba(42,2,5,.6)}
 .ck-banner{box-shadow:0 20px 50px -12px rgba(65,3,9,.4),0 0 0 1px var(--line),inset 0 3px 0 var(--marigold)}
-@media (max-width:560px){.hero-eyebrow{letter-spacing:.12em;font-size:.68rem}.hero-eyebrow::before,.hero-eyebrow::after{display:none}.hero .wrap{padding-block:44px 52px}}
+@media (max-width:560px){.hero-eyebrow{letter-spacing:.12em;font-size:.68rem}.hero-eyebrow::before,.hero-eyebrow::after{display:none}.hero .wrap.hero-welcome{padding-block:40px 48px}}

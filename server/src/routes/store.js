@@ -35,7 +35,8 @@ router.get("/catalog", ah(async (req, res) => {
   res.set("Cache-Control", "no-store");
   res.json({
     settings: { freeShipping: s.free_shipping_threshold, deliveryFee: s.delivery_fee, codEnabled: s.cod_enabled, phone: s.phone,
-      whatsapp: s.whatsapp, whatsappEnabled: s.whatsapp_enabled, whatsappMessage: s.whatsapp_message || "", ga4: s["seo.ga4_id"] || "" },
+      whatsapp: s.whatsapp, whatsappEnabled: s.whatsapp_enabled, whatsappMessage: s.whatsapp_message || "", ga4: s["seo.ga4_id"] || "",
+      banner: s.home_banner_image ? { image: s.home_banner_image, mobile: s.home_banner_mobile || "", link: s.home_banner_link || "", alt: s.home_banner_alt || "" } : null },
     categories: cats.map((c) => ({ k: c.slug, n: c.name })),
     products: rows.map(publicProduct),
   });

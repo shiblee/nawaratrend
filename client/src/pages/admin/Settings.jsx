@@ -65,6 +65,21 @@ export default function Settings() {
             <Field label="Address" className="sm:col-span-2"><Textarea value={f.address} onChange={set("address")} /></Field>
           </div>
         </Card>
+        <Card className="lg:col-span-2">
+          <CardHeader title="Home page banner" sub="Paste an image link (https://…) to show a banner at the top of the home page in place of the welcome section. Leave it empty to show the welcome section." />
+          <div className="grid gap-4 p-5 sm:grid-cols-2">
+            <Field label="Banner image" hint="(wide, about 2400 × 900 px)"><Input value={f.home_banner_image || ""} onChange={set("home_banner_image")} placeholder="https://…/banner.jpg" /></Field>
+            <Field label="Mobile banner image" hint="(optional, about 1080 × 1200 px)"><Input value={f.home_banner_mobile || ""} onChange={set("home_banner_mobile")} placeholder="https://…/banner-mobile.jpg" /></Field>
+            <Field label="Opens when clicked" hint="(optional, e.g. /shop or a product link)"><Input value={f.home_banner_link || ""} onChange={set("home_banner_link")} placeholder="/shop" /></Field>
+            <Field label="Description" hint="(what the banner says, for screen readers and Google)"><Input value={f.home_banner_alt || ""} onChange={set("home_banner_alt")} maxLength={150} placeholder="Festive sale: up to 50% off" /></Field>
+            {f.home_banner_image && (
+              <div className="sm:col-span-2">
+                <p className="mb-2 text-sm font-medium text-slate-600">Preview</p>
+                <img src={f.home_banner_image} alt="" className="max-h-64 w-full rounded-xl border border-slate-200 bg-slate-50 object-cover" />
+              </div>
+            )}
+          </div>
+        </Card>
       </fieldset>
     </form>
   );

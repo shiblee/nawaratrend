@@ -2,7 +2,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import { pool } from "../../config/db.js";
-import { ah, HttpError, str, num, oneOf, bool, paging, EMAIL, password } from "../../lib/http.js";
+import { ah, HttpError, str, num, oneOf, bool, paging, EMAIL, password, URL_RE } from "../../lib/http.js";
 import { audit, getSettings } from "../../lib/store.js";
 import { requireRole } from "../../middleware/auth.js";
 
@@ -171,6 +171,11 @@ const SETTING_RULES = {
   cod_enabled: (v) => (bool(v) ? "1" : "0"),
   whatsapp_enabled: (v) => (bool(v) ? "1" : "0"),
   whatsapp_message: (v) => str(v, "WhatsApp greeting", { optional: true, max: 300 }) || "",
+  // home page banner (replaces the welcome section while an image is set)
+  home_banner_image: (v) => str(v, "banner image", { optional: true, max: 500, pattern: URL_RE, msg: "The banner image must be a link starting with https://" }) || "",
+  home_banner_mobile: (v) => str(v, "mobile banner image", { optional: true, max: 500, pattern: URL_RE, msg: "The mobile banner image must be a link starting with https://" }) || "",
+  home_banner_link: (v) => str(v, "banner link", { optional: true, max: 500, pattern: /^(https?:\/\/[^\s"'<>]+|\/[^\s"'<>]*)$/i, msg: "The banner link must start with https:// or / (for a page on this site)" }) || "",
+  home_banner_alt: (v) => str(v, "banner description", { optional: true, max: 150 }) || "",
 };
 
 router.get("/settings", ah(async (req, res) => {

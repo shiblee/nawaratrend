@@ -11,6 +11,7 @@ import { currentCustomer, assetUrl } from "../services/customerApi.js";
 let FREE_SHIP = 999;
 let DELIVERY_FEE = 49;
 let COD_ENABLED = true;
+let BANNER = null;   // home page banner from the admin Settings page
 // contact numbers and the WhatsApp button come from the admin Settings page
 const CONTACT = { phone: "+91 89608 88231", whatsapp: "+91 98075 62620", whatsappEnabled: true, whatsappMessage: "" };
 const categories = [
@@ -89,6 +90,7 @@ export function loadCatalog(){
       FREE_SHIP = d.settings.freeShipping; DELIVERY_FEE = d.settings.deliveryFee; COD_ENABLED = d.settings.codEnabled;
       Object.assign(CONTACT, { phone: d.settings.phone || CONTACT.phone, whatsapp: d.settings.whatsapp || CONTACT.whatsapp,
         whatsappEnabled: d.settings.whatsappEnabled !== false, whatsappMessage: d.settings.whatsappMessage || "" });
+      BANNER = d.settings.banner && /^https?:\/\//i.test(d.settings.banner.image) ? d.settings.banner : null;
       categories.splice(0, categories.length, ...d.categories.map(c => ({k: safe(c.k), n: safe(c.n)})));
       products.splice(0, products.length, ...d.products.map(p => ({...p, id: safe(p.id), cat: safe(p.cat), name: safe(p.name), desc: safe(p.desc),
         points: (p.points || []).map(safe), sizes: p.sizes && p.sizes.map(safe)})));
@@ -289,32 +291,18 @@ export function initStorefront(){
 
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------- Spotlight (homepage only) ---------- */
-  if($("spot")){
-  let si = 0;
-  function showSpot(i){
-    si = (i + ordered.length) % ordered.length;
-    const p = ordered[si];
-    $("spotStage").style.background = `var(--${p.cat}-bg)`;
-    $("spotArt").outerHTML = art(p).replace('class="art"','class="art fade" id="spotArt"');
-    $("spotCount").textContent = `${si+1} / ${ordered.length}`;
-    $("spotOff").textContent = `${off(p)}% OFF`;
-    $("spotBody").innerHTML = `
-      <span class="cat mono" style="color:var(--${p.cat})">${catName(p.cat)} · ★ ${p.rate} (${p.reviews})</span>
-      <div class="fade"><h3>${p.name}</h3><div class="spot-price"><b>${inr(p.price)}</b><s>${inr(p.mrp)}</s><span class="save">Save ${inr(p.mrp-p.price)}</span></div></div>
-      <div class="spot-actions">${buyControl(p, "")}<a href="/product/${p.id}">View details</a></div>`;
-    const sa = $("spotBody").querySelector("[data-buy]"); if(sa) sa.onclick = () => addToCart(p);
-    // restart the progress bar; when it finishes, move to the next pick
-    const bar = $("spotProg"); bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = "";
-  }
-  $("spotProg").addEventListener("animationend", () => showSpot(si+1));
-  $("spotPrev").onclick = () => showSpot(si-1);
-  $("spotNext").onclick = () => showSpot(si+1);
-  $("spot").addEventListener("keydown", e => { if(e.key==="ArrowRight") showSpot(si+1); if(e.key==="ArrowLeft") showSpot(si-1); });
-  let tx = null;
-  $("spotStage").addEventListener("touchstart", e => tx = e.touches[0].clientX, {passive:true});
-  $("spotStage").addEventListener("touchend", e => { if(tx===null) return; const dx = e.changedTouches[0].clientX - tx; if(Math.abs(dx) > 40) showSpot(si + (dx < 0 ? 1 : -1)); tx = null; });
-  showSpot(0);
+  /* ---------- Home banner (homepage only) ----------
+     When an image is set in Admin → Settings → Home page banner, it replaces the welcome section. */
+  if($("hero") && BANNER){
+    const pic = document.createElement("picture");
+    if(BANNER.mobile){ const src = document.createElement("source"); src.media = "(max-width:640px)"; src.srcset = BANNER.mobile; pic.append(src); }
+    const img = Object.assign(document.createElement("img"), { src: BANNER.image, alt: BANNER.alt || "", decoding: "async", fetchPriority: "high" });
+    img.onerror = () => { $("hero")?.classList.remove("has-banner"); $("heroBanner")?.replaceChildren(); };   // broken link: keep the welcome section
+    pic.append(img);
+    let box = pic;
+    if(BANNER.link){ box = Object.assign(document.createElement("a"), { href: BANNER.link, className: "hb-link" }); if(!BANNER.alt) box.setAttribute("aria-label", "View offer"); box.append(pic); }
+    $("heroBanner").replaceChildren(box);
+    $("hero").classList.add("has-banner");
   }
 
   /* ---------- Category links (all pages) ---------- */
