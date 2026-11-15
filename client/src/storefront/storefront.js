@@ -23,30 +23,14 @@ const categories = [
   {k:"accessories", n:"Accessories"}
 ];
 const products = [
-  {id:"earbuds", cat:"electronics", name:"Wireless Bluetooth Earbuds", price:1299, mrp:2999, rate:4.3, reviews:214, left:6,
-   desc:"Clear sound and a pocket-size charging case for calls, music and commutes.",
-   points:["Up to 24 hours with the case","Touch controls, built-in mic","Bluetooth 5.3, quick pairing"]},
-  {id:"band", cat:"electronics", name:"Smart Fitness Band", price:1799, mrp:3499, rate:4.1, reviews:64,
-   desc:"Tracks steps, heart rate and sleep, and shows phone notifications on your wrist.",
-   points:["Heart rate & sleep tracking","Water resistant for daily wear","Up to 10 days per charge"]},
-  {id:"shirt", cat:"fashion", name:"Men's Cotton Slim-Fit Shirt", price:699, mrp:1299, rate:4.1, reviews:86, sizes:["S","M","L","XL","XXL"],
-   desc:"Soft, breathable cotton that works for office days and weekends.",
-   points:["100% cotton","Sizes S to XXL","Machine washable"]},
-  {id:"kurta", cat:"fashion", name:"Women's Printed Cotton Kurta", price:599, mrp:1199, rate:4.2, reviews:112, sizes:["XS","S","M","L","XL","XXL"],
-   desc:"A light everyday kurta with a fresh print and a relaxed fit.",
-   points:["Breathable cotton fabric","Sizes XS to XXL","Colour-fast print"]},
-  {id:"cookware", cat:"home", name:"Non-Stick Cookware Set, 3 Pieces", price:1499, mrp:2499, rate:4.4, reviews:131,
-   desc:"Fry pan, kadai and tawa with a durable non-stick coating for everyday cooking.",
-   points:["Works on gas & induction","Cool-touch handles","Easy to clean"]},
-  {id:"serum", cat:"beauty", name:"Vitamin C Face Serum, 30 ml", price:449, mrp:799, rate:4.2, reviews:95,
-   desc:"A lightweight serum for brighter, even-looking skin.",
-   points:["Suitable for all skin types","Non-sticky, absorbs fast","Use morning or night"]},
-  {id:"blocks", cat:"kids", name:"Building Blocks Set, 250 Pieces", price:899, mrp:1499, rate:4.6, reviews:72, left:3,
-   desc:"Colourful blocks that build creativity and fine motor skills.",
-   points:["Ages 4 and up","Non-toxic, smooth edges","Storage box included"]},
-  {id:"backpack", cat:"accessories", name:"Laptop Backpack with USB Port", price:999, mrp:1999, rate:4.3, reviews:58,
-   desc:"A padded backpack for laptops up to 15.6\" with room for daily essentials.",
-   points:["Water-resistant fabric","Built-in USB charging port","Padded laptop sleeve"]}
+  {id:"mens-premium-black-shirt", cat:"fashion", name:"Men's Premium Black Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+   desc:"A classic black shirt that goes from office meetings to evening plans, with a crisp spread collar, buttoned cuffs and an embroidered horse-rider emblem.",
+   points:["Crisp spread collar that holds its shape","Embroidered horse-rider emblem on the chest","Comfortable fit for office, occasions and everyday wear"],
+   img:"https://nawaratrend.com/products/mens-black-shirt/1.jpg"},
+  {id:"mens-premium-sage-green-shirt", cat:"fashion", name:"Men's Premium Sage Green Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+   desc:"A fresh sage green shirt with a sharp spread collar, breathable fabric and an embroidered horse-rider emblem, for workdays and weekends alike.",
+   points:["Soft sage green shade that suits every season","Embroidered horse-rider emblem on the chest","Breathable fabric for all-day comfort"],
+   img:"https://nawaratrend.com/products/mens-sage-green-shirt/1.jpg"}
 ];
 
 const ICON = {
