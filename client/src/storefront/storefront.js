@@ -350,7 +350,7 @@ export function initStorefront(){
           <div class="info-top"><span class="tag" style="background:var(--${c.k}-bg);color:var(--${c.k})">${c.n}</span></div>
           <h4><a href="/product/${p.id}" class="pd-link">${p.name}</a></h4>
           <p class="desc">${p.desc}</p>
-          <ul>${p.points.slice(0,3).map(x => `<li><span class="ck">${check}</span><span>${x}</span></li>`).join("")}</ul>
+          <ul>${p.points.slice(0,2).map(x => `<li><span class="ck">${check}</span><span>${x}</span></li>`).join("")}</ul>
           <div class="meta">${ratingHtml(p, true) || `<div class="rating"><span class="stars" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><span>(${p.reviews} reviews)</span></div>`}
           ${p.left ? `<span class="stock">Only ${p.left} left</span>` : ""}</div>
           <div class="buy">

@@ -586,3 +586,9 @@ footer h4{color:#FFF1DE}
 .new-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:var(--gold-grad);padding:3px 9px;border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
 .new-badge::before{content:"✦";font-size:.7rem}
 .bb-rating .new-badge{margin-right:8px}
+
+/* Home catalogue: keep each spread compact, and let real photos fill their panel (no dark bands) */
+.info .desc{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.stage .art.has-photo img{object-fit:cover}
+.stage .art.has-photo::before{display:none}
+@media (max-width:720px){.stage:has(.art.has-photo){aspect-ratio:1/1}}
