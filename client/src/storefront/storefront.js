@@ -4,6 +4,7 @@
 
 import { BASE_URL } from "../services/api.js";
 import { initConsent } from "./consent.js";
+import { currentCustomer, assetUrl } from "../services/customerApi.js";
 
 /* The catalogue comes from the database (GET /api/store/catalog). These sample values are only
    used if the server can't be reached, so the shop still opens. Edit products in the admin panel. */
@@ -168,12 +169,27 @@ export function syncContacts(root = document.body){
   if(float) float.hidden = !CONTACT.whatsappEnabled;
 }
 
+/** Header account icon: the customer's photo (or initial) once signed in. Called again when the profile changes. */
+export function syncAccountIcon(){
+  const me = currentCustomer(), acct = document.querySelector(".acct-btn");
+  if(!me || !acct) return;
+  acct.setAttribute("aria-label", `My account (${me.name})`);
+  acct.dataset.tip = "My account";
+  const pic = document.createElement("span");
+  pic.className = "acct-pic";
+  if(me.avatar){ const img = document.createElement("img"); img.src = assetUrl(me.avatar); img.alt = ""; pic.append(img); }
+  else pic.textContent = (me.name || "?").trim().charAt(0).toUpperCase();
+  acct.replaceChildren(pic);
+}
+
 export function initStorefront(){
   const ac = new AbortController();
   const sig = {signal: ac.signal};
   const stopConsent = initConsent();
   const timers = new Set();
   const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
+
+  syncAccountIcon();
 
   /* ---------- Toast ---------- */
   let tt; const say = m => { const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); timers.delete(tt); tt=later(()=>t.classList.remove("show"),2200); };

@@ -1,5 +1,5 @@
 /* Shared building blocks for the admin panel (Tailwind). Brand colours: ink #15203B, marigold #F4A300. */
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, forwardRef, useCallback, useContext, useEffect, useState } from "react";
 
 /* ---------- formatting ---------- */
 export const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
@@ -106,9 +106,9 @@ export function Field({ label, hint, error, children, className = "" }) {
   );
 }
 const inputCls = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#15203B] focus:ring-2 focus:ring-[#F4A300]/30 disabled:bg-slate-50";
-export const Input = (p) => <input {...p} className={`${inputCls} ${p.className || ""}`} />;
+export const Input = forwardRef((p, ref) => <input ref={ref} {...p} className={`${inputCls} ${p.className || ""}`} />);
 export const Select = ({ children, ...p }) => <select {...p} className={`${inputCls} ${p.className || ""}`}>{children}</select>;
-export const Textarea = (p) => <textarea rows={3} {...p} className={`${inputCls} ${p.className || ""}`} />;
+export const Textarea = forwardRef((p, ref) => <textarea ref={ref} rows={3} {...p} className={`${inputCls} ${p.className || ""}`} />);
 
 export function Toggle({ checked, onChange, label, disabled }) {
   return (
@@ -133,11 +133,16 @@ const TONES = {
 };
 export const Badge = ({ tone = "gray", children }) => <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONES[tone]}`}>{children}</span>;
 
+// same order as the journey (server/src/lib/orders.js)
 export const ORDER_STATUS = {
-  pending: ["Pending", "amber"], confirmed: ["Confirmed", "blue"], packed: ["Packed", "violet"], shipped: ["Shipped", "blue"],
-  delivered: ["Delivered", "green"], cancelled: ["Cancelled", "red"], returned: ["Returned", "red"],
+  pending: ["Pending", "amber"], on_hold: ["On hold", "amber"], confirmed: ["Confirmed", "blue"], packed: ["Packed", "violet"],
+  shipped: ["Shipped", "blue"], out_for_delivery: ["Out for delivery", "blue"], delivery_failed: ["Delivery failed", "red"],
+  delivered: ["Delivered", "green"], return_requested: ["Return requested", "amber"], returned: ["Returned", "red"], cancelled: ["Cancelled", "red"],
 };
-export const PAY_STATUS = { pending: ["Unpaid", "amber"], paid: ["Paid", "green"], failed: ["Failed", "red"], refunded: ["Refunded", "gray"] };
+export const PAY_STATUS = { pending: ["Unpaid", "amber"], paid: ["Paid", "green"], failed: ["Failed", "red"], refund_pending: ["Refund initiated", "violet"], refunded: ["Refunded", "gray"] };
+export const EMAIL_STATUS = { queued: ["Queued", "amber"], sending: ["Sending", "blue"], sent: ["Sent", "green"], failed: ["Failed", "red"], skipped: ["Not sent", "gray"] };
+export const EmailBadge = ({ status }) => <Badge tone={(EMAIL_STATUS[status] || [])[1]}>{(EMAIL_STATUS[status] || [status])[0]}</Badge>;
+export const TRIGGER = { registration: "Sign-up", order: "New order", admin: "Admin update", system: "System", test: "Test", retry: "Resent by admin", customer: "Customer action" };
 export const PRODUCT_STATUS = { active: ["On sale", "green"], draft: ["Draft", "gray"], archived: ["Archived", "red"] };
 export const PAY_METHOD = { upi: "UPI", card: "Card", cod: "Cash on Delivery" };
 export const OrderBadge = ({ status }) => <Badge tone={(ORDER_STATUS[status] || [])[1]}>{(ORDER_STATUS[status] || [status])[0]}</Badge>;
@@ -271,6 +276,7 @@ export const Icon = {
   profile: "M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0",
   store: "M3 9 4.5 4h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6",
   seo: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM21 21l-5-5M8 11h6M11 8v6",
+  emails: "M3 6.75A1.5 1.5 0 0 1 4.5 5.25h15a1.5 1.5 0 0 1 1.5 1.5v10.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.25V6.75Zm0 0 9 6 9-6",
   logout: "M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75",
 };
 export const Svg = ({ d, className = "h-5 w-5" }) => (

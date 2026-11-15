@@ -6,6 +6,7 @@ import About from "./pages/About.jsx";
 import Shop from "./pages/Shop.jsx";
 import Product from "./pages/Product.jsx";
 import { Checkout, CustomerLogin } from "./pages/Checkout.jsx";
+import { Account, TrackOrder, ResetPassword } from "./pages/Account.jsx";
 import { Terms, ShippingPolicy, RefundPolicy, PrivacyPolicy, Faqs } from "./pages/Policies.jsx";
 import { AdminAuthProvider } from "./context/AdminAuthContext.jsx";
 import ProtectedRoute from "./components/admin/ProtectedRoute.jsx";
@@ -25,6 +26,8 @@ const Activity = lazy(() => import("./pages/admin/Activity.jsx"));
 const Settings = lazy(() => import("./pages/admin/Settings.jsx"));
 const Seo = lazy(() => import("./pages/admin/Seo.jsx"));
 const Profile = lazy(() => import("./pages/admin/Profile.jsx"));
+const Emails = lazy(() => import("./pages/admin/Emails.jsx"));
+const EmailTemplateEdit = lazy(() => import("./pages/admin/EmailTemplateEdit.jsx"));
 
 export default function App() {
   return (
@@ -38,6 +41,9 @@ export default function App() {
           <Route path="/product/:id" element={<Product />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/login" element={<CustomerLogin />} />
+          <Route path="/account/*" element={<Account />} />
+          <Route path="/track" element={<TrackOrder />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faqs" element={<Faqs />} />
@@ -67,6 +73,8 @@ export default function App() {
             <Route path="team" element={<ProtectedRoute roles={["owner"]}><Team /></ProtectedRoute>} />
             <Route path="activity" element={<ProtectedRoute roles={["owner", "manager"]}><Activity /></ProtectedRoute>} />
             <Route path="seo" element={<Seo />} />
+            <Route path="emails" element={<ProtectedRoute roles={["owner", "manager"]}><Emails /></ProtectedRoute>} />
+            <Route path="emails/templates/:key" element={<ProtectedRoute roles={["owner", "manager"]}><EmailTemplateEdit /></ProtectedRoute>} />
             <Route path="settings" element={<Settings />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="dashboard" replace />} />

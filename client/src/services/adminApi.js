@@ -36,6 +36,15 @@ async function request(path, options = {}) {
   return data;
 }
 
+/** Downloads a CSV export (the token can't go in a plain link, so fetch it). */
+async function download(path, filename) {
+  const res = await fetch(`${BASE_URL}${path}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+  if (!res.ok) throw new Error("Export failed");
+  const url = URL.createObjectURL(await res.blob());
+  Object.assign(document.createElement("a"), { href: url, download: filename }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 const send = (method, path, body) => request(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
 
 export const adminApi = {
@@ -63,15 +72,7 @@ export const adminApi = {
   getOrders: (p) => request(`/admin/orders${qs(p)}`),
   getOrder: (id) => request(`/admin/orders/${id}`),
   updateOrder: (id, d) => send("PATCH", `/admin/orders/${id}`, d),
-  /** Downloads the filtered orders as a CSV file (the token can't go in a plain link, so fetch it). */
-  async exportOrders(p) {
-    const res = await fetch(`${BASE_URL}/admin/orders/export.csv${qs(p)}`, { headers: { Authorization: `Bearer ${getToken()}` } });
-    if (!res.ok) throw new Error("Export failed");
-    const url = URL.createObjectURL(await res.blob());
-    const a = Object.assign(document.createElement("a"), { href: url, download: `orders-${new Date().toISOString().slice(0, 10)}.csv` });
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  },
+  exportOrders: (p) => download(`/admin/orders/export.csv${qs(p)}`, `orders-${new Date().toISOString().slice(0, 10)}.csv`),
 
   getCustomers: (p) => request(`/admin/customers${qs(p)}`),
   getCustomer: (id) => request(`/admin/customers/${id}`),
@@ -91,6 +92,21 @@ export const adminApi = {
   updateSeoSettings: (d) => send("PUT", "/admin/seo/settings", d),
   updateSeoPage: (key, d) => send("PUT", `/admin/seo/pages/${key}`, d),
   updateSeoProduct: (id, d) => send("PUT", `/admin/seo/products/${id}`, d),
+
+  // emails (owners and managers)
+  getEmailTemplates: () => request("/admin/emails/templates"),
+  getEmailTemplate: (key) => request(`/admin/emails/templates/${key}`),
+  saveEmailTemplate: (key, d) => send("PUT", `/admin/emails/templates/${key}`, d),
+  setEmailTemplateEnabled: (key, enabled) => send("PATCH", `/admin/emails/templates/${key}`, { enabled }),
+  previewEmailTemplate: (key, d) => send("POST", `/admin/emails/templates/${key}/preview`, d),
+  testEmailTemplate: (key, d) => send("POST", `/admin/emails/templates/${key}/test`, d),
+  resetEmailTemplate: (key) => send("POST", `/admin/emails/templates/${key}/reset`),
+  getEmailLogs: (p) => request(`/admin/emails/logs${qs(p)}`),
+  getEmailLog: (id) => request(`/admin/emails/logs/${id}`),
+  retryEmail: (id) => send("POST", `/admin/emails/logs/${id}/retry`),
+  getEmailSettings: () => request("/admin/emails/settings"),
+  updateEmailSettings: (d) => send("PUT", "/admin/emails/settings", d),
+  exportEmails: (p) => download(`/admin/emails/logs/export.csv${qs(p)}`, `emails-${new Date().toISOString().slice(0, 10)}.csv`),
 
   getSettings: () => request("/admin/settings"),
   updateSettings: (d) => send("PUT", "/admin/settings", d),

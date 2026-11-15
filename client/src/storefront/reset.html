@@ -1,0 +1,30 @@
+<main id="top">
+
+<section class="x-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/login">Sign in</a><span aria-hidden="true">/</span><span aria-current="page">Reset password</span></nav>
+    <h1 id="rsTitle">Forgot your <span>password?</span></h1>
+    <p class="x-intro" id="rsIntro">Enter the email or mobile number of your account and we'll email you a link to choose a new password.</p>
+  </div>
+</section>
+
+<section class="x-body">
+  <div class="wrap lg-wrap">
+    <form class="card lg-form" id="rsAsk" novalidate>
+      <div class="fld"><label for="rsContact">Email or mobile number</label><input id="rsContact" autocomplete="username" maxlength="150"><p class="err"></p></div>
+      <p class="form-msg" role="alert"></p>
+      <p class="ok-msg" role="status"></p>
+      <button type="submit" class="btn btn-ink"><span class="lbl">Email me a reset link</span><span class="spin" aria-hidden="true"></span></button>
+      <p class="lg-alt">Remembered it? <a class="link" href="/login">Sign in</a> · No email on your account? <a class="link" href="https://wa.me/919807562620?text=Hi%20NawaraTrend%2C%20I%20need%20help%20signing%20in%20to%20my%20account.">WhatsApp us</a></p>
+    </form>
+
+    <form class="card lg-form" id="rsSet" novalidate hidden>
+      <div class="fields one" id="rsFields"></div>
+      <p class="form-msg" role="alert"></p>
+      <button type="submit" class="btn btn-ink"><span class="lbl">Save new password</span><span class="spin" aria-hidden="true"></span></button>
+      <p class="lg-alt">Link not working? <a class="link" href="/reset-password">Ask for a new one</a></p>
+    </form>
+  </div>
+</section>
+
+</main>

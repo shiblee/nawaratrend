@@ -3,7 +3,8 @@ import { adminApi } from "../../services/adminApi.js";
 import { describe } from "../../components/admin/activity.js";
 import { Alert, Card, PageHeader, Pager, Select, Table, dateTime, useLoad } from "../../components/admin/ui.jsx";
 
-const ENTITIES = { "": "Everything", order: "Orders", product: "Products", category: "Categories", customer: "Customers", message: "Messages", admin: "Team & sign-ins", settings: "Settings" };
+const ENTITIES = { "": "Everything", order: "Orders", product: "Products", category: "Categories", customer: "Customers", message: "Messages",
+  email: "Emails", email_template: "Email templates", admin: "Team & sign-ins", settings: "Settings" };
 
 // show what changed, e.g. "price: 1499 → 1399"
 function Details({ raw }) {

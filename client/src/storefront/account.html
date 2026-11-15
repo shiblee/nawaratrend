@@ -1,0 +1,33 @@
+<main id="top">
+
+<section class="x-head ac-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb" id="acCrumbs"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">My account</span></nav>
+    <div class="ac-hero">
+      <div class="ac-photo">
+        <span class="av" id="acAv" aria-hidden="true"></span>
+        <label class="ac-cam" for="acFile" title="Change profile photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span class="sr">Change profile photo</span></label>
+        <input type="file" id="acFile" accept="image/jpeg,image/png,image/webp" hidden>
+      </div>
+      <div class="ac-who">
+        <h1 id="acName">My <span>account</span></h1>
+        <p class="x-intro" id="acMeta"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="x-body">
+  <div class="wrap">
+    <nav class="ac-tabs" aria-label="My account">
+      <a href="/account" id="tabOrders">My orders</a>
+      <a href="/account/profile" id="tabProfile">Profile</a>
+      <a href="/account/security" id="tabSecurity">Password<span class="ac-long"> &amp; security</span></a>
+      <button type="button" class="ac-out" id="acOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Sign out</button>
+    </nav>
+    <p class="form-msg ac-photo-msg" id="acPhotoMsg" role="alert"></p>
+    <div id="acView" aria-live="polite"><div class="card ac-loading">Loading…</div></div>
+  </div>
+</section>
+
+</main>

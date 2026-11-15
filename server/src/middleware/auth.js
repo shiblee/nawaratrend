@@ -10,8 +10,9 @@ const SECRET = () => process.env.JWT_SECRET;
 export const signAdminToken = (admin) =>
   jwt.sign({ sub: admin.id, role: admin.role, tv: admin.token_version }, SECRET(), { audience: "admin", expiresIn: "8h" });
 
+// tv = token version: changing the password or "sign out everywhere" raises it, which ends older sessions
 export const signCustomerToken = (customer) =>
-  jwt.sign({ sub: customer.id }, SECRET(), { audience: "customer", expiresIn: "30d" });
+  jwt.sign({ sub: customer.id, tv: customer.token_version || 0 }, SECRET(), { audience: "customer", expiresIn: "30d" });
 
 const bearer = (req) => {
   const h = req.headers.authorization || "";
@@ -47,9 +48,11 @@ export async function optionalCustomer(req, res, next) {
     const token = bearer(req);
     if (token) {
       try {
-        const { sub } = jwt.verify(token, SECRET(), { audience: "customer" });
-        const [rows] = await pool.query("SELECT id, name, email, phone, is_active FROM customers WHERE id = ?", [sub]);
-        if (rows[0]?.is_active) req.customer = rows[0];
+        const { sub, tv = 0 } = jwt.verify(token, SECRET(), { audience: "customer" });
+        const [rows] = await pool.query(
+          `SELECT c.id, c.name, c.email, c.phone, c.is_active, c.token_version, c.created_at, a.updated_at AS avatar_at
+           FROM customers c LEFT JOIN customer_avatars a ON a.customer_id = c.id WHERE c.id = ?`, [sub]);
+        if (rows[0]?.is_active && rows[0].token_version === tv) req.customer = rows[0];
       } catch { /* bad or expired token: treat as a guest */ }
     }
     next();

@@ -3,6 +3,7 @@ import "dotenv/config";
 
 import app from "./app.js";
 import { testConnection } from "./config/db.js";
+import { startEmailWorker } from "./lib/email/index.js";
 
 const PORT = process.env.PORT || 5050;
 
@@ -18,6 +19,7 @@ testConnection()
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
+    startEmailWorker();   // sends queued emails and retries failed ones
   })
   .catch((error) => {
     console.error("Failed to connect to MySQL:", error.message);

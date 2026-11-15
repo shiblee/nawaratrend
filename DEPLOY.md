@@ -119,6 +119,16 @@ How the server is set up (different from Steps 4–6 above, because GoDaddy's "S
 - `~/public_html/nawaratrend.com/.htaccess`: Passenger settings that run the app for nawaratrend.com, plus `RewriteEngine Off` so the main site's WordPress rules in `public_html/.htaccess` don't break every page
 - SSH login: `ssh mjgykn3s9utp@184.168.114.12` with this Mac's key
 
+## Customer accounts, order tracking and emails
+
+- Customers manage everything at **/account** (orders with tracking, profile and photo, password, sign out everywhere). Guests follow an order at **/track** with the order number and mobile number. Forgotten passwords are reset by email at **/reset-password**.
+- Admin → **Orders**: each status change has a message the customer sees and an internal note only the team sees, plus courier, tracking link and expected delivery. The order page shows the timeline, every email sent and the full change log. Refunds can only be recorded by owners and managers.
+- Admin → **Emails** (owners and managers): turn each email on or off, edit its wording with a live preview, send yourself a test, restore the default; the **Email log** shows every email with its delivery attempts, and failed ones can be retried.
+- Emails are sent by the hosting server's own mail system (no password needed). To use another provider instead, add to `deploy/production.env`: `EMAIL_TRANSPORT=smtp`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE=1`, `SMTP_USER`, `SMTP_PASS`, then deploy. On your Mac, emails are only logged, never sent (`EMAIL_TRANSPORT=log`).
+- Failed emails are retried after 2, 10 and 30 minutes. A problem sending an email never affects the order or sign-up that triggered it.
+- Database upgrades: after a deploy that changes tables, run `~/nodejs/bin/node src/config/initDb.js` in `~/nawaratrend/server` (safe to repeat; it only adds what's missing). Back up first:
+  backups are in `~/backups` on the server.
+
 ## If something goes wrong
 
 | Problem | What to do |

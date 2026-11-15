@@ -1,11 +1,10 @@
 /* Customer accounts, orders and the contact form: the storefront's connection to the backend.
-   Server routes live in server/src/routes/store.js:
-     POST /api/store/auth/register  { name, contact, password }   -> { token, customer }
-     POST /api/store/auth/login     { contact, password }         -> { token, customer }
-     GET  /api/store/auth/me                                      -> { customer }
-     GET  /api/store/orders/mine                                  -> { orders }
-     POST /api/store/orders         { items:[{productId, qty, size}], address, payment } -> { orderId, total, ... }
-     POST /api/store/contact        { topic, name, contact, order, message }
+   Server routes live in server/src/routes/account.js and store.js:
+     POST /api/store/auth/register | login | forgot | reset | logout-everywhere,  GET /api/store/auth/me
+     PUT  /api/store/account/profile | password | avatar,  DELETE /api/store/account/avatar
+     GET  /api/store/orders/mine?status=&q=&page=,  GET /api/store/orders/mine/:number,  POST /api/store/orders/track
+     POST /api/store/orders  { items:[{productId, qty, size}], address, payment } -> { orderId, total, ... }
+     POST /api/store/contact { topic, name, contact, order, message }
    `contact` is a mobile number or an email. The server recalculates every price itself. */
 
 import { BASE_URL } from "./api.js";
@@ -54,6 +53,9 @@ function saveSession({ token, customer }) {
   return customer;
 }
 
+/** Full address for something the server serves, e.g. a profile photo ("/api/store/avatars/…"). */
+export const assetUrl = (path) => (path && path.startsWith("/") ? BASE_URL.replace(/\/api\/?$/, "") + path : path || "");
+
 /** The signed-in customer ({ id, name, contact, email, phone }) or null. Read from the browser, so it's instant. */
 export function currentCustomer() {
   try { return JSON.parse(store.get(CUSTOMER_KEY)) || null; } catch { return null; }
@@ -83,7 +85,27 @@ export async function refreshCustomer() {
   }
 }
 
-export const myOrders = async () => (await request("/store/orders/mine")).orders;
+const send = (method, path, body) => request(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
+const keepCustomer = (data) => { if (data.token) saveSession(data); else store.set(CUSTOMER_KEY, JSON.stringify(data.customer)); return data.customer; };
+
+/* ---------- account ---------- */
+export const updateProfile = async (data) => keepCustomer(await send("PUT", "/store/account/profile", data));
+/** Signs out other devices; this one gets a fresh session. */
+export const changePassword = async (currentPassword, newPassword) => keepCustomer(await send("PUT", "/store/account/password", { currentPassword, newPassword }));
+export const uploadAvatar = async (image) => keepCustomer(await send("PUT", "/store/account/avatar", { image }));
+export const removeAvatar = async () => keepCustomer(await send("DELETE", "/store/account/avatar"));
+export async function logoutEverywhere() {
+  try { await send("POST", "/store/auth/logout-everywhere"); } finally { logout(); }
+}
+export const forgotPassword = (contact) => send("POST", "/store/auth/forgot", { contact });
+export const resetPassword = async (token, password) => saveSession(await send("POST", "/store/auth/reset", { token, password }));
+
+/* ---------- orders ---------- */
+const qs = (p) => { const s = new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(); return s ? `?${s}` : ""; };
+/** { orders, total, page, pages, counts } — filter: status ("active" | "delivered" | "closed"), q (order number or product), page */
+export const myOrders = (params = {}) => request(`/store/orders/mine${qs(params)}`);
+export const myOrder = async (number) => (await request(`/store/orders/mine/${encodeURIComponent(number)}`)).order;
+export const trackOrder = (order, phone) => send("POST", "/store/orders/track", { order, phone });
 
 /** order = { items:[{productId, qty, size}], address:{...}, payment:"upi"|"card"|"cod" } */
 export const placeOrder = (order) => request("/store/orders", { method: "POST", body: JSON.stringify(order) });

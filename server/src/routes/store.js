@@ -1,12 +1,12 @@
-/* Public storefront API: catalogue, contact form, customer accounts and orders. */
+/* Public storefront API: catalogue, contact form and placing orders. Customer accounts are in account.js. */
 import express from "express";
-import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { pool } from "../config/db.js";
-import { ah, HttpError, str, num, oneOf, EMAIL, mobile10, password, clientIp, jsonList } from "../lib/http.js";
-import { getSettings } from "../lib/store.js";
-import { optionalCustomer, requireCustomer, signCustomerToken } from "../middleware/auth.js";
+import { ah, HttpError, str, num, oneOf, EMAIL, mobile10, clientIp, jsonList } from "../lib/http.js";
+import { getSettings, audit } from "../lib/store.js";
+import { queueOrderEmail } from "../lib/email/index.js";
+import { optionalCustomer } from "../middleware/auth.js";
 
 const router = express.Router();
 const limit = (windowMin, max, message) =>
@@ -53,63 +53,6 @@ router.post("/contact", limit(10, 5, "Too many messages. Please try again in a f
   await pool.query("INSERT INTO contact_messages (topic, name, contact, order_ref, message, ip) VALUES (?, ?, ?, ?, ?, ?)",
     [topic, name, contact, orderRef, message, clientIp(req)]);
   res.status(201).json({ ok: true });
-}));
-
-/* ---------- Customer accounts ---------- */
-const parseContact = (v) => {
-  const s = str(v, "contact", { max: 150, msg: "Enter your mobile number or email" });
-  if (EMAIL.test(s)) return { email: s.toLowerCase(), phone: null, display: s.toLowerCase() };
-  const m = mobile10(s);
-  if (m) return { email: null, phone: m, display: m };
-  throw new HttpError(400, "Enter a valid mobile number or email", { field: "contact" });
-};
-const publicCustomer = (c) => ({ id: c.id, name: c.name, contact: c.email || c.phone, email: c.email, phone: c.phone });
-const authLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, skipSuccessfulRequests: true, standardHeaders: true, legacyHeaders: false,
-  message: { message: "Too many attempts. Please wait a few minutes and try again." } });
-// compared against when no account matches, so "no such account" and "wrong password" take the same time
-const DUMMY_HASH = bcrypt.hashSync("no-account-placeholder", 12);
-
-router.post("/auth/register", authLimit, ah(async (req, res) => {
-  const name = str(req.body?.name, "name", { min: 2, max: 100 });
-  const { email, phone } = parseContact(req.body?.contact);
-  const pw = password(req.body?.password);
-  const [dupe] = await pool.query("SELECT id FROM customers WHERE email = ? OR phone = ?", [email, phone]);
-  if (dupe.length) throw new HttpError(409, "An account with this mobile number or email already exists. Please sign in.");
-  const [r] = await pool.query("INSERT INTO customers (name, email, phone, password, last_login_at) VALUES (?, ?, ?, ?, NOW())",
-    [name, email, phone, await bcrypt.hash(pw, 12)]);
-  const customer = { id: r.insertId, name, email, phone };
-  res.status(201).json({ token: signCustomerToken(customer), customer: publicCustomer(customer) });
-}));
-
-router.post("/auth/login", authLimit, ah(async (req, res) => {
-  const { email, phone } = parseContact(req.body?.contact);
-  const pw = typeof req.body?.password === "string" ? req.body.password : "";
-  const [rows] = await pool.query("SELECT * FROM customers WHERE " + (email ? "email = ?" : "phone = ?"), [email || phone]);
-  const c = rows[0];
-  const fail = new HttpError(401, "Wrong mobile number/email or password");
-  if (!c || !c.password) { await bcrypt.compare(pw, DUMMY_HASH); throw fail; }
-  if (!c.is_active) throw new HttpError(403, "This account has been disabled. Please contact us.");
-  if (c.locked_until && new Date(c.locked_until) > new Date()) throw new HttpError(429, "Too many wrong passwords. Please try again in 15 minutes.");
-  if (!(await bcrypt.compare(pw, c.password))) {
-    await pool.query(
-      "UPDATE customers SET failed_attempts = failed_attempts + 1, locked_until = IF(failed_attempts >= 5, NOW() + INTERVAL 15 MINUTE, NULL) WHERE id = ?", [c.id]);
-    throw fail;
-  }
-  await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL, last_login_at = NOW() WHERE id = ?", [c.id]);
-  res.json({ token: signCustomerToken(c), customer: publicCustomer(c) });
-}));
-
-router.get("/auth/me", requireCustomer, ah(async (req, res) => res.json({ customer: publicCustomer(req.customer) })));
-
-router.get("/orders/mine", requireCustomer, ah(async (req, res) => {
-  const [orders] = await pool.query(
-    `SELECT id, order_number, status, payment_method, payment_status, total, courier, tracking_number, created_at
-     FROM orders WHERE customer_id = ? ORDER BY created_at DESC LIMIT 50`, [req.customer.id]);
-  const ids = orders.map((o) => o.id);
-  const [items] = ids.length
-    ? await pool.query("SELECT order_id, product_name, product_slug, size, qty, line_total FROM order_items WHERE order_id IN (?)", [ids])
-    : [[]];
-  res.json({ orders: orders.map(({ id, ...o }) => ({ ...o, total: Number(o.total), items: items.filter((i) => i.order_id === id).map(({ order_id, ...i }) => ({ ...i, line_total: Number(i.line_total) })) })) });
 }));
 
 /* ---------- Place an order (guest or signed in) ---------- */
@@ -185,9 +128,13 @@ router.post("/orders", limit(60, 20, "Too many orders from this connection. Plea
         [orderId, l.p.id, l.p.name, l.p.slug, l.size, l.unit, l.qty, l.total]);
     }
     for (const [pid, qty] of Object.entries(need)) await conn.query("UPDATE products SET stock = stock - ? WHERE id = ?", [qty, pid]);
-    await conn.query("INSERT INTO order_status_history (order_id, status, note) VALUES (?, 'pending', 'Order placed')", [orderId]);
+    await conn.query("INSERT INTO order_status_history (order_id, status, note, actor) VALUES (?, 'pending', NULL, ?)",
+      [orderId, req.customer ? "customer" : "guest"]);
     await conn.commit();
     res.status(201).json({ orderId: orderNumber, subtotal, deliveryFee: fee, total, payment });
+    // after the order is safely saved: the record of who placed it, and the confirmation email (neither can affect the order)
+    await audit(req, "order.create", "order", orderNumber, { by: req.customer ? `customer #${req.customer.id}` : "guest checkout", total, payment });
+    await queueOrderEmail(orderId, "order_placed", { trigger: "order", dedupeKey: `order_placed:${orderId}` });
   } catch (err) {
     await conn.rollback();
     throw err;

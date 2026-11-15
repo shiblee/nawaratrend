@@ -166,6 +166,86 @@ const TABLES = [
     INDEX idx_audit_created (created_at),
     CONSTRAINT fk_audit_admin FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
   )`,
+
+  // profile photos live in the database (not on disk), so deploys can never wipe them and they use no hosting file quota
+  `CREATE TABLE IF NOT EXISTS customer_avatars (
+    customer_id INT PRIMARY KEY,
+    mime VARCHAR(20) NOT NULL,
+    data MEDIUMBLOB NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_avatar_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+  )`,
+
+  // one-time password reset links; only a hash of the token is stored
+  `CREATE TABLE IF NOT EXISTS password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME DEFAULT NULL,
+    ip VARCHAR(64) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_reset_customer (customer_id, created_at),
+    CONSTRAINT fk_reset_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+  )`,
+
+  // admin-edited email templates (defaults live in server/src/lib/email/templates.js)
+  `CREATE TABLE IF NOT EXISTS email_templates (
+    \`key\` VARCHAR(40) PRIMARY KEY,
+    subject VARCHAR(255) NOT NULL,
+    html MEDIUMTEXT NOT NULL,
+    text MEDIUMTEXT,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    version INT NOT NULL DEFAULT 1,
+    updated_by INT DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tpl_admin FOREIGN KEY (updated_by) REFERENCES admins(id) ON DELETE SET NULL
+  )`,
+
+  // every email the store sends (or decided not to send), with what was sent and what the mail server said
+  `CREATE TABLE IF NOT EXISTS email_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    template_key VARCHAR(40) NOT NULL,
+    template_version INT NOT NULL DEFAULT 0,
+    category VARCHAR(20) NOT NULL,
+    recipient VARCHAR(150) NOT NULL,
+    customer_id INT DEFAULT NULL,
+    order_id INT DEFAULT NULL,
+    order_number VARCHAR(20) DEFAULT NULL,
+    subject VARCHAR(255) NOT NULL,
+    html MEDIUMTEXT NOT NULL,
+    text MEDIUMTEXT,
+    status ENUM('queued','sending','sent','failed','skipped') NOT NULL DEFAULT 'queued',
+    attempts INT NOT NULL DEFAULT 0,
+    max_attempts INT NOT NULL DEFAULT 4,
+    next_attempt_at DATETIME DEFAULT NULL,
+    last_error VARCHAR(500) DEFAULT NULL,
+    provider_message_id VARCHAR(255) DEFAULT NULL,
+    provider_response VARCHAR(500) DEFAULT NULL,
+    trigger_source VARCHAR(20) NOT NULL DEFAULT 'system',
+    triggered_by INT DEFAULT NULL,
+    dedupe_key VARCHAR(120) DEFAULT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sent_at DATETIME DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_email_created (created_at),
+    INDEX idx_email_status (status, next_attempt_at),
+    INDEX idx_email_customer (customer_id),
+    INDEX idx_email_order (order_id),
+    CONSTRAINT fk_email_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+    CONSTRAINT fk_email_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
+    CONSTRAINT fk_email_admin FOREIGN KEY (triggered_by) REFERENCES admins(id) ON DELETE SET NULL
+  )`,
+
+  `CREATE TABLE IF NOT EXISTS email_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email_id INT NOT NULL,
+    attempt INT NOT NULL,
+    status ENUM('sent','failed') NOT NULL,
+    response VARCHAR(500) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_attempt_email FOREIGN KEY (email_id) REFERENCES email_logs(id) ON DELETE CASCADE
+  )`,
 ];
 
 const SETTINGS = {
@@ -193,6 +273,13 @@ const SETTINGS = {
   "seo.google_verification": "",
   "seo.bing_verification": "",
   "seo.ga4_id": "",
+
+  // Emails (edited on the admin Emails page; the mail server login stays in .env)
+  "email.enabled": "1",
+  "email.from_name": "NawaraTrend",
+  "email.from_address": "",
+  "email.reply_to": "",
+  "email.support_email": "",
 };
 
 const CATEGORIES = [
@@ -232,7 +319,10 @@ const PRODUCTS = [
 async function addColumn(table, column, definition) {
   const [rows] = await pool.query(
     "SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?", [table, column]);
-  if (!rows.length) { await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`); console.log(`Added ${table}.${column}`); }
+  if (rows.length) return false;
+  await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  console.log(`Added ${table}.${column}`);
+  return true;
 }
 
 const isEmpty = async (table) => {
@@ -246,6 +336,21 @@ const run = async () => {
   await pool.query("ALTER TABLE settings MODIFY value TEXT NOT NULL");
   await addColumn("products", "seo_title", "VARCHAR(80) DEFAULT NULL AFTER sort_order");
   await addColumn("products", "seo_description", "VARCHAR(200) DEFAULT NULL AFTER seo_title");
+  // customer accounts: sign out everywhere / after a password change
+  await addColumn("customers", "token_version", "INT NOT NULL DEFAULT 0 AFTER locked_until");
+  // order tracking: more statuses, refunds, courier link and expected delivery (existing values are all kept)
+  await pool.query(`ALTER TABLE orders MODIFY status ENUM('pending','on_hold','confirmed','packed','shipped','out_for_delivery','delivery_failed',
+    'delivered','return_requested','returned','cancelled') NOT NULL DEFAULT 'pending'`);
+  await pool.query("ALTER TABLE orders MODIFY payment_status ENUM('pending','paid','failed','refund_pending','refunded') NOT NULL DEFAULT 'pending'");
+  await addColumn("orders", "tracking_url", "VARCHAR(255) DEFAULT NULL AFTER tracking_number");
+  await addColumn("orders", "expected_delivery", "DATE DEFAULT NULL AFTER tracking_url");
+  // the order timeline: what the customer is told (note) and what only the team sees (internal_note)
+  await pool.query("ALTER TABLE order_status_history MODIFY note VARCHAR(500) DEFAULT NULL");
+  await addColumn("order_status_history", "from_status", "VARCHAR(20) DEFAULT NULL AFTER order_id");
+  await addColumn("order_status_history", "internal_note", "VARCHAR(1000) DEFAULT NULL AFTER note");
+  if (await addColumn("order_status_history", "actor", "VARCHAR(10) NOT NULL DEFAULT 'system' AFTER admin_id")) {
+    await pool.query("UPDATE order_status_history SET actor = IF(admin_id IS NULL, 'customer', 'admin')");
+  }
   console.log(`Tables ready (${TABLES.length})`);
 
   for (const [key, value] of Object.entries(SETTINGS)) {

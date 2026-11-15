@@ -15,6 +15,7 @@ const NAV = [
   { section: "Admin" },
   { to: "/admin/team", label: "Team", icon: Icon.team, roles: ["owner"] },
   { to: "/admin/activity", label: "Activity log", icon: Icon.activity, roles: ["owner", "manager"] },
+  { to: "/admin/emails", label: "Emails", icon: Icon.emails, roles: ["owner", "manager"] },
   { to: "/admin/seo", label: "SEO", icon: Icon.seo },
   { to: "/admin/settings", label: "Settings", icon: Icon.settings },
   { to: "/admin/profile", label: "My profile", icon: Icon.profile },

@@ -3,11 +3,13 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import storeRoutes from "./routes/store.js";
+import accountRoutes from "./routes/account.js";
 import adminAuthRoutes from "./routes/admin/auth.js";
 import adminCatalogRoutes from "./routes/admin/catalog.js";
 import adminOrderRoutes from "./routes/admin/orders.js";
 import adminSystemRoutes from "./routes/admin/system.js";
 import adminSeoRoutes from "./routes/admin/seo.js";
+import adminEmailRoutes from "./routes/admin/emails.js";
 import seoRoutes, { storefrontHtml } from "./routes/seo.js";
 import { requireAdmin } from "./middleware/auth.js";
 import { HttpError } from "./lib/http.js";
@@ -50,15 +52,17 @@ app.use(helmet({
   },
 }));
 app.use(cors({ origin: (origin, cb) => cb(null, !origin || origins.includes(origin)), maxAge: 600 }));
+// profile photos arrive as an image inside JSON (resized in the browser first), so that one route may send more
+app.use("/api/store/account/avatar", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "100kb" }));
 app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false, message: { message: "Too many requests. Please slow down." } }));
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-app.use("/api/store", storeRoutes);
+app.use("/api/store", storeRoutes, accountRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use(seoRoutes);   // /sitemap.xml, /robots.txt, /api/store/seo
-app.use("/api/admin", requireAdmin, adminCatalogRoutes, adminOrderRoutes, adminSystemRoutes, adminSeoRoutes);
+app.use("/api/admin", requireAdmin, adminCatalogRoutes, adminOrderRoutes, adminSystemRoutes, adminSeoRoutes, adminEmailRoutes);
 
 app.use("/api", (req, res) => res.status(404).json({ message: "Not found" }));
 

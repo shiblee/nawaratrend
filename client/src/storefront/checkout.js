@@ -126,11 +126,14 @@ export function initCheckout(){
     $("ckForm").hidden = true; $("ckIntro").hidden = true; $("ckEmpty").hidden = true;
     const first = address.name.split(" ")[0];
     $("doneTitle").textContent = `Thank you, ${first}!`;
+    const updates = address.email ? `We've emailed the details to ${address.email} and will email you at every step.` : "You can follow it step by step with Track order.";
     $("doneText").textContent = payment === "cod"
-      ? "Your order is confirmed. Please keep the amount ready when it arrives. We'll send updates to your mobile."
+      ? `Your order is placed. Please keep the amount ready when it arrives. ${updates}`
       : MOCK
         ? "Your order is confirmed. (Demo: in the live store you'd now be taken to the secure payment page.)"
-        : "Your order is confirmed. We'll send updates to your mobile.";
+        : `Your order is placed. ${updates}`;
+    // signed-in customers follow it in their account; guests on Track order with the number already filled in
+    $("doneTrack").href = currentCustomer() ? `/account/orders/${encodeURIComponent(res.orderId)}` : `/track?order=${encodeURIComponent(res.orderId)}`;
     const rows = [["Order number", "#" + res.orderId], ["Items", String(count)], ["Total", inr(total)], ["Payment", PAY[payment]],
       ["Deliver to", `${address.name}, ${address.line1}, ${address.city} ${address.pin}`]];
     const dl = $("doneSum"); dl.textContent = "";

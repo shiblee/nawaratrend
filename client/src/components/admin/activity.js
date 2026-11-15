@@ -8,9 +8,12 @@ export const ACTION = {
   "team.update": "updated a team member", "settings.update": "changed settings", "profile.update": "updated their profile",
   "password.change": "changed their password", "logout.all": "signed out everywhere",
   "seo.settings": "changed SEO settings", "seo.page": "edited a page's SEO", "seo.product": "edited a product's SEO",
+  "order.create": "new order placed", "email_template.update": "edited an email template", "email_template.enable": "turned on an email",
+  "email_template.disable": "turned off an email", "email_template.reset": "restored an email template", "email.test": "sent a test email",
+  "email.retry": "retried an email", "email.resend": "resent an email", "emails.export": "exported the email log", "email.settings": "changed email settings",
 };
 export const describe = (a) => {
   const d = typeof a.details === "string" ? (() => { try { return JSON.parse(a.details); } catch { return {}; } })() : a.details || {};
-  const what = d?.name || (a.entity === "order" ? `#${a.entity_id}` : "");
+  const what = d?.name || (a.entity === "order" ? `#${a.entity_id}` : a.entity === "email" && a.entity_id ? `email ${a.entity_id}` : "");
   return `${ACTION[a.action] || a.action}${what ? ` · ${what}` : ""}`;
 };

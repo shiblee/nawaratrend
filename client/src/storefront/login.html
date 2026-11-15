@@ -11,20 +11,6 @@
 <section class="x-body">
   <div class="wrap lg-wrap">
 
-    <!-- shown when already signed in -->
-    <div class="card lg-in" id="lgIn" hidden>
-      <span class="av" id="lgAv"></span>
-      <h2 id="lgHello"></h2>
-      <p id="lgContact"></p>
-      <div class="btns"><a class="btn btn-ink" id="lgGo" href="/shop">Continue shopping</a><button type="button" class="btn btn-line" id="lgOut">Sign out</button></div>
-    </div>
-
-    <!-- the signed-in customer's orders -->
-    <div class="card orders" id="lgOrders" hidden>
-      <h2>Your orders</h2>
-      <div id="ordList"><p class="sub">Loading your orders…</p></div>
-    </div>
-
     <div class="card" id="lgCard">
       <div class="lg-tabs" role="tablist" aria-label="Account">
         <button type="button" role="tab" id="tabIn" aria-selected="true" aria-controls="formIn">Sign in</button>
@@ -36,7 +22,7 @@
         <div class="fld"><label for="inPass">Password</label><div class="pw"><input id="inPass" type="password" autocomplete="current-password" maxlength="64"><button type="button" class="pw-show" aria-controls="inPass" aria-pressed="false">Show</button></div><p class="err"></p></div>
         <p class="form-msg" role="alert"></p>
         <button type="submit" class="btn btn-ink"><span class="lbl">Sign in</span><span class="spin" aria-hidden="true"></span></button>
-        <p class="lg-alt">Forgot your password? <a class="link" href="https://wa.me/919807562620">Message us on WhatsApp</a></p>
+        <p class="lg-alt">Forgot your password? <a class="link" href="/reset-password">Reset it</a></p>
       </form>
 
       <form class="lg-form" id="formUp" role="tabpanel" aria-labelledby="tabUp" novalidate hidden>

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { adminApi } from "../../services/adminApi.js";
-import { Alert, Badge, Button, Card, CardHeader, Field, OrderBadge, PageHeader, Pager, PayBadge, SearchBox, Select, Stat, Table, Textarea, Toggle, money, phone, num, dateOnly, dateTime, timeAgo, useConfirm, useDebounced, useLoad, useToast, PAY_METHOD } from "../../components/admin/ui.jsx";
+import { BASE_URL } from "../../services/api.js";
+import { useAdminAuth } from "../../context/AdminAuthContext.jsx";
+import { Alert, Badge, Button, Card, CardHeader, Field, OrderBadge, PageHeader, Pager, PayBadge, SearchBox, Select, Stat, Table, Textarea, Toggle, money, phone, num, dateOnly, dateTime, timeAgo, initials, useConfirm, useDebounced, useLoad, useToast, EmailBadge, PAY_METHOD } from "../../components/admin/ui.jsx";
 
 export default function Customers() {
   const [search, setSearch] = useState("");
@@ -48,6 +50,7 @@ export function CustomerDetail() {
   const toast = useToast();
   const confirm = useConfirm();
   const { data: c, error, loading, reload } = useLoad(() => adminApi.getCustomer(id), [id]);
+  const canSeeLog = useAdminAuth().can("owner", "manager");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (c) setNotes(c.notes || ""); }, [c]);
@@ -68,8 +71,15 @@ export function CustomerDetail() {
     <div className="space-y-6">
       <div>
         <Link to="/admin/customers" className="text-sm text-slate-500 hover:text-slate-900">← All customers</Link>
-        <h2 className="mt-1 flex items-center gap-3 text-xl font-semibold">{c.name} {c.is_active ? <Badge tone="green">Active</Badge> : <Badge tone="red">Disabled</Badge>}</h2>
-        <p className="text-sm text-slate-500">{[c.email, c.phone && phone(c.phone)].filter(Boolean).join(" · ")} · Joined {dateOnly(c.created_at)} · Last sign-in {timeAgo(c.last_login_at)}</p>
+        <div className="mt-2 flex items-center gap-4">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F4A300] text-lg font-semibold text-[#15203B]">
+            {c.avatar ? <img src={BASE_URL.replace(/\/api\/?$/, "") + c.avatar} alt="" className="h-full w-full object-cover" /> : initials(c.name)}
+          </span>
+          <div>
+            <h2 className="flex items-center gap-3 text-xl font-semibold">{c.name} {c.is_active ? <Badge tone="green">Active</Badge> : <Badge tone="red">Disabled</Badge>}</h2>
+            <p className="text-sm text-slate-500">{[c.email, c.phone && phone(c.phone)].filter(Boolean).join(" · ")} · Joined {dateOnly(c.created_at)} · Last sign-in {timeAgo(c.last_login_at)}</p>
+          </div>
+        </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Orders" value={num(c.stats.orders)} />
@@ -92,6 +102,17 @@ export function CustomerDetail() {
           </Table>
         </Card>
         <div className="space-y-6">
+          <Card>
+            <CardHeader title="Emails sent" action={canSeeLog && <Link to={`/admin/emails?customer=${c.id}`} className="text-sm font-medium text-slate-600 hover:underline">Email log →</Link>} />
+            <ul className="divide-y divide-slate-100 text-sm">
+              {c.emails.length ? c.emails.slice(0, 8).map((e) => (
+                <li key={e.id} className="flex items-center gap-3 px-5 py-2.5">
+                  <div className="min-w-0 flex-1"><div className="truncate">{e.subject}</div><div className="text-xs text-slate-500">{dateTime(e.created_at)}</div></div>
+                  <EmailBadge status={e.status} />
+                </li>
+              )) : <li className="px-5 py-3 text-slate-500">{c.email ? "None yet." : "No email address on this account."}</li>}
+            </ul>
+          </Card>
           <Card>
             <CardHeader title="Addresses used" />
             <ul className="divide-y divide-slate-100 text-sm">

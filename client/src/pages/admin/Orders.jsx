@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { adminApi } from "../../services/adminApi.js";
-import { Alert, Button, Card, Input, OrderBadge, PageHeader, Pager, PayBadge, SearchBox, Select, Table, Tabs, money, phone, dateTime, useDebounced, useLoad, useToast, ORDER_STATUS, PAY_METHOD } from "../../components/admin/ui.jsx";
+import { Alert, Button, Card, Input, OrderBadge, PageHeader, Pager, PayBadge, SearchBox, Select, Table, Tabs, money, phone, dateTime, useDebounced, useLoad, useToast, ORDER_STATUS, PAY_METHOD, PAY_STATUS } from "../../components/admin/ui.jsx";
 
 export default function Orders() {
   const [params, setParams] = useSearchParams();
@@ -37,12 +37,12 @@ export default function Orders() {
             tabs={[{ value: "", label: "All", count: all }, ...Object.entries(ORDER_STATUS).map(([k, [l]]) => ({ value: k, label: l, count: counts[k] || 0 }))]} />
         </div>
         <div className="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
-          <SearchBox value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Order number, name, phone, email or PIN" />
+          <SearchBox value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Order number, name, phone, email, PIN or tracking no." />
           <Select value={filters.payment_method} onChange={(e) => set("payment_method", e.target.value)} aria-label="Payment method">
             <option value="">Any payment method</option>{Object.entries(PAY_METHOD).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </Select>
           <Select value={filters.payment_status} onChange={(e) => set("payment_status", e.target.value)} aria-label="Payment status">
-            <option value="">Paid or unpaid</option><option value="pending">Unpaid</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
+            <option value="">Any payment status</option>{Object.entries(PAY_STATUS).map(([k, [l]]) => <option key={k} value={k}>{l}</option>)}
           </Select>
           <Input type="date" value={filters.from} onChange={(e) => set("from", e.target.value)} aria-label="From date" />
           <Input type="date" value={filters.to} onChange={(e) => set("to", e.target.value)} aria-label="To date" />

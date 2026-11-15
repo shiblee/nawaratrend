@@ -1,10 +1,6 @@
-/* Customer sign-in / create-account page. Opened with ?next=/path to return there afterwards (e.g. checkout). */
-import { currentCustomer, refreshCustomer, login, register, logout, myOrders, MOCK } from "../services/customerApi.js";
-import { inr } from "./storefront.js";
-
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const STATUS = {pending:"Order placed", confirmed:"Confirmed", packed:"Packed", shipped:"Shipped", delivered:"Delivered", cancelled:"Cancelled", returned:"Returned"};
-const PAY = {upi:"UPI", card:"Card", cod:"Cash on Delivery"};
+/* Customer sign-in / create-account page. Opened with ?next=/path to return there afterwards (e.g. checkout);
+   otherwise a signed-in customer goes to My account. */
+import { currentCustomer, login, register, MOCK } from "../services/customerApi.js";
 
 const $ = id => document.getElementById(id);
 
@@ -31,41 +27,9 @@ export function initLogin({ navigate }){
   $("lgGuest").hidden = next !== "/checkout";
   if(next === "/checkout") $("lgIntro").textContent = "Sign in to check out faster, or continue as a guest.";
 
-  function renderSignedIn(){
-    const c = currentCustomer();
-    $("lgIn").hidden = !c; $("lgCard").hidden = !!c;
-    if(!c) return;
-    $("lgTitle").innerHTML = "My <span>account</span>";
-    $("lgIntro").textContent = "You're signed in.";
-    $("lgAv").textContent = c.name.charAt(0).toUpperCase();
-    $("lgHello").textContent = `Hello, ${c.name}`;
-    $("lgContact").textContent = c.contact;
-    $("lgGo").textContent = next === "/checkout" ? "Continue to checkout" : "Continue shopping";
-    $("lgGo").href = next || "/shop";
-    $("lgGuest").hidden = true;
-    loadOrders();
-  }
-  async function loadOrders(){
-    const box = $("lgOrders"), list = $("ordList");
-    box.hidden = false;
-    try {
-      const orders = await myOrders();
-      if(!alive) return;
-      list.innerHTML = orders.length ? orders.map(o => `<div class="ord">
-        <div class="ord-top"><b>#${esc(o.order_number)}</b><span class="st st-${esc(o.status)}">${STATUS[o.status] || esc(o.status)}</span></div>
-        <p class="sub">${new Date(o.created_at).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"})} · ${inr(o.total)} · ${PAY[o.payment_method]}${o.payment_status === "paid" ? " (paid)" : ""}</p>
-        <ul>${o.items.map(i => `<li>${i.qty} × ${esc(i.product_name)}${i.size ? ` (Size ${esc(i.size)})` : ""}</li>`).join("")}</ul>
-        ${o.tracking_number ? `<p class="sub">Tracking: <b>${esc(o.courier || "Courier")} ${esc(o.tracking_number)}</b></p>` : ""}
-      </div>`).join("") : `<p class="sub">You haven't placed any orders yet. <a class="link" href="/shop">Start shopping</a></p>`;
-    } catch(err){
-      if(alive) list.innerHTML = `<p class="sub">${esc(err.message)}</p>`;
-    }
-  }
-  $("lgOut").onclick = () => {
-    logout(); setTab(false); renderSignedIn(); $("lgOrders").hidden = true;
-    $("lgIntro").textContent = "You've signed out. Sign in again any time.";
-    $("lgGuest").hidden = next !== "/checkout";
-  };
+  const done = () => navigate(next || "/account", { replace: true });
+  // already signed in: nothing to do here
+  if(currentCustomer()){ done(); return; }
 
   /* ---------- Tabs ---------- */
   const setTab = up => {
@@ -102,7 +66,7 @@ export function initLogin({ navigate }){
       try {
         await call();
         if(!alive) return;
-        if(next) navigate(next); else renderSignedIn();
+        done();
       } catch(err){
         msg.textContent = err.message || "Something went wrong. Please try again.";
       } finally { btn.classList.remove("loading"); }
@@ -111,8 +75,5 @@ export function initLogin({ navigate }){
   wire("formIn", ["inContact","inPass"], () => login({ contact: $("inContact").value.trim(), password: $("inPass").value }));
   wire("formUp", ["upName","upContact","upPass"], () => register({ name: $("upName").value.trim(), contact: $("upContact").value.trim(), password: $("upPass").value }));
 
-  renderSignedIn();
-  // make sure the saved session is still valid (it may have expired or been disabled)
-  if(currentCustomer()) refreshCustomer().then(c => { if(alive && !c){ renderSignedIn(); $("lgOrders").hidden = true; } });
   return () => { alive = false; };
 }

@@ -28,8 +28,15 @@ export const PAGES = [
     title: "Terms & conditions", description: "The terms for shopping with NawaraTrend: orders, payments, delivery, returns and your rights." },
   { key: "checkout", path: "/checkout", label: "Checkout", noindex: true,
     title: "Checkout", description: "Complete your NawaraTrend order." },
-  { key: "login", path: "/login", label: "Sign in / My account", noindex: true,
+  { key: "login", path: "/login", label: "Sign in", noindex: true,
     title: "Sign in", description: "Sign in to your NawaraTrend account to check out faster and track your orders." },
+  // private pages: /account also covers /account/profile, /account/orders/NT… (prefix)
+  { key: "account", path: "/account", prefix: true, label: "My account", noindex: true,
+    title: "My account", description: "Your NawaraTrend profile, orders and order tracking." },
+  { key: "track", path: "/track", label: "Track your order", noindex: true,
+    title: "Track your order", description: "Follow your NawaraTrend order with its order number and the mobile number used at checkout." },
+  { key: "reset", path: "/reset-password", label: "Reset password", noindex: true,
+    title: "Reset your password", description: "Choose a new password for your NawaraTrend account." },
 ];
 
 const clip = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : s; };
@@ -130,7 +137,7 @@ export async function buildSeo(rawPath, conf) {
       out.jsonLd.push(breadcrumbs(c, [["Home", "/"], ["Shop", "/shop"], ...(p.category_name ? [[p.category_name, `/shop#${p.category_slug}`]] : []), [p.name, path]]));
     }
   } else {
-    const page = c.pages.find((x) => x.path === path);
+    const page = c.pages.find((x) => x.path === path || (x.prefix && path.startsWith(x.path + "/")));
     if (!page) {
       Object.assign(out, { status: 404, title: full("Page not found"), robots: "noindex, follow" });
     } else {
@@ -140,7 +147,7 @@ export async function buildSeo(rawPath, conf) {
       if (page.key === "home") {
         out.jsonLd.push(organization(c), { "@type": "WebSite", "@id": `${c.siteUrl}/#website`, name, url: `${c.siteUrl}/`, inLanguage: "en-IN", publisher: { "@id": `${c.siteUrl}/#organization` } });
       } else {
-        out.jsonLd.push(breadcrumbs(c, [["Home", "/"], [page.label, path]]));
+        if (!page.noindex) out.jsonLd.push(breadcrumbs(c, [["Home", "/"], [page.label, path]]));
       }
       if (page.key === "faqs") {
         const list = await faqs();
