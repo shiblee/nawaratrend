@@ -29,7 +29,7 @@
   --body:"Onest","Segoe UI",system-ui,-apple-system,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   --hdr:76px;
-  --wrap:1240px;
+  --wrap:1480px;           /* content width: wide like the big marketplaces; phones and tablets still use the full screen */
   color-scheme:light;
 }
 *{box-sizing:border-box}
@@ -596,3 +596,6 @@ body .pc,body .filters,body .toolbar,body .bb-price,body .spot,body .s-cat{box-s
 body .pc:hover{box-shadow:0 0 0 1px #D5D5DA,0 12px 28px -18px rgba(16,24,40,.25)}
 body .spread{box-shadow:0 0 0 1px var(--line),0 1px 2px rgba(16,24,40,.04)}
 body .index{box-shadow:0 0 0 1px var(--line)}
+
+/* wide screens: a little more breathing room at the sides of the wider layout */
+@media (min-width:1100px){.wrap{padding-left:32px;padding-right:32px}.hero-banner{padding-left:32px;padding-right:32px}}
