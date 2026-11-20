@@ -21,7 +21,7 @@ const categories = [
   {k:"beauty", n:"Beauty & Care"},
   {k:"kids", n:"Kids & Toys"},
   {k:"accessories", n:"Accessories"},
-  {k:"water-bottles", n:"Water Bottles"}
+  {k:"school-essentials", n:"School Essentials"}
 ];
 const products = [
   {id:"mens-premium-black-shirt", cat:"fashion", name:"Men's Premium Black Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
@@ -40,7 +40,7 @@ const products = [
    desc:"A deep navy blue shirt with our signature gold Nawara Trend crown embroidery, a premium spread collar and tonal navy buttons.",
    points:["Deep navy blue shade with tonal navy buttons","Signature gold Nawara Trend crown embroidery on the chest","Premium spread collar with woven Nawara Trend label"],
    img:"https://nawaratrend.com/products/mens-navy-blue-shirt/1.jpg"},
-  {id:"kids-puppy-water-bottle-500ml-blue", cat:"water-bottles", name:"Kids Water Bottle 500 ml with Cute Puppy Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Sky Blue", price:649, mrp:927, rate:0, reviews:0, stock:50,
+  {id:"kids-puppy-water-bottle-500ml-blue", cat:"school-essentials", name:"Kids Water Bottle 500 ml with Cute Puppy Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Sky Blue", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A cute and sturdy 500 ml water bottle for kids, with a 3D puppy topper, a 2-in-1 lid for straw or direct drinking, a push-button lock against spills and a carry strap for school, sports and trips.",
    points:["500 ml capacity, about 21 cm tall and 7.5 cm wide","2-in-1 lid: drink with the straw or sip directly","Push-button flip lid with secure lock: no spills, no leaks","BPA-free, lightweight and durable with a carry strap"],
    img:"https://nawaratrend.com/products/kids-puppy-water-bottle/1.jpg"}
@@ -53,7 +53,7 @@ const ICON = {
   beauty:'<rect x="9" y="9" width="6" height="12" rx="1.5"/><path d="M10 9V6l4-3v6"/>',
   kids:'<circle cx="12" cy="13" r="7"/><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M10 16c1.2 1 2.8 1 4 0"/>',
   accessories:'<rect x="5" y="7" width="14" height="14" rx="3"/><path d="M9 7V5a3 3 0 0 1 6 0v2M5 13h14"/>',
-  "water-bottles":'<path d="M10 2h4v3h-4z"/><path d="M10 5c-2 1-3 2.5-3 4.5V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9.5c0-2-1-3.5-3-4.5"/><path d="M7 12h10M7 17h10"/>'
+  "school-essentials":'<path d="M8 6V5a4 4 0 0 1 8 0v1"/><rect x="5" y="6" width="14" height="16" rx="4"/><path d="M9 14h6v4H9z"/><path d="M5 12h14"/>'
 };
 const svg = (k, sw=1.6) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]||ICON.home}</svg>`;
 const check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>';
