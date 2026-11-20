@@ -12,14 +12,15 @@
 .pdp-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:start}
 
 .gallery{grid-template-columns:minmax(0,1fr) auto;align-items:center;position:sticky;top:calc(var(--hdr) + 20px + env(safe-area-inset-top,0px));display:grid;gap:12px}
-.g-main{position:relative;border-radius:30px;overflow:hidden;aspect-ratio:1/1;max-width:100%;box-shadow:0 30px 60px -36px rgba(65,3,9,.45);cursor:zoom-in}
+/* the photo frame follows the shape of the photo on show (--ar, set by product.js), capped so a tall photo still fits the screen */
+.g-main{--ar:1;position:relative;border-radius:30px;overflow:hidden;aspect-ratio:var(--ar);justify-self:center;width:min(100%,calc((100svh - var(--hdr) - 150px) * var(--ar)));min-width:min(100%,320px);transition:width .3s ease,aspect-ratio .3s ease;box-shadow:0 30px 60px -36px rgba(65,3,9,.45);cursor:zoom-in}
 .g-main.zoom{cursor:zoom-out}
 .g-art,.g-art .art{width:100%;height:100%}
 .g-art .art svg{width:36%;height:36%;transition:transform .5s ease;transform:var(--v,scale(1))}
 .g-art .art img{transition:transform .5s ease}
 .g-main.zoom .g-art .art svg{transform:var(--v,scale(1)) scale(1.35)}
 .g-main.zoom .g-art .art img{transform:scale(2.2);transform-origin:var(--zx,50%) var(--zy,50%)}
-.g-art .art.has-photo img{transition:transform .35s ease}
+.g-art .art.has-photo img{object-fit:cover;transition:transform .35s ease}
 /* sample views, used until a product has real photos */
 .art.v-angle{--v:rotate(-16deg) scale(1.12)}
 .art.v-close{--v:scale(2.3) translate(10%,8%)}
@@ -29,6 +30,10 @@
 .art.v-angle svg,.art.v-close svg,.art.v-box svg{transform:var(--v)}
 .g-arrow{position:absolute;top:50%;z-index:2;width:44px;height:44px;margin-top:-22px;border-radius:50%;border:0;background:var(--surface);font-weight:700;font-size:1.05rem;box-shadow:0 4px 14px rgba(65,3,9,.14);transition:transform .15s,background .15s,color .15s}
 .g-arrow:hover{background:var(--ink);color:#fff}
+/* arrows appear only while the pointer is on the photo (or a key is used), so they don't sit on the picture; touch screens swipe instead */
+.g-arrow{opacity:0;transition:opacity .2s ease,background .15s,color .15s}
+.g-main:hover .g-arrow,.g-main:focus-within .g-arrow,.g-arrow:focus-visible{opacity:1}
+@media (hover:none){.g-arrow{display:none}}
 .g-arrow.prev{left:14px}
 .g-arrow.next{right:14px}
 .g-count{position:absolute;left:18px;bottom:16px;z-index:2;background:rgba(255,255,255,.9);color:var(--ink);font-weight:700;font-size:.8rem;padding:5px 12px;border-radius:999px;font-variant-numeric:tabular-nums}
@@ -165,7 +170,6 @@
 @media (max-width:860px){
   .pdp-grid{grid-template-columns:minmax(0,1fr);gap:24px}
   .gallery{position:static}
-  .g-main{aspect-ratio:1/1}
   .sticky-buy{display:flex}
   body.has-sticky .wa{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }

@@ -15,10 +15,19 @@ function gallery(p, reduce){
     : SAMPLE_VIEWS.map(([label, cls]) => ({html: art(p).replace('class="art"', `class="art ${cls}"`), label: `${label} (sample)`}));
   const n = photos.length, gm = $("gMain"), th = $("gThumbs");
   let gi = 0;
+  // the frame takes each photo's own shape (tall, square or wide), so photos are never cropped or padded
+  const ratios = [];
+  const fit = () => { if(ratios[gi]) gm.style.setProperty("--ar", ratios[gi]); else gm.style.removeProperty("--ar"); };
+  (p.images?.length ? p.images : p.img ? [p.img] : []).forEach((src, i) => {
+    const im = new Image();
+    im.onload = () => { if(im.naturalWidth && im.naturalHeight){ ratios[i] = (im.naturalWidth / im.naturalHeight).toFixed(4); if(i === gi) fit(); } };
+    im.src = src;
+  });
 
   const show = i => {
     gi = (i + n) % n;
     gm.classList.remove("zoom");
+    fit();
     $("gArt").innerHTML = photos[gi].html;
     if(!reduce){ const a = $("gArt").firstElementChild; a.classList.add("fade"); }
     $("gCount").textContent = `${gi+1} / ${n} · ${photos[gi].label}`;
