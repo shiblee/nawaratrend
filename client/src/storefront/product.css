@@ -11,7 +11,7 @@
 .pdp .wrap{padding-block:28px 56px}
 .pdp-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:start}
 
-.gallery{position:sticky;top:calc(var(--hdr) + 20px + env(safe-area-inset-top,0px));display:grid;gap:12px}
+.gallery{grid-template-columns:minmax(0,1fr) auto;align-items:center;position:sticky;top:calc(var(--hdr) + 20px + env(safe-area-inset-top,0px));display:grid;gap:12px}
 .g-main{position:relative;border-radius:30px;overflow:hidden;aspect-ratio:1/1;max-width:100%;box-shadow:0 30px 60px -36px rgba(65,3,9,.45);cursor:zoom-in}
 .g-main.zoom{cursor:zoom-out}
 .g-art,.g-art .art{width:100%;height:100%}
@@ -19,9 +19,7 @@
 .g-art .art img{transition:transform .5s ease}
 .g-main.zoom .g-art .art svg{transform:var(--v,scale(1)) scale(1.35)}
 .g-main.zoom .g-art .art img{transform:scale(2.2);transform-origin:var(--zx,50%) var(--zy,50%)}
-/* real photos sit inside a margin of blurred backdrop, so the badges and buttons on the frame never cover them */
-.g-art .art.has-photo img{box-sizing:border-box;padding:clamp(44px,10%,66px);transition:transform .35s ease,padding .35s ease}
-.g-main.zoom .g-art .art.has-photo img{padding:0}
+.g-art .art.has-photo img{transition:transform .35s ease}
 /* sample views, used until a product has real photos */
 .art.v-angle{--v:rotate(-16deg) scale(1.12)}
 .art.v-close{--v:scale(2.3) translate(10%,8%)}
@@ -41,6 +39,10 @@
 .g-btn:hover{transform:scale(1.08);color:var(--ink)}
 .g-btn svg{width:20px;height:20px}
 .g-btn.wish{position:static}
+/* heart and share sit beside the thumbnails, off the photo, so they never cover the picture */
+.gallery .g-main{grid-column:1/-1}
+.gallery .g-tools{position:static;display:flex;gap:8px;grid-column:2;grid-row:2}
+.gallery .g-thumbs{grid-column:1;grid-row:2}
 .g-btn.wish[aria-pressed="true"]{color:var(--fashion)}
 .g-btn.wish[aria-pressed="true"] path{fill:currentColor}
 .g-thumbs{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px}
@@ -163,7 +165,7 @@
 @media (max-width:860px){
   .pdp-grid{grid-template-columns:minmax(0,1fr);gap:24px}
   .gallery{position:static}
-  .g-main{aspect-ratio:4/3}
+  .g-main{aspect-ratio:1/1}
   .sticky-buy{display:flex}
   body.has-sticky .wa{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
