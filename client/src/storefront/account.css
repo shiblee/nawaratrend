@@ -4,10 +4,8 @@
 .crumbs [aria-current]{color:var(--ink);font-weight:600}
 
 /* heading band: same treatment as the other page headings */
-.x-head{position:relative;isolation:isolate;overflow:hidden;padding-block:40px 40px;background:
-  radial-gradient(560px circle at 92% 10%,rgba(230,178,38,.16),transparent 62%),
-  radial-gradient(520px circle at 0% 100%,rgba(140,20,34,.08),transparent 60%),var(--bg)}
-.x-head::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(65,3,9,.13) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
+.x-head{position:relative;isolation:isolate;overflow:hidden;padding-block:40px 40px;background:var(--page)}
+.x-head::before{content:"";position:absolute;inset:0;z-index:-1;display:none;background-image:radial-gradient(rgba(65,3,9,.13) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
 .x-head h1{font-size:clamp(2.4rem,5.4vw,4rem)}
 .x-head h1 span{background:linear-gradient(transparent 64%,rgba(242,193,46,.5) 64% 92%,transparent 92%)}
 .x-intro{font-size:1.1rem;color:var(--muted);margin-top:14px;max-width:52ch}

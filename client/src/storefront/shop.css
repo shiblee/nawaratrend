@@ -5,10 +5,8 @@
 .btn-wa{background:#25D366;color:#fff}
 .btn-wa:hover{background:#1EB257;transform:translateY(-1px)}
 
-.s-hero{position:relative;isolation:isolate;overflow:hidden;background:
-  radial-gradient(600px circle at 90% 0%,rgba(230,178,38,.16),transparent 62%),
-  radial-gradient(520px circle at 0% 100%,rgba(140,20,34,.08),transparent 60%),var(--bg)}
-.s-hero::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(65,3,9,.13) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
+.s-hero{position:relative;isolation:isolate;overflow:hidden;background:var(--page)}
+.s-hero::before{content:"";position:absolute;inset:0;z-index:-1;display:none;background-image:radial-gradient(rgba(65,3,9,.13) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
 .s-hero .wrap{padding-block:36px 28px}
 .s-hero h1{font-size:clamp(2.4rem,5.4vw,4rem)}
 .s-hero h1 span{background:linear-gradient(transparent 64%,rgba(242,193,46,.5) 64% 92%,transparent 92%)}

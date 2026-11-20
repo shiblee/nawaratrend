@@ -6,8 +6,8 @@
 .btn-wa:hover{background:#1EB257;transform:translateY(-1px)}
 .more-link{font-weight:700;text-decoration:underline;text-decoration-color:var(--marigold);text-decoration-thickness:2px;text-underline-offset:4px}
 
-.pdp{position:relative;isolation:isolate;background:radial-gradient(640px circle at 95% 10%,rgba(230,178,38,.14),transparent 60%),var(--bg)}
-.pdp::before{content:"";position:absolute;inset:0 0 40% 0;z-index:-1;background-image:radial-gradient(rgba(65,3,9,.12) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
+.pdp{position:relative;isolation:isolate;background:var(--page)}
+.pdp::before{content:"";position:absolute;inset:0 0 40% 0;z-index:-1;display:none;background-image:radial-gradient(rgba(65,3,9,.12) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
 .pdp .wrap{padding-block:28px 56px}
 .pdp-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:start}
 

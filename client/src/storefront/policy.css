@@ -1,9 +1,7 @@
 /* ================= Help & policy pages: page list on the left, plain content on the right (loaded on top of storefront.css) ================= */
 /* page heading band: same treatment as the Shop, Contact and About headings */
-.p-head{position:relative;isolation:isolate;overflow:hidden;padding-block:44px 48px;background:
-  radial-gradient(560px circle at 92% 10%,rgba(230,178,38,.16),transparent 62%),
-  radial-gradient(520px circle at 0% 100%,rgba(140,20,34,.08),transparent 60%),var(--bg)}
-.p-head::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(65,3,9,.13) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
+.p-head{position:relative;isolation:isolate;overflow:hidden;padding-block:44px 48px;background:var(--page)}
+.p-head::before{content:"";position:absolute;inset:0;z-index:-1;display:none;background-image:radial-gradient(rgba(65,3,9,.13) 1.1px,transparent 1.6px);background-size:22px 22px;-webkit-mask-image:linear-gradient(to bottom,#000,transparent);mask-image:linear-gradient(to bottom,#000,transparent)}
 .crumbs{display:flex;gap:8px;align-items:center;font-size:.88rem;color:var(--muted);margin-bottom:18px}
 .crumbs a:hover{color:var(--ink);text-decoration:underline}
 .crumbs [aria-current]{color:var(--ink);font-weight:600}
