@@ -18,7 +18,10 @@
 .g-art .art svg{width:36%;height:36%;transition:transform .5s ease;transform:var(--v,scale(1))}
 .g-art .art img{transition:transform .5s ease}
 .g-main.zoom .g-art .art svg{transform:var(--v,scale(1)) scale(1.35)}
-.g-main.zoom .g-art .art img{transform:scale(1.35)}
+.g-main.zoom .g-art .art img{transform:scale(2.2);transform-origin:var(--zx,50%) var(--zy,50%)}
+/* real photos sit inside a margin of blurred backdrop, so the badges and buttons on the frame never cover them */
+.g-art .art.has-photo img{box-sizing:border-box;padding:clamp(44px,10%,66px);transition:transform .35s ease,padding .35s ease}
+.g-main.zoom .g-art .art.has-photo img{padding:0}
 /* sample views, used until a product has real photos */
 .art.v-angle{--v:rotate(-16deg) scale(1.12)}
 .art.v-close{--v:scale(2.3) translate(10%,8%)}

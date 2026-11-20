@@ -37,8 +37,12 @@ function gallery(p, reduce){
     gm.addEventListener("touchstart", e => tx = e.touches[0].clientX, {passive: true});
     gm.addEventListener("touchend", e => { if(tx === null) return; const dx = e.changedTouches[0].clientX - tx; if(Math.abs(dx) > 40) show(gi + (dx < 0 ? 1 : -1)); tx = null; });
   }
-  // tap the picture to zoom in or out
-  gm.addEventListener("click", e => { if(!e.target.closest(".g-tools,.g-arrow")) gm.classList.toggle("zoom"); });
+  // tap the picture to zoom in or out; the zoom centres on the spot tapped and follows the pointer
+  const aim = e => { const r = gm.getBoundingClientRect();
+    gm.style.setProperty("--zx", `${((e.clientX - r.left) / r.width * 100).toFixed(1)}%`);
+    gm.style.setProperty("--zy", `${((e.clientY - r.top) / r.height * 100).toFixed(1)}%`); };
+  gm.addEventListener("click", e => { if(e.target.closest(".g-tools,.g-arrow")) return; aim(e); gm.classList.toggle("zoom"); });
+  gm.addEventListener("mousemove", e => { if(gm.classList.contains("zoom")) aim(e); });
   show(0);
 }
 
