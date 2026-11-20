@@ -43,7 +43,7 @@ export default function Categories() {
             <tr key={c.id} className="hover:bg-slate-50">
               <td className="px-4 py-3 tabular-nums text-slate-500">{c.sort_order}</td>
               <td className="px-4 py-3 font-medium">{c.name}</td>
-              <td className="px-4 py-3 text-slate-500">/shop#{c.slug}</td>
+              <td className="px-4 py-3 text-slate-500">/shop/{c.slug}</td>
               <td className="px-4 py-3 text-right"><Link to={`/admin/products?category=${c.id}`} className="hover:underline">{c.active_count} on sale · {c.product_count} total</Link></td>
               <td className="px-4 py-3">{c.is_active ? <Badge tone="green">Shown</Badge> : <Badge>Hidden</Badge>}</td>
               <td className="whitespace-nowrap px-4 py-3 text-right">

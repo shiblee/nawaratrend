@@ -1,7 +1,7 @@
 /* Shop page: category tabs, filters, sorting and grid/list view. Call after initStorefront; returns a cleanup function. */
 import { ordered, used, svg, inr, off, catName } from "./storefront.js";
 import { productCard } from "./card.js";
-import { pageTitle } from "./seo.js";
+import { applySeo } from "./seo.js";
 
 const $ = id => document.getElementById(id);
 
@@ -26,10 +26,16 @@ export function initShop(){
   function setCat(k, push){
     state.cat = used.some(c=>c.k===k) ? k : "all";
     // keep the router's history state so back/forward still work
-    if(push){ try { history.replaceState(history.state, "", state.cat==="all" ? location.pathname : "#" + state.cat); } catch(e){} }
+    // each category has its own address (/shop/fashion) that search engines can index; refresh the SEO tags to match
+    const want = state.cat==="all" ? "/shop" : `/shop/${state.cat}`;
+    if(push || location.pathname !== want || location.hash){
+      try { history.replaceState(history.state, "", want); } catch(e){}
+      if(push) applySeo();
+    }
     render();
   }
-  addEventListener("hashchange", () => setCat(location.hash.slice(1), false), sig);
+  // old links (/shop#fashion) still work: they open the category and switch to its new address
+  addEventListener("hashchange", () => { if(location.hash.length > 1) setCat(location.hash.slice(1), true); }, sig);
 
   /* ---------- Filters ---------- */
   const radios = name => document.querySelectorAll(`input[name="${name}"]`);
@@ -103,7 +109,6 @@ export function initShop(){
     const name = state.cat==="all" ? "All products" : catName(state.cat);
     $("crumbNow").textContent = state.cat==="all" ? "Shop" : name;
     $("shopTitle").innerHTML = state.cat==="all" ? "Shop <span>all products</span>" : `Shop <span>${name}</span>`;
-    document.title = state.cat==="all" ? (pageTitle || "Shop all products | NawaraTrend") : `${name} | NawaraTrend`;
     document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view===state.view));
     const list = results(), grid = $("pGrid");
     grid.classList.toggle("list", state.view==="list");
@@ -115,7 +120,7 @@ export function initShop(){
     activeChips();
   }
 
-  setCat(location.hash.slice(1), false);
+  setCat(decodeURIComponent(location.pathname.split("/")[2] || "") || location.hash.slice(1), false);
 
   return () => { ac.abort(); timers.forEach(clearTimeout); document.body.classList.remove("lock"); };
 }

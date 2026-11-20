@@ -41,6 +41,17 @@ export const PAGES = [
 
 const clip = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : s; };
 const abs = (base, p) => base.replace(/\/+$/, "") + p;
+const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const inr = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
+const days = (min, max) => ({ "@type": "QuantitativeValue", minValue: min, maxValue: max, unitCode: "DAY" });
+
+/** Active categories that have at least one active product (the ones with a page of their own). */
+async function liveCategories() {
+  const [rows] = await pool.query(
+    `SELECT c.slug, c.name, COUNT(p.id) AS n, MIN(p.price) AS min_price, MAX(p.updated_at) AS updated_at FROM categories c
+     JOIN products p ON p.category_id = c.id AND p.status = 'active' WHERE c.is_active = 1 GROUP BY c.id ORDER BY c.sort_order, c.name`);
+  return rows;
+}
 
 /** SEO settings with each page's overrides merged in. */
 export async function seoConfig() {
@@ -79,6 +90,8 @@ const breadcrumbs = (c, items) => ({
   itemListElement: items.map(([name, path], i) => ({ "@type": "ListItem", position: i + 1, name, item: abs(c.siteUrl, path) })),
 });
 
+const crumbHtml = (items) => `<nav aria-label="Breadcrumb"><ol>${items.map(([n, p], i) => `<li>${i === items.length - 1 ? esc(n) : `<a href="${esc(p)}">${esc(n)}</a>`}</li>`).join("")}</ol></nav>`;
+
 let faqData = null;
 async function faqs() {
   if (faqData) return faqData;
@@ -100,7 +113,10 @@ export async function buildSeo(rawPath, conf) {
     title: full(""), description: c.defaultDescription, canonical: abs(c.siteUrl, path === "/" ? "/" : path),
     image: c.shareImage, type: "website", robots: "index, follow, max-image-preview:large, max-snippet:-1",
     twitter: c.twitter, google: c.google, bing: c.bing, ga4: c.ga4, jsonLd: [],
+    meta: [],     // extra [attribute, key, value] tags, e.g. product brand and price labels for share cards
+    ssr: null,    // the page's main content as plain HTML, for crawlers that don't run JavaScript
   };
+  const cats = await liveCategories();
 
   const product = path.match(/^\/product\/([a-z0-9-]+)$/);
   if (product) {
@@ -116,25 +132,66 @@ export async function buildSeo(rawPath, conf) {
       Object.assign(out, {
         title: full(p.seo_title || `${p.name} at ₹${price.toLocaleString("en-IN")}${off ? ` (${off}% off)` : ""}`),
         description: p.seo_description || clip(`${String(p.description || p.name).replace(/[.!\s]+$/, "")}. ${off ? `Now ${off}% off. ` : ""}100% genuine, free delivery on orders ₹${c.store.free_shipping_threshold.toLocaleString("en-IN")}+.`, 160),
-        image: images[0] || c.shareImage, type: "product",
+        image: images[0] || c.shareImage, imageAlt: p.name, type: "product",
         product: { price, currency: "INR", availability: p.stock > 0 ? "in stock" : "out of stock" },
       });
+      out.meta.push(["property", "product:brand", name], ["property", "product:condition", "new"], ["property", "product:retailer_item_id", p.sku || p.slug],
+        ["name", "twitter:label1", "Price"], ["name", "twitter:data1", `${inr(price)}${off ? ` (${off}% off)` : ""}`],
+        ["name", "twitter:label2", "Availability"], ["name", "twitter:data2", p.stock > 0 ? "In stock" : "Out of stock"]);
       out.jsonLd.push({
         "@type": "Product", "@id": `${out.canonical}#product`, name: p.name, description: clip(p.description || p.name, 5000),
         sku: p.sku || p.slug, image: images.length ? images : c.shareImage ? [c.shareImage] : undefined,
         brand: { "@type": "Brand", name }, category: p.category_name || undefined, url: out.canonical,
         offers: {
           "@type": "Offer", url: out.canonical, priceCurrency: "INR", price: price.toFixed(2),
+          // the MRP, so Google can show the saving as a struck-through price
+          priceSpecification: off ? [
+            { "@type": "UnitPriceSpecification", price: price.toFixed(2), priceCurrency: "INR" },
+            { "@type": "UnitPriceSpecification", priceType: "https://schema.org/StrikethroughPrice", price: mrp.toFixed(2), priceCurrency: "INR" },
+          ] : undefined,
           availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
           itemCondition: "https://schema.org/NewCondition", seller: { "@id": `${c.siteUrl}/#organization` },
           shippingDetails: { "@type": "OfferShippingDetails", shippingDestination: { "@type": "DefinedRegion", addressCountry: "IN" },
-            shippingRate: { "@type": "MonetaryAmount", value: price >= c.store.free_shipping_threshold ? 0 : c.store.delivery_fee, currency: "INR" } },
-          hasMerchantReturnPolicy: { "@type": "MerchantReturnPolicy", applicableCountry: "IN", returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow", merchantReturnDays: 7 },
+            shippingRate: { "@type": "MonetaryAmount", value: price >= c.store.free_shipping_threshold ? 0 : c.store.delivery_fee, currency: "INR" },
+            // packed in 1–2 business days, then 1–12 days in transit depending on the region (see the Shipping policy)
+            deliveryTime: { "@type": "ShippingDeliveryTime", handlingTime: days(1, 2), transitTime: days(1, 12) } },
+          hasMerchantReturnPolicy: { "@type": "MerchantReturnPolicy", applicableCountry: "IN", returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+            merchantReturnDays: 7, returnMethod: "https://schema.org/ReturnByMail" },
         },
         aggregateRating: p.review_count > 0 && Number(p.rating) > 0
           ? { "@type": "AggregateRating", ratingValue: Number(p.rating), reviewCount: p.review_count, bestRating: 5 } : undefined,
       });
-      out.jsonLd.push(breadcrumbs(c, [["Home", "/"], ["Shop", "/shop"], ...(p.category_name ? [[p.category_name, `/shop#${p.category_slug}`]] : []), [p.name, path]]));
+      const crumbs = [["Home", "/"], ["Shop", "/shop"], ...(p.category_name ? [[p.category_name, `/shop/${p.category_slug}`]] : []), [p.name, path]];
+      out.jsonLd.push(breadcrumbs(c, crumbs));
+      const highlights = jsonList(p.highlights);
+      out.ssr = crumbHtml(crumbs) + `<article><h1>${esc(p.name)}</h1>`
+        + `<p><strong>${inr(price)}</strong>${off ? ` <s>MRP ${inr(mrp)}</s> (${off}% off)` : ""}. ${p.stock > 0 ? "In stock" : "Out of stock"}.</p>`
+        + String(p.description || "").split(/\n\s*\n/).map((t) => `<p>${esc(t.trim())}</p>`).join("")
+        + (highlights.length ? `<h2>Highlights</h2><ul>${highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : "")
+        + images.map((src, i) => `<img src="${esc(src)}" alt="${esc(`${p.name}, photo ${i + 1} of ${images.length}`)}" loading="lazy">`).join("")
+        + (p.category_name ? `<p>More in <a href="/shop/${esc(p.category_slug)}">${esc(p.category_name)}</a></p>` : "") + `</article>`;
+    }
+  } else if (path.match(/^\/shop\/([a-z0-9-]+)$/)) {
+    const slug = path.split("/")[2];
+    const cat = cats.find((x) => x.slug === slug);
+    if (!cat) {
+      Object.assign(out, { status: 404, title: full("Category not found"), description: "This category isn't available any more.", robots: "noindex, follow" });
+    } else {
+      const [items] = await pool.query(
+        `SELECT p.slug, p.name, p.price, p.images FROM products p JOIN categories c ON c.id = p.category_id
+         WHERE c.slug = ? AND p.status = 'active' ORDER BY p.sort_order, p.id`, [slug]);
+      const n = items.length, first = jsonList(items[0]?.images)[0];
+      const desc = clip(`Shop ${cat.name} online at NawaraTrend: ${n} handpicked product${n > 1 ? "s" : ""} from ${inr(cat.min_price)}. 100% genuine, Cash on Delivery and free delivery on orders ${inr(c.store.free_shipping_threshold)}+.`, 160);
+      Object.assign(out, { title: full(`${cat.name}: Buy Online at the Best Price`), description: desc, image: first || c.shareImage, imageAlt: cat.name });
+      const crumbs = [["Home", "/"], ["Shop", "/shop"], [cat.name, path]];
+      out.jsonLd.push({
+        "@type": "CollectionPage", "@id": `${out.canonical}#page`, name: cat.name, description: desc, url: out.canonical, inLanguage: "en-IN",
+        isPartOf: { "@id": `${c.siteUrl}/#website` },
+        mainEntity: { "@type": "ItemList", numberOfItems: n,
+          itemListElement: items.map((p, i) => ({ "@type": "ListItem", position: i + 1, url: abs(c.siteUrl, `/product/${p.slug}`), name: p.name })) },
+      }, breadcrumbs(c, crumbs));
+      out.ssr = crumbHtml(crumbs) + `<h1>${esc(cat.name)}</h1><p>${esc(desc)}</p><ul>`
+        + items.map((p) => `<li><a href="/product/${esc(p.slug)}">${esc(p.name)}</a>, ${inr(p.price)}</li>`).join("") + `</ul>`;
     }
   } else {
     const page = c.pages.find((x) => x.path === path || (x.prefix && path.startsWith(x.path + "/")));
@@ -143,6 +200,7 @@ export async function buildSeo(rawPath, conf) {
     } else {
       out.title = page.key === "home" ? (page.title ? full(page.title) : full("")) : full(page.title);
       out.description = page.description || c.defaultDescription;
+      out.ssr = `<h1>${esc(page.key === "home" ? name : page.title || page.label)}</h1><p>${esc(out.description)}</p>`;
       if (page.noindex) out.robots = "noindex, follow";
       if (page.key === "home") {
         out.jsonLd.push(organization(c), { "@type": "WebSite", "@id": `${c.siteUrl}/#website`, name, url: `${c.siteUrl}/`, inLanguage: "en-IN", publisher: { "@id": `${c.siteUrl}/#organization` } });
@@ -158,6 +216,10 @@ export async function buildSeo(rawPath, conf) {
   }
   if (!c.indexing) out.robots = "noindex, nofollow";
   if (out.status === 404) out.canonical = null;   // missing pages have no canonical address
+  // links to the main pages and every category, so crawlers can find the whole shop from any page
+  out.ssr = `<nav aria-label="Site"><a href="/">${esc(name)}</a> <a href="/shop">Shop</a> `
+    + cats.map((x) => `<a href="/shop/${esc(x.slug)}">${esc(x.name)}</a>`).join(" ")
+    + ` <a href="/about">About</a> <a href="/contact">Contact</a> <a href="/faqs">FAQs</a></nav><main>${out.ssr || `<h1>${esc(out.title)}</h1>`}</main>`;
   out.jsonLd = out.jsonLd.map((x) => ({ "@context": "https://schema.org", ...JSON.parse(JSON.stringify(x)) }));   // drops undefined fields
   return out;
 }
@@ -172,13 +234,21 @@ export function headHtml(seo) {
   meta("robots", seo.robots);
   if (seo.canonical) t.push(`<link rel="canonical" href="${attr(seo.canonical)}" data-seo>`);
   meta("og:type", seo.type, 1); meta("og:site_name", seo.siteName, 1); meta("og:locale", seo.locale, 1);
-  meta("og:title", seo.title, 1); meta("og:description", seo.description, 1); meta("og:url", seo.canonical, 1); meta("og:image", seo.image, 1);
+  meta("og:title", seo.title, 1); meta("og:description", seo.description, 1); meta("og:url", seo.canonical, 1); meta("og:image", seo.image, 1); if (seo.image) meta("og:image:alt", seo.imageAlt || seo.title, 1);
   if (seo.product) { meta("product:price:amount", seo.product.price, 1); meta("product:price:currency", seo.product.currency, 1); meta("product:availability", seo.product.availability, 1); }
   meta("twitter:card", seo.image ? "summary_large_image" : "summary"); meta("twitter:site", seo.twitter);
   meta("twitter:title", seo.title); meta("twitter:description", seo.description); meta("twitter:image", seo.image);
+  for (const [a, k, v] of seo.meta || []) meta(k, v, a === "property");
   meta("google-site-verification", seo.google); meta("msvalidate.01", seo.bing);
   for (const j of seo.jsonLd) t.push(`<script type="application/ld+json" data-seo>${JSON.stringify(j).replace(/</g, "\\u003c")}</script>`);
   return t.join("\n    ");
+}
+
+/** The page's content as plain HTML, put inside #root for crawlers that don't run JavaScript.
+    It is visually hidden (the shop draws the same content), and React replaces it when the page starts. */
+export function bodyHtml(seo) {
+  if (!seo.ssr) return "";
+  return `<div style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0)">${seo.ssr}</div>`;
 }
 
 /* ---------- sitemap.xml and robots.txt ---------- */
@@ -189,6 +259,8 @@ export async function sitemapXml() {
     `SELECT p.slug, p.name, p.images, p.updated_at FROM products p JOIN categories c ON c.id = p.category_id AND c.is_active = 1
      WHERE p.status = 'active' ORDER BY p.sort_order, p.id`);
   const urls = c.pages.filter((p) => !p.noindex).map((p) => `  <url><loc>${xml(abs(c.siteUrl, p.path))}</loc><changefreq>${p.freq}</changefreq><priority>${p.priority.toFixed(1)}</priority></url>`);
+  if (c.indexing) for (const k of await liveCategories())
+    urls.push(`  <url><loc>${xml(abs(c.siteUrl, `/shop/${k.slug}`))}</loc><lastmod>${new Date(k.updated_at).toISOString().slice(0, 10)}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>`);
   for (const p of products) {
     const imgs = jsonList(p.images).slice(0, 10).map((src) => `<image:image><image:loc>${xml(src)}</image:loc><image:title>${xml(p.name)}</image:title></image:image>`).join("");
     urls.push(`  <url><loc>${xml(abs(c.siteUrl, `/product/${p.slug}`))}</loc><lastmod>${new Date(p.updated_at).toISOString().slice(0, 10)}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority>${imgs}</url>`);

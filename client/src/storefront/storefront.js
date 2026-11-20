@@ -114,7 +114,7 @@ export const buyControl = (p, cls, label = "Add to cart") =>
 // a real photo fills the frame (over a blurred copy of itself, so any shape fits); otherwise the category icon on a plinth
 const cssUrl = u => `url("${String(u).replace(/["\\\n]/g, "")}")`;
 const art = p => p.img
-  ? `<div class="art has-photo" style="--ph:${cssUrl(p.img)}"><img src="${p.img}" alt="${p.name}" decoding="async"></div>`
+  ? `<div class="art has-photo" style="--ph:${cssUrl(p.img)}"><img src="${p.img}" alt="${p.alt ?? p.name}" decoding="async"></div>`
   : `<div class="art" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${svg(p.cat)}<span class="no" aria-hidden="true">${pad(p.no)}</span></div>`;
 /** Star rating, or a "New" label while a product has no reviews yet (never show 0 stars). */
 export const ratingHtml = (p, long) => p.reviews > 0 && p.rate > 0
@@ -312,12 +312,12 @@ export function initStorefront(){
 
   /* ---------- Category links (all pages) ---------- */
   const catLink = (c, cls) => { const n = ordered.filter(p=>p.cat===c.k).length;
-    return `<a class="${cls}" href="/shop#${c.k}"><span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.9)}</span><span><b>${c.n}</b><small>${n} item${n>1?"s":""}</small></span></a>`; };
+    return `<a class="${cls}" href="/shop/${c.k}"><span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.9)}</span><span><b>${c.n}</b><small>${n} item${n>1?"s":""}</small></span></a>`; };
   $("ddCats").innerHTML = used.map(c => catLink(c,"dd-cat")).join("");
   $("mCats").innerHTML = used.map(c => catLink(c,"")).join("");
-  $("footCats").innerHTML = used.map(c => `<li><a href="/shop#${c.k}">${c.n}</a></li>`).join("");
+  $("footCats").innerHTML = used.map(c => `<li><a href="/shop/${c.k}">${c.n}</a></li>`).join("");
   // About page: category tiles and the "shelf" illustration
-  if($("aboutCats")) $("aboutCats").innerHTML = used.map(c => `<a href="/shop#${c.k}"><span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.8)}</span><b>${c.n}</b></a>`).join("");
+  if($("aboutCats")) $("aboutCats").innerHTML = used.map(c => `<a href="/shop/${c.k}"><span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.8)}</span><b>${c.n}</b></a>`).join("");
   if($("shelfArt")) $("shelfArt").innerHTML = used.map(c => `<span class="tile" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.6)}</span>`).join("");
   document.querySelectorAll("nav.main .nav-link[href]").forEach(a => {
     if(a.getAttribute("href")===location.pathname) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");

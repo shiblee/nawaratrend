@@ -10,7 +10,8 @@ const $ = id => document.getElementById(id);
 const SAMPLE_VIEWS = [["Front",""],["Angle","v-angle"],["Close-up","v-close"],["In the box","v-box"]];
 
 function gallery(p, reduce){
-  const photos = p.images?.length ? p.images.map((src,i) => ({html: art({...p, img: src}), label: `Photo ${i+1}`}))
+  // each photo gets its own alt text; thumbnails are named by their button, so their images stay silent
+  const photos = p.images?.length ? p.images.map((src,i) => ({html: art({...p, img: src, alt: p.images.length > 1 ? `${p.name}, photo ${i+1} of ${p.images.length}` : p.name}), thumb: art({...p, img: src, alt: ""}), label: `Photo ${i+1}`}))
     : p.img ? [{html: art(p), label: "Photo 1"}]
     : SAMPLE_VIEWS.map(([label, cls]) => ({html: art(p).replace('class="art"', `class="art ${cls}"`), label: `${label} (sample)`}));
   const n = photos.length, gm = $("gMain"), th = $("gThumbs");
@@ -37,7 +38,7 @@ function gallery(p, reduce){
   if(n > 1){
     ["gPrev","gNext","gCount"].forEach(x => $(x).hidden = false);
     th.hidden = false;
-    th.innerHTML = photos.map((ph, i) => `<button type="button" aria-label="${ph.label}" data-i="${i}">${ph.html}</button>`).join("");
+    th.innerHTML = photos.map((ph, i) => `<button type="button" aria-label="${ph.label}" data-i="${i}">${ph.thumb || ph.html}</button>`).join("");
     th.addEventListener("click", e => { const b = e.target.closest("button"); if(b) show(+b.dataset.i); });
     $("gPrev").onclick = e => { e.stopPropagation(); show(gi - 1); };
     $("gNext").onclick = e => { e.stopPropagation(); show(gi + 1); };
@@ -75,13 +76,13 @@ export function initProduct(id){
   /* ---------- Basic info ---------- */
   const cat = catName(p.cat);
   document.title = `${p.name} | NawaraTrend`;
-  $("pCrumbs").insertAdjacentHTML("beforeend", `<span aria-hidden="true">/</span><a href="/shop#${p.cat}">${cat}</a><span aria-hidden="true">/</span><span aria-current="page"></span>`);
+  $("pCrumbs").insertAdjacentHTML("beforeend", `<span aria-hidden="true">/</span><a href="/shop/${p.cat}">${cat}</a><span aria-hidden="true">/</span><span aria-current="page"></span>`);
   $("pCrumbs").lastElementChild.textContent = p.name;
   $("gMain").style.background = `var(--${p.cat}-bg)`;
   $("gOff").textContent = `${off(p)}% OFF`;
   gallery(p, reduce);
   const catTag = $("pCat");
-  catTag.textContent = cat; catTag.href = `/shop#${p.cat}`;
+  catTag.textContent = cat; catTag.href = `/shop/${p.cat}`;
   catTag.style.background = `var(--${p.cat}-bg)`; catTag.style.color = `var(--${p.cat})`;
   $("pCode").textContent = `Product code NT-${pad(p.no)}`;
   $("pName").textContent = p.name;
@@ -165,7 +166,7 @@ export function initProduct(id){
 
   /* ---------- Tabs ---------- */
   $("pPoints").innerHTML = p.points.map(x => `<li><span class="ck">${check}</span>${x}</li>`).join("");
-  const rows = [["Product code", `NT-${pad(p.no)}`], ["Category", `<a href="/shop#${p.cat}">${cat}</a>`]]
+  const rows = [["Product code", `NT-${pad(p.no)}`], ["Category", `<a href="/shop/${p.cat}">${cat}</a>`]]
     .concat(p.sizes ? [["Sizes", p.sizes.join(", ")]] : [])
     .concat([["MRP", inr(p.mrp)], ["Our price", `${inr(p.price)} (${off(p)}% off)`], ["Ships from", "Lucknow, Uttar Pradesh"],
              ["Delivery", p.price >= 999 ? "Free delivery" : "Free on orders above ₹999"], ["Returns", `<a href="/refund-policy">7-day returns, see our policy</a>`]]);

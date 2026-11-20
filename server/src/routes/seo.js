@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ah } from "../lib/http.js";
-import { buildSeo, headHtml, robotsTxt, sitemapXml } from "../lib/seo.js";
+import { bodyHtml, buildSeo, headHtml, robotsTxt, sitemapXml } from "../lib/seo.js";
 
 const router = express.Router();
 
@@ -19,7 +19,8 @@ router.get("/robots.txt", ah(async (req, res) => {
 }));
 
 router.get("/api/store/seo", ah(async (req, res) => {
-  res.set("Cache-Control", "no-store").json(await buildSeo(String(req.query.path || "/")));
+  const { ssr, ...seo } = await buildSeo(String(req.query.path || "/"));   // the shop draws its own content
+  res.set("Cache-Control", "no-store").json(seo);
 }));
 
 /* Production: serve the built storefront (client/dist) with SEO tags written into each page.
@@ -40,7 +41,7 @@ export function storefrontHtml(app) {
       return res.set("Cache-Control", "no-cache").send(template.replace("</head>", `<title>NawaraTrend Admin</title><meta name="robots" content="noindex, nofollow">\n</head>`));
     }
     const seo = await buildSeo(req.path);
-    res.status(seo.status).set("Cache-Control", "no-cache").send(template.replace("</head>", `    ${headHtml(seo)}\n  </head>`));
+    res.status(seo.status).set("Cache-Control", "no-cache").send(template.replace("</head>", `    ${headHtml(seo)}\n  </head>`).replace('<div id="root"></div>', `<div id="root">${bodyHtml(seo)}</div>`));
   }));
 }
 

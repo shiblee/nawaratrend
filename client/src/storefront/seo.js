@@ -32,8 +32,7 @@ export async function applySeo(path = location.pathname) {
   document.querySelectorAll('head meta[name="description"]').forEach((el) => el.remove());
 
   pageTitle = seo.title;
-  // a Shop category view (/shop#fashion) shows the category in the title; the Shop page manages that itself
-  if (!(path === "/shop" && location.hash.length > 1)) document.title = seo.title;
+  document.title = seo.title;
   const desc = document.createElement("meta");
   desc.name = "description"; desc.content = seo.description || ""; desc.dataset.seo = "";
   document.head.appendChild(desc);
@@ -50,6 +49,7 @@ export async function applySeo(path = location.pathname) {
   setMeta("property", "og:description", seo.description);
   setMeta("property", "og:url", seo.canonical);
   setMeta("property", "og:image", seo.image);
+  if (seo.image) setMeta("property", "og:image:alt", seo.imageAlt || seo.title);
   if (seo.product) {
     setMeta("property", "product:price:amount", seo.product.price);
     setMeta("property", "product:price:currency", seo.product.currency);
@@ -60,6 +60,7 @@ export async function applySeo(path = location.pathname) {
   setMeta("name", "twitter:title", seo.title);
   setMeta("name", "twitter:description", seo.description);
   setMeta("name", "twitter:image", seo.image);
+  for (const [attr, key, value] of seo.meta || []) setMeta(attr, key, value);
   setMeta("name", "google-site-verification", seo.google);
   setMeta("name", "msvalidate.01", seo.bing);
   for (const data of seo.jsonLd || []) {
