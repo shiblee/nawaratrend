@@ -38,7 +38,11 @@ const products = [
   {id:"mens-premium-navy-blue-shirt", cat:"fashion", name:"Men's Premium Navy Blue Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A deep navy blue shirt with our signature gold Nawara Trend crown embroidery, a premium spread collar and tonal navy buttons.",
    points:["Deep navy blue shade with tonal navy buttons","Signature gold Nawara Trend crown embroidery on the chest","Premium spread collar with woven Nawara Trend label"],
-   img:"https://nawaratrend.com/products/mens-navy-blue-shirt/1.jpg"}
+   img:"https://nawaratrend.com/products/mens-navy-blue-shirt/1.jpg"},
+  {id:"kids-puppy-water-bottle-500ml-blue", cat:"kids", name:"Kids Water Bottle 500 ml with Cute Puppy Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Sky Blue", price:399, mrp:599, rate:0, reviews:0, stock:50,
+   desc:"A cute and sturdy 500 ml water bottle for kids, with a 3D puppy topper, a 2-in-1 lid for straw or direct drinking, a push-button lock against spills and a carry strap for school, sports and trips.",
+   points:["500 ml capacity, about 21 cm tall and 7.5 cm wide","2-in-1 lid: drink with the straw or sip directly","Push-button flip lid with secure lock: no spills, no leaks","BPA-free, lightweight and durable with a carry strap"],
+   img:"https://nawaratrend.com/products/kids-puppy-water-bottle/1.jpg"}
 ];
 
 const ICON = {
