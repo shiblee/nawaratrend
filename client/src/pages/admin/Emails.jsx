@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { adminApi } from "../../services/adminApi.js";
+import { useAdminAuth } from "../../context/AdminAuthContext.jsx";
 import { Alert, Badge, Button, Card, CardHeader, EmailBadge, Field, Input, Modal, PageHeader, Pager, SearchBox, Select, Stat, Table, Tabs, Toggle,
   dateTime, num, timeAgo, useDebounced, useLoad, useToast, EMAIL_STATUS, TRIGGER } from "../../components/admin/ui.jsx";
 
 export default function Emails() {
   const [params, setParams] = useSearchParams();
-  const tab = params.get("tab") || (params.get("order") || params.get("customer") || params.get("log") ? "log" : "templates");
+  // the email log now lives in Communication → Delivery logs (old links still work)
+  if (params.get("tab") === "log" || params.get("order") || params.get("customer") || params.get("log")) {
+    const keep = new URLSearchParams([...params].filter(([k]) => k !== "tab"));
+    return <Navigate to={`/admin/communication/logs${keep.toString() ? `?${keep}` : ""}`} replace />;
+  }
+  const tab = params.get("tab") || "templates";
   const setTab = (t) => setParams(t === "templates" ? {} : { tab: t });
   return (
     <div>
-      <PageHeader title="Emails" sub="What customers are emailed, every email that was sent, and who it comes from." />
-      <div className="mb-6"><Tabs value={tab} onChange={setTab} tabs={[{ value: "templates", label: "Templates" }, { value: "log", label: "Email log" }, { value: "settings", label: "Settings" }]} /></div>
+      <PageHeader title="Email templates" sub="What customers are emailed, and who it comes from. Every email sent is in Delivery logs."
+        actions={<Link to="/admin/communication/logs"><Button variant="outline" size="sm">Delivery logs →</Button></Link>} />
+      <div className="mb-6"><Tabs value={tab} onChange={setTab} tabs={[{ value: "templates", label: "Templates" }, { value: "settings", label: "Sender & settings" }]} /></div>
       {tab === "templates" && <Templates />}
-      {tab === "log" && <Log params={params} />}
       {tab === "settings" && <Settings />}
     </div>
   );
@@ -28,7 +34,7 @@ function Templates() {
     catch (e) { toast(e.message, "error"); }
   };
   if (error) return <Alert>{error}</Alert>;
-  const groups = [["account", "Account emails", "Sent when customers sign up or manage their password"], ["order", "Order emails", "Sent as an order moves along. Turn off any you don't want customers to receive."]];
+  const groups = [["account", "Account emails", "Sent when customers sign up, manage their password, or their account is suspended or reactivated"], ["order", "Order emails", "Sent as an order moves along. Turn off any you don't want customers to receive."]];
   return (
     <div className="space-y-6">
       {groups.map(([cat, title, sub]) => (
@@ -42,7 +48,7 @@ function Templates() {
                   <div className="text-xs text-slate-500">{t.description}</div>
                   <div className="mt-1 truncate text-xs text-slate-400" title={t.subject}>Subject: {t.subject}</div>
                 </td>
-                <td className="px-4 py-3">{t.essential ? <Badge tone="blue">Always on</Badge> : <Toggle checked={t.enabled} onChange={(v) => toggle(t, v)} />}</td>
+                <td className="px-4 py-3">{t.essential ? <Badge tone="blue">Always on</Badge> : t.future ? <Badge>Not used yet</Badge> : <Toggle checked={t.enabled} onChange={(v) => toggle(t, v)} />}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">
                   {t.customised ? <><Badge tone="violet">Edited</Badge><div className="mt-1">{t.updated_by_name || "—"}, {timeAgo(t.updated_at)}</div></> : <Badge>Default</Badge>}
                 </td>
@@ -61,10 +67,11 @@ function Templates() {
 }
 
 /* ---------- log ---------- */
-function Log({ params }) {
+export function Log({ params }) {
   const toast = useToast();
   const [search, setSearch] = useState("");
-  const [f, setF] = useState({ status: "", template: "", trigger: "", category: "", from: "", to: "" });
+  const { allowed } = useAdminAuth();
+  const [f, setF] = useState({ status: params.get("status") || "", template: "", trigger: "", category: "", from: "", to: "" });
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState(params.get("log") ? Number(params.get("log")) : null);
   const [exporting, setExporting] = useState(false);
@@ -86,11 +93,11 @@ function Log({ params }) {
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-2">
         <Tabs value={f.status} onChange={(v) => { setF({ ...f, status: v }); setPage(1); }}
           tabs={[{ value: "", label: "All", count: Object.values(counts).reduce((a, b) => a + b, 0) }, ...Object.entries(EMAIL_STATUS).filter(([k]) => k !== "sending").map(([k, [l]]) => ({ value: k, label: l, count: counts[k] || 0 }))]} />
-        <Button variant="outline" size="sm" onClick={exportCsv} loading={exporting}>Download CSV</Button>
+        {allowed("logs.export") && <Button variant="outline" size="sm" onClick={exportCsv} loading={exporting}>Download CSV</Button>}
       </div>
       {(scope.order || scope.customer) && (
         <div className="mx-4 mt-3 flex items-center justify-between rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-800">
-          Showing emails for one {scope.order ? "order" : "customer"} only. <Link to="/admin/emails?tab=log" className="font-semibold underline">Show all</Link>
+          Showing emails for one {scope.order ? "order" : "customer"} only. <Link to="/admin/communication/logs" className="font-semibold underline">Show all</Link>
         </div>
       )}
       <div className="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
@@ -145,7 +152,7 @@ function LogDetail({ id, onClose, onChanged }) {
     ["Customer", e.customer_id ? <Link key="c" to={`/admin/customers/${e.customer_id}`} className="underline">{e.customer_name}</Link> : "—"],
     ["Order", e.order_id ? <Link key="o" to={`/admin/orders/${e.order_id}`} className="underline">#{e.order_number}</Link> : "—"],
     ["Sent because of", `${TRIGGER[e.trigger_source] || e.trigger_source}${e.triggered_by_name ? ` (${e.triggered_by_name})` : ""}`],
-    ["Created", dateTime(e.created_at)], ["Sent", e.sent_at ? dateTime(e.sent_at) : "—"], ["Attempts", `${e.attempts} of ${e.max_attempts}`],
+    ["Created", dateTime(e.created_at)], ["Sent", e.sent_at ? dateTime(e.sent_at) : "—"], ["Delivered", e.delivered_at ? dateTime(e.delivered_at) : "Not reported"], ["Attempts", `${e.attempts} of ${e.max_attempts}`],
     ["Mail server reply", e.provider_response || "—"], ["Message ID", e.provider_message_id || "—"],
   ];
   return (
@@ -190,7 +197,8 @@ function Settings() {
   const [f, setF] = useState(null);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-  useEffect(() => { if (data) setF({ enabled: data.enabled, from_name: data.from_name, from_address: data.from_address, reply_to: data.reply_to, support_email: data.support_email }); }, [data]);
+  useEffect(() => { if (data) setF({ enabled: data.enabled, from_name: data.from_name, from_address: data.from_address, reply_to: data.reply_to, support_email: data.support_email,
+    company_name: data.company_name, log_retention_days: data.log_retention_days }); }, [data]);
   if (error && !f) return <Alert>{error}</Alert>;
   if (!f) return <div className="h-64 animate-pulse rounded-2xl bg-slate-200/60" />;
   const set = (k) => (e) => setF({ ...f, [k]: e?.target ? e.target.value : e });
@@ -203,7 +211,7 @@ function Settings() {
       <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Emails, last 30 days" value={num(data.last30.total)} />
         <Stat label="Sent" value={num(data.last30.sent)} tone="green" />
-        <Stat label="Failed" value={num(data.last30.failed)} sub={data.last30.failed ? <Link to="/admin/emails?tab=log" className="underline">See the log</Link> : "None"} />
+        <Stat label="Failed" value={num(data.last30.failed)} sub={data.last30.failed ? <Link to="/admin/communication/logs?status=failed" className="underline">See the log</Link> : "None"} />
         <Stat label="Waiting to send" value={num(data.last30.queued)} />
       </div>
       <Alert>{err}</Alert>
@@ -212,7 +220,8 @@ function Settings() {
           <CardHeader title="Sending" />
           <div className="space-y-4 p-5">
             <Toggle checked={!!f.enabled} onChange={set("enabled")} label="Send emails to customers" />
-            {!f.enabled && <Alert type="warn">While this is off, no emails go out (password reset emails included). Each one is logged as "Not sent" instead.</Alert>}
+            {!f.enabled && <Alert type="warn">While this is off, no emails go out (security notices included). Each one is logged as "Not sent" instead. Sign-ups still work: their confirmation email is simply not sent.</Alert>}
+            <Field label="Keep the email log for" hint="(days; 0 = forever)"><Input type="number" min={0} max={3650} value={f.log_retention_days ?? 0} onChange={set("log_retention_days")} /></Field>
             <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
               <div><b className="text-slate-800">How email is sent:</b> {data.transport.label}</div>
               <p className="mt-1 text-xs">This, and any mail server password, is set in the server's settings file (.env), so it's never shown or stored here.</p>
@@ -223,6 +232,7 @@ function Settings() {
           <CardHeader title="Sender" sub="What customers see in their inbox" />
           <div className="space-y-4 p-5">
             <Field label="Sender name"><Input value={f.from_name} maxLength={60} onChange={set("from_name")} required /></Field>
+            <Field label="Company name" hint="(shown in emails as {{company_name}})"><Input value={f.company_name || ""} maxLength={80} onChange={set("company_name")} required /></Field>
             <Field label="Sender email" hint="(should be an address on your own domain)"><Input type="email" value={f.from_address} maxLength={150} onChange={set("from_address")} required /></Field>
             <Field label="Replies go to" hint="(optional; when customers press Reply)"><Input type="email" value={f.reply_to} maxLength={150} onChange={set("reply_to")} placeholder={f.from_address} /></Field>
             <Field label="Support email" hint="(shown in emails as {{support_email}})"><Input type="email" value={f.support_email} maxLength={150} onChange={set("support_email")} placeholder={f.reply_to || f.from_address} /></Field>

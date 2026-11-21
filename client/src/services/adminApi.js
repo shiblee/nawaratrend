@@ -93,7 +93,7 @@ export const adminApi = {
   updateSeoPage: (key, d) => send("PUT", `/admin/seo/pages/${key}`, d),
   updateSeoProduct: (id, d) => send("PUT", `/admin/seo/products/${id}`, d),
 
-  // emails (owners and managers)
+  // emails (see server/src/lib/permissions.js for who may use what)
   getEmailTemplates: () => request("/admin/emails/templates"),
   getEmailTemplate: (key) => request(`/admin/emails/templates/${key}`),
   saveEmailTemplate: (key, d) => send("PUT", `/admin/emails/templates/${key}`, d),
@@ -107,6 +107,16 @@ export const adminApi = {
   getEmailSettings: () => request("/admin/emails/settings"),
   updateEmailSettings: (d) => send("PUT", "/admin/emails/settings", d),
   exportEmails: (p) => download(`/admin/emails/logs/export.csv${qs(p)}`, `emails-${new Date().toISOString().slice(0, 10)}.csv`),
+
+  getEmailTemplateHistory: (key) => request(`/admin/emails/templates/${key}/history`),
+
+  // communication: OTP / SMS settings and the SMS log
+  getOtpSettings: () => request("/admin/communication/otp-settings"),
+  updateOtpSettings: (d) => send("PUT", "/admin/communication/otp-settings", d),
+  sendTestSms: (mobile) => send("POST", "/admin/communication/sms-test", { mobile }),
+  getSmsLogs: (p) => request(`/admin/communication/sms-logs${qs(p)}`),
+  getSmsLog: (id) => request(`/admin/communication/sms-logs/${id}`),
+  exportSms: (p) => download(`/admin/communication/sms-logs/export.csv${qs(p)}`, `sms-otp-${new Date().toISOString().slice(0, 10)}.csv`),
 
   getSettings: () => request("/admin/settings"),
   updateSettings: (d) => send("PUT", "/admin/settings", d),

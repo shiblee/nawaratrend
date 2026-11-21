@@ -4,18 +4,21 @@ import { useAdminAuth } from "../../context/AdminAuthContext.jsx";
 import { adminApi } from "../../services/adminApi.js";
 import { Icon, Svg, initials, ToastProvider, ConfirmProvider } from "./ui.jsx";
 
-// `roles`: who sees the item (the server enforces the same rules)
+// `roles` / `perm`: who sees the item (the server enforces the same rules)
 const NAV = [
   { to: "/admin/dashboard", label: "Dashboard", icon: Icon.dashboard },
   { to: "/admin/orders", label: "Orders", icon: Icon.orders, badge: "orders" },
   { to: "/admin/products", label: "Products", icon: Icon.products },
   { to: "/admin/categories", label: "Categories", icon: Icon.categories },
-  { to: "/admin/customers", label: "Customers", icon: Icon.customers },
+  { to: "/admin/customers", label: "Customers", icon: Icon.customers, perm: "customers.view" },
   { to: "/admin/messages", label: "Messages", icon: Icon.messages, badge: "messages" },
+  { section: "Communication", perms: ["templates.edit", "sms.settings", "logs.view"] },
+  { to: "/admin/emails", label: "Email templates", icon: Icon.emails, perm: "templates.edit" },
+  { to: "/admin/communication/sms", label: "OTP / SMS", icon: Icon.sms, perm: "sms.settings" },
+  { to: "/admin/communication/logs", label: "Delivery logs", icon: Icon.logs, perm: "logs.view" },
   { section: "Admin" },
   { to: "/admin/team", label: "Team", icon: Icon.team, roles: ["owner"] },
   { to: "/admin/activity", label: "Activity log", icon: Icon.activity, roles: ["owner", "manager"] },
-  { to: "/admin/emails", label: "Emails", icon: Icon.emails, roles: ["owner", "manager"] },
   { to: "/admin/seo", label: "SEO", icon: Icon.seo },
   { to: "/admin/settings", label: "Settings", icon: Icon.settings },
   { to: "/admin/profile", label: "My profile", icon: Icon.profile },
@@ -23,7 +26,7 @@ const NAV = [
 const ROLE = { owner: "Owner", manager: "Manager", staff: "Staff" };
 
 export default function AdminLayout() {
-  const { admin, logout, can } = useAdminAuth();
+  const { admin, logout, can, allowed } = useAdminAuth();
   const [open, setOpen] = useState(false);
   const [counts, setCounts] = useState({});
   const navigate = useNavigate();
@@ -39,7 +42,7 @@ export default function AdminLayout() {
     return () => { live = false; clearInterval(t); };
   }, [pathname]);
 
-  const items = NAV.filter((i) => !i.roles || can(...i.roles));
+  const items = NAV.filter((i) => (!i.roles || can(...i.roles)) && (!i.perm || allowed(i.perm)) && (!i.perms || i.perms.some(allowed)));
   const current = NAV.find((i) => i.to && pathname.startsWith(i.to))?.label || "Admin";
   useEffect(() => { document.title = `${current} | NawaraTrend Admin`; }, [current]);
 

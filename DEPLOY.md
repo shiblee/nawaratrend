@@ -138,3 +138,19 @@ How the server is set up (different from Steps 4–6 above, because GoDaddy's "S
 | Error mentions `Unexpected token` or an old Node version | In Setup Node.js App, choose a newer Node.js version (18+), then Restart. |
 | The old site still shows | public_html/nawaratrend.com still has old files (Step 5), or your browser cached it: try a private window. |
 | "Not secure" warning | Step 7: run AutoSSL and wait. |
+
+---
+
+## Mobile OTP sign-up (SMS)
+
+Customers sign up and reset their password with a code sent by SMS through **Renflair**.
+
+1. In your Renflair account, make sure the sender/app name in their message is **Nawara Trend** (their text reads "<code> is your verification code for <app name>"), and copy your API key.
+2. Add it to `deploy/production.env` (never to the code or the database):
+   ```
+   RENFLAIR_API_KEY=your-key
+   ```
+3. Deploy with `./scripts/deploy.sh`. It now also updates the database (new tables for sign-ups, codes, SMS log and sessions) before restarting.
+4. Admin → Communication → **OTP / SMS**: check the provider shows **Connected**, then **Send test** to your own mobile.
+
+Until the key is set, nobody can create an account or reset a password (a mobile number is never accepted without its code). Existing customers with a mobile number can still sign in.

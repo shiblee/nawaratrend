@@ -140,7 +140,11 @@ export const ORDER_STATUS = {
   delivered: ["Delivered", "green"], return_requested: ["Return requested", "amber"], returned: ["Returned", "red"], cancelled: ["Cancelled", "red"],
 };
 export const PAY_STATUS = { pending: ["Unpaid", "amber"], paid: ["Paid", "green"], failed: ["Failed", "red"], refund_pending: ["Refund initiated", "violet"], refunded: ["Refunded", "gray"] };
-export const EMAIL_STATUS = { queued: ["Queued", "amber"], sending: ["Sending", "blue"], sent: ["Sent", "green"], failed: ["Failed", "red"], skipped: ["Not sent", "gray"] };
+export const EMAIL_STATUS = { queued: ["Queued", "amber"], sending: ["Sending", "blue"], sent: ["Sent", "green"], delivered: ["Delivered", "green"], failed: ["Failed", "red"], bounced: ["Bounced", "red"], skipped: ["Not sent", "gray"] };
+export const SMS_STATUS = { queued: ["Queued", "amber"], sent: ["Sent", "green"], delivered: ["Delivered", "green"], failed: ["Failed", "red"] };
+export const SmsBadge = ({ status }) => <Badge tone={(SMS_STATUS[status] || [])[1]}>{(SMS_STATUS[status] || [status])[0]}</Badge>;
+export const VERIFY_TONE = { Verified: "green", Pending: "amber", Expired: "gray", Rejected: "red", Replaced: "gray", Test: "blue" };
+export const OTP_PURPOSE = { registration: "Sign-up", password_reset: "Password reset", test: "Test message" };
 export const EmailBadge = ({ status }) => <Badge tone={(EMAIL_STATUS[status] || [])[1]}>{(EMAIL_STATUS[status] || [status])[0]}</Badge>;
 export const TRIGGER = { registration: "Sign-up", order: "New order", admin: "Admin update", system: "System", test: "Test", retry: "Resent by admin", customer: "Customer action" };
 export const PRODUCT_STATUS = { active: ["On sale", "green"], draft: ["Draft", "gray"], archived: ["Archived", "red"] };
@@ -264,6 +268,8 @@ export function useDebounced(value, ms = 300) {
 }
 
 export const Icon = {
+  sms: "M8.25 10.5h.01M12 10.5h.01m3.74 0h.01M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z",
+  logs: "M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z",
   dashboard: "M3 13h8V3H3v10Zm10 8h8V11h-8v10ZM3 21h8v-6H3v6ZM13 9h8V3h-8v6Z",
   orders: "M5 8h14l-1.5 12h-11zM9 8V6a3 3 0 0 1 6 0v2",
   products: "M21 8 12 3 3 8m18 0-9 5m9-5v9l-9 5m0-9L3 8m9 5v9M3 8v9l9 5",

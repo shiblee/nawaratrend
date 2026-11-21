@@ -105,6 +105,50 @@
 .lg-in p{color:var(--muted)}
 .lg-in .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
 
+/* mobile number with a fixed +91 */
+.tel{display:flex;align-items:stretch;border:2px solid var(--line);border-radius:12px;background:var(--surface);transition:border-color .15s,box-shadow .15s}
+.tel span{display:grid;place-items:center;padding:0 4px 0 14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.fld .tel input{border:0;box-shadow:none;background:transparent;padding-left:6px;letter-spacing:.02em}
+.fld .tel input:focus{box-shadow:none}
+.tel:focus-within{border-color:var(--ink);box-shadow:0 0 0 4px rgba(230,178,38,.25)}
+.fld.invalid .tel{border-color:var(--fashion);background:#FFF8F6}
+.lg-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.92rem}
+.check{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.92rem;font-weight:500;line-height:1.45}
+.fld label.check{font-weight:500;font-size:.9rem}
+.check input{appearance:none;width:20px;height:20px;flex-shrink:0;margin:1px 0 0;border:2px solid var(--line);border-radius:6px;background:var(--surface);display:grid;place-items:center;cursor:pointer;transition:border-color .15s,background .15s}
+.check input:checked{background:var(--ink);border-color:var(--ink)}
+.check input:checked::after{content:"";width:5px;height:10px;border:solid var(--marigold);border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.check input:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+.fld.invalid .check input{border-color:var(--fashion)}
+/* password strength */
+.meter{display:flex;align-items:center;gap:10px;min-height:18px}
+.meter b{flex:1;height:5px;border-radius:99px;background:var(--bg);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:inherit;background:var(--fashion);transition:width .25s,background .25s}
+.meter span{font-size:.78rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.meter[data-score="0"]{display:none}
+.meter[data-score="2"] i{background:#C8921A}
+.meter[data-score="3"] i{background:#5B8C3A}
+.meter[data-score="4"] i{background:var(--ok)}
+/* code boxes */
+.otp-head{text-align:center;display:grid;justify-items:center;gap:6px}
+.otp-head h2{font-family:var(--display);font-size:1.5rem}
+.otp-head p{color:var(--muted);font-size:.94rem}
+.otp-ic{width:52px;height:52px;border-radius:50%;background:var(--marigold-soft);color:var(--ink);display:grid;place-items:center;margin-bottom:4px}
+.otp{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;max-width:360px;margin:4px auto 0}
+.otp input{width:100%;aspect-ratio:5/6;max-height:62px;border:2px solid var(--line);border-radius:12px;text-align:center;font:700 1.45rem/1 var(--mono);color:var(--ink);background:var(--surface);outline:none;padding:0;transition:border-color .15s,box-shadow .15s}
+.otp input:focus{border-color:var(--ink);box-shadow:0 0 0 4px rgba(230,178,38,.25)}
+.otp input:disabled{opacity:.6}
+.otp.bad input{border-color:var(--fashion);animation:otp-shake .35s}
+@keyframes otp-shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.otp.bad input{animation:none}}
+.otp-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.9rem}
+.otp-meta .link:disabled{color:var(--muted);text-decoration:none;cursor:default;font-weight:600}
+/* steps (password reset) */
+.steps{list-style:none;display:flex;gap:8px;margin:0 0 16px;padding:0;counter-reset:st}
+.steps li{flex:1;counter-increment:st;font-size:.8rem;font-weight:700;color:var(--muted);border-top:3px solid var(--line);padding-top:8px}
+.steps li::before{content:counter(st) ". "}
+.steps li[aria-current],.steps li.done{color:var(--ink);border-color:var(--marigold)}
+
 /* ---------- status chips ---------- */
 .st{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;padding:4px 11px;border-radius:999px;white-space:nowrap;background:var(--bg);color:var(--muted)}
 .st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}

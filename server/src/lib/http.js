@@ -68,6 +68,26 @@ export function mobile10(v) {
   return /^[6-9]\d{9}$/.test(d) ? d : null;
 }
 
+/* Phone numbers are stored in international (E.164) form, e.g. +919876543210, so other countries can be added
+   later by extending COUNTRIES. Phase 1 accepts Indian mobiles only. */
+const COUNTRIES = { IN: { code: "91", national: (d) => mobile10(d) } };
+
+/** A mobile number → { e164: "+919876543210", national: "9876543210" }, or null if it isn't valid. */
+export function normalizePhone(v, country = "IN") {
+  const c = COUNTRIES[country];
+  const national = c && c.national(v);
+  return national ? { e164: `+${c.code}${national}`, national } : null;
+}
+
+/** The national part of a stored number ("+919876543210" → "9876543210"). */
+export const nationalPhone = (e164) => (e164 ? String(e164).replace(/^\+91/, "") : null);
+
+/** "+919876543210" → "+91 98XXXXXX10" (for people who don't need to see the full number). */
+export const maskPhone = (p) => {
+  const d = String(p || "").replace(/\D/g, "").slice(-10);
+  return d.length === 10 ? `+91 ${d.slice(0, 2)}XXXXXX${d.slice(8)}` : p ? "XXXX" : "";
+};
+
 /** Strong-enough password: 8+ characters with a letter and a number. */
 export function password(v, field = "password") {
   const s = typeof v === "string" ? v : "";

@@ -28,6 +28,8 @@ const Seo = lazy(() => import("./pages/admin/Seo.jsx"));
 const Profile = lazy(() => import("./pages/admin/Profile.jsx"));
 const Emails = lazy(() => import("./pages/admin/Emails.jsx"));
 const EmailTemplateEdit = lazy(() => import("./pages/admin/EmailTemplateEdit.jsx"));
+const OtpSettings = lazy(() => import("./pages/admin/Communication.jsx").then((m) => ({ default: m.OtpSettings })));
+const DeliveryLogs = lazy(() => import("./pages/admin/Communication.jsx").then((m) => ({ default: m.DeliveryLogs })));
 
 export default function App() {
   return (
@@ -68,14 +70,16 @@ export default function App() {
             <Route path="products" element={<Products />} />
             <Route path="products/:id" element={<ProductEdit />} />
             <Route path="categories" element={<Categories />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="customers/:id" element={<CustomerDetail />} />
+            <Route path="customers" element={<ProtectedRoute perm="customers.view"><Customers /></ProtectedRoute>} />
+            <Route path="customers/:id" element={<ProtectedRoute perm="customers.view"><CustomerDetail /></ProtectedRoute>} />
             <Route path="messages" element={<Messages />} />
             <Route path="team" element={<ProtectedRoute roles={["owner"]}><Team /></ProtectedRoute>} />
             <Route path="activity" element={<ProtectedRoute roles={["owner", "manager"]}><Activity /></ProtectedRoute>} />
             <Route path="seo" element={<Seo />} />
-            <Route path="emails" element={<ProtectedRoute roles={["owner", "manager"]}><Emails /></ProtectedRoute>} />
-            <Route path="emails/templates/:key" element={<ProtectedRoute roles={["owner", "manager"]}><EmailTemplateEdit /></ProtectedRoute>} />
+            <Route path="emails" element={<ProtectedRoute perm="templates.edit"><Emails /></ProtectedRoute>} />
+            <Route path="emails/templates/:key" element={<ProtectedRoute perm="templates.edit"><EmailTemplateEdit /></ProtectedRoute>} />
+            <Route path="communication/sms" element={<ProtectedRoute perm="sms.settings"><OtpSettings /></ProtectedRoute>} />
+            <Route path="communication/logs" element={<ProtectedRoute perm="logs.view"><DeliveryLogs /></ProtectedRoute>} />
             <Route path="settings" element={<Settings />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="dashboard" replace />} />

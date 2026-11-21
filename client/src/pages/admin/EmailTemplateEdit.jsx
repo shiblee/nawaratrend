@@ -32,6 +32,7 @@ export default function EmailTemplateEdit() {
     return () => { live = false; };
   }, [draft, key]);
 
+  const history = useLoad(() => adminApi.getEmailTemplateHistory(key), [key, t?.version]);
   if (error) return <Alert>{error}</Alert>;
   if (!t || !f) return <div className="h-64 animate-pulse rounded-2xl bg-slate-200/60" />;
 
@@ -44,6 +45,25 @@ export default function EmailTemplateEdit() {
     setF({ ...f, [k]: f[k].slice(0, start) + tag + f[k].slice(end) });
     requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(start + tag.length, start + tag.length); });
   };
+
+  // formatting toolbar: wraps the selected text in the HTML body with a tag (or inserts a block)
+  const wrap = (before, after = "", placeholder = "") => {
+    const el = refs.html.current, v = f.html;
+    const start = el?.selectionStart ?? v.length, end = el?.selectionEnd ?? v.length;
+    const inner = v.slice(start, end) || placeholder;
+    setF({ ...f, html: v.slice(0, start) + before + inner + after + v.slice(end) });
+    requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(start + before.length, start + before.length + inner.length); });
+  };
+  const link = () => { const url = window.prompt("Link address (https://… or a placeholder like {{site_url}})", "{{site_url}}"); if (url) wrap(`<a href="${url.replace(/"/g, "&quot;")}">`, "</a>", "link text"); };
+  const btn = () => { const url = window.prompt("Button link (https://… or a placeholder like {{account_url}})", "{{account_url}}"); if (url) wrap(`<p style="margin:24px 0"><a href="${url.replace(/"/g, "&quot;")}" style="display:inline-block;background:#410309;color:#FFF6E6;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:10px">`, "</a></p>", "Button text"); };
+  const TOOLS = [
+    ["H", "Heading", () => wrap("<h1>", "</h1>", "Heading")], ["¶", "Paragraph", () => wrap("<p>", "</p>", "Text")],
+    ["B", "Bold", () => wrap("<b>", "</b>", "bold text")], ["I", "Italic", () => wrap("<i>", "</i>", "italic text")],
+    ["Link", "Link", link], ["Button", "Button", btn], ["• List", "Bulleted list", () => wrap("<ul>\n  <li>", "</li>\n</ul>", "Item")],
+    ["↵", "Line break", () => wrap("<br>")],
+    ["Note", "Highlighted note", () => wrap('<p style="background:#FFF6E0;border-left:4px solid #E2B023;padding:12px 14px;border-radius:8px;margin:16px 0">', "</p>", "Note")],
+  ];
+  const loadVersion = (v) => { setF({ subject: v.subject, html: v.html, text: v.text || "" }); toast(`Version ${v.version} loaded into the editor. Save to use it.`); };
 
   const save = async () => {
     setBusy("save");
@@ -87,6 +107,10 @@ export default function EmailTemplateEdit() {
             <div className="space-y-4 p-5">
               <Field label="Subject"><Input ref={refs.subject} value={f.subject} maxLength={255} onChange={set("subject")} onFocus={() => { lastField.current = "subject"; }} /></Field>
               <Field label="Email body (HTML)" hint="(the branded header and footer are added around it)">
+                <div className="mb-1.5 flex flex-wrap gap-1" role="toolbar" aria-label="Formatting">
+                  {TOOLS.map(([label, title, fn]) => <button key={title} type="button" title={title} aria-label={title} onClick={fn}
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50">{label}</button>)}
+                </div>
                 <Textarea ref={refs.html} value={f.html} onChange={set("html")} onFocus={() => { lastField.current = "html"; }} rows={16} spellCheck={false} className="font-mono text-xs leading-relaxed" />
               </Field>
               <Field label="Plain-text version" hint="(optional; leave empty to make it from the HTML automatically)">
@@ -100,6 +124,20 @@ export default function EmailTemplateEdit() {
               {t.placeholders.map((p) => (
                 <li key={p.name}><button type="button" onClick={() => insert(p.name)} className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800 hover:bg-amber-100">{`{{${p.name}}}`}</button> <span className="text-xs text-slate-500">{p.help}</span></li>
               ))}
+            </ul>
+          </Card>
+          <Card>
+            <CardHeader title="History" sub="Every saved version. Load one into the editor, check the preview, then Save to bring it back." />
+            <ul className="divide-y divide-slate-100 text-sm">
+              {history.data?.length ? history.data.map((v) => (
+                <li key={v.id} className="flex flex-wrap items-center gap-3 px-5 py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate"><b>v{v.version}</b> · {v.subject}</div>
+                    <div className="text-xs text-slate-500">{{ edit: "Edited", reset: "Default restored", enable: "Turned on", disable: "Turned off" }[v.action] || v.action} by {v.admin_name || "someone"} · {timeAgo(v.created_at)}</div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => loadVersion(v)}>Load</Button>
+                </li>
+              )) : <li className="px-5 py-3 text-slate-500">{history.loading ? "Loading…" : "No saved changes yet: this email uses the default wording."}</li>}
             </ul>
           </Card>
         </div>

@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import { pool } from "../../config/db.js";
 import { ah, HttpError, str, EMAIL, password, clientIp } from "../../lib/http.js";
 import { audit } from "../../lib/store.js";
+import { permissionsFor } from "../../lib/permissions.js";
 import { requireAdmin, signAdminToken } from "../../middleware/auth.js";
 
 const router = express.Router();
@@ -39,14 +40,14 @@ router.post("/login", loginLimit, ah(async (req, res) => {
   await pool.query("UPDATE admins SET failed_attempts = 0, locked_until = NULL, last_login_at = NOW(), last_login_ip = ? WHERE id = ?", [clientIp(req), admin.id]);
   req.admin = admin;
   await audit(req, "login", "admin", admin.id);
-  res.json({ token: signAdminToken(admin), admin: safe(admin) });
+  res.json({ token: signAdminToken(admin), admin: { ...safe(admin), permissions: permissionsFor(admin) } });
 }));
 
 router.use(requireAdmin);
 
 router.get("/me", ah(async (req, res) => {
   const [rows] = await pool.query("SELECT * FROM admins WHERE id = ?", [req.admin.id]);
-  res.json(safe(rows[0]));
+  res.json({ ...safe(rows[0]), permissions: permissionsFor(rows[0]) });
 }));
 
 router.put("/profile", ah(async (req, res) => {
@@ -57,7 +58,7 @@ router.put("/profile", ah(async (req, res) => {
   await pool.query("UPDATE admins SET name = ?, email = ? WHERE id = ?", [name, email, req.admin.id]);
   await audit(req, "profile.update", "admin", req.admin.id, { name, email });
   const [rows] = await pool.query("SELECT * FROM admins WHERE id = ?", [req.admin.id]);
-  res.json(safe(rows[0]));
+  res.json({ ...safe(rows[0]), permissions: permissionsFor(rows[0]) });
 }));
 
 // Changing the password signs out every other session (token_version goes up) and returns a fresh token.
@@ -71,7 +72,7 @@ router.put("/password", ah(async (req, res) => {
     [await bcrypt.hash(next, 12), req.admin.id]);
   await audit(req, "password.change", "admin", req.admin.id);
   const [fresh] = await pool.query("SELECT * FROM admins WHERE id = ?", [req.admin.id]);
-  res.json({ token: signAdminToken(fresh[0]), admin: safe(fresh[0]) });
+  res.json({ token: signAdminToken(fresh[0]), admin: { ...safe(fresh[0]), permissions: permissionsFor(fresh[0]) } });
 }));
 
 router.post("/logout-everywhere", ah(async (req, res) => {

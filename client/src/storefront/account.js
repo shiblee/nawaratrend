@@ -46,7 +46,7 @@ export function initAccount({ navigate }){
     renderHero(c);
   });
 
-  $("acOut").onclick = () => { logout(); navigate("/login"); };
+  $("acOut").onclick = async () => { await logout(); navigate("/login"); };
 
   /* ---------- profile photo: cropped to a square and shrunk in the browser, so uploads are small ---------- */
   const photoMsg = $("acPhotoMsg");
@@ -164,10 +164,10 @@ export function initAccount({ navigate }){
           <div class="fields">
             <div class="fld full"><label for="pfName">Full name</label><input id="pfName" autocomplete="name" maxlength="100" value="${esc(c.name)}"><p class="err"></p></div>
             <div class="fld"><label for="pfEmail">Email <small>(for order updates)</small></label><input id="pfEmail" type="email" autocomplete="email" maxlength="150" value="${esc(c.email || "")}"><p class="err"></p></div>
-            <div class="fld"><label for="pfPhone">Mobile number</label><input id="pfPhone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" value="${esc(c.phone || "")}"><p class="err"></p></div>
-            <div class="full" id="pfPwRow" hidden>${passwordField("pfPw", "Current password", "current-password", "(needed to change your email or mobile)")}</div>
+            <div class="fld"><label for="pfPhone">Mobile number <small>${c.phoneVerified ? "(verified)" : ""}</small></label><div class="tel"><span aria-hidden="true">+91</span><input id="pfPhone" type="tel" value="${esc(c.phone || "")}" readonly aria-readonly="true"></div><p class="err"></p></div>
+            <div class="full" id="pfPwRow" hidden>${passwordField("pfPw", "Current password", "current-password", "(needed to change your email)")}</div>
           </div>
-          <p class="sub">You can sign in with either your email or your mobile number.</p>
+          <p class="sub">You sign in with your mobile number. To change it, please <a class="link" href="/contact">contact us</a>.</p>
           <p class="form-msg" role="alert"></p>
           <p class="ok-msg" role="status"></p>
           <button type="submit" class="btn btn-ink"><span class="lbl">Save changes</span><span class="spin" aria-hidden="true"></span></button>
@@ -182,24 +182,23 @@ export function initAccount({ navigate }){
     const form = $("pfForm"), name = $("pfName"), email = $("pfEmail"), phone = $("pfPhone"), pw = $("pfPw");
     const contactChanged = () => {
       const cur = currentCustomer();
-      return email.value.trim().toLowerCase() !== (cur.email || "") || mobileDigits(phone.value) !== (cur.phone || "");
+      return email.value.trim().toLowerCase() !== (cur.email || "");
     };
     const syncPw = () => { $("pfPwRow").hidden = !contactChanged(); };
-    email.addEventListener("input", syncPw); phone.addEventListener("input", syncPw);
+    email.addEventListener("input", syncPw);
     form.addEventListener("submit", e => {
       e.preventDefault();
       const msg = form.querySelector(".form-msg"), ok = form.querySelector(".ok-msg");
       msg.textContent = ok.textContent = "";
       const checks = [
         fieldError(name, name.value.trim().length < 2 ? "Please enter your name." : ""),
-        fieldError(email, emailProblem(email.value.trim()) || (!email.value.trim() && !phone.value.trim() ? "Keep an email or a mobile number so you can sign in." : "")),
-        fieldError(phone, mobileProblem(phone.value.trim())),
-        contactChanged() ? fieldError(pw, pw.value ? "" : "Enter your current password to change your email or mobile.") : true,
+        fieldError(email, emailProblem(email.value.trim())),
+        contactChanged() ? fieldError(pw, pw.value ? "" : "Enter your current password to change your email.") : true,
       ];
       if(checks.includes(false)){ form.querySelector(".invalid input")?.focus(); return; }
       busy(form.querySelector("button[type=submit]"), async () => {
         try {
-          const c2 = await updateProfile({ name: name.value.trim(), email: email.value.trim(), phone: mobileDigits(phone.value), currentPassword: pw.value });
+          const c2 = await updateProfile({ name: name.value.trim(), email: email.value.trim(), currentPassword: pw.value });
           if(!alive) return;
           renderHero(c2); pw.value = ""; syncPw();
           ok.textContent = "Saved. Your details are up to date.";
@@ -225,7 +224,7 @@ export function initAccount({ navigate }){
           <p class="form-msg" role="alert"></p>
           <p class="ok-msg" role="status"></p>
           <button type="submit" class="btn btn-ink"><span class="lbl">Change password</span><span class="spin" aria-hidden="true"></span></button>
-          <p class="lg-alt">Forgot your current password? <a class="link" href="/reset-password">Reset it by email</a></p>
+          <p class="lg-alt">Forgot your current password? <a class="link" href="/reset-password">Reset it with a code by SMS</a></p>
         </form>
         <div class="ac-stack">
           <div class="card">
@@ -241,7 +240,7 @@ export function initAccount({ navigate }){
         </div>
       </div>`;
     wirePasswordToggles(box);
-    $("outHere").onclick = () => { logout(); navigate("/login"); };
+    $("outHere").onclick = () => busy($("outHere"), async () => { await logout(); navigate("/login"); });
     $("outAll").onclick = () => {
       if(!window.confirm("Sign out of NawaraTrend on all your devices, including this one?")) return;
       busy($("outAll"), async () => { try { await logoutEverywhere(); } catch { /* signed out locally anyway */ } navigate("/login"); });
@@ -259,12 +258,12 @@ export function initAccount({ navigate }){
       if(checks.includes(false)){ form.querySelector(".invalid input")?.focus(); return; }
       busy(form.querySelector("button[type=submit]"), async () => {
         try {
-          await changePassword(cur.value, nw.value);
+          await changePassword(cur.value, nw.value, again.value);
           if(!alive) return;
           form.reset();
           ok.textContent = "Password changed. You've been signed out on your other devices.";
         } catch(err){
-          const field = { currentPassword: cur, newPassword: nw }[err.field];
+          const field = { currentPassword: cur, newPassword: nw, confirmPassword: again }[err.field];
           if(field) fieldError(field, err.message); else msg.textContent = err.message;
         }
       });

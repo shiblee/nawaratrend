@@ -36,9 +36,11 @@ export function AdminAuthProvider({ children }) {
 
   /** Role check used to hide buttons the server would refuse anyway. */
   const can = (...roles) => !!admin && roles.includes(admin.role);
+  /** Permission check (the list comes from the server: server/src/lib/permissions.js). */
+  const allowed = (perm) => !!admin?.permissions?.includes(perm);
 
   return (
-    <AdminAuthContext.Provider value={{ admin, setAdmin, token, setSessionToken: applyToken, login, logout, loading, can }}>
+    <AdminAuthContext.Provider value={{ admin, setAdmin, token, setSessionToken: applyToken, login, logout, loading, can, allowed }}>
       {children}
     </AdminAuthContext.Provider>
   );

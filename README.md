@@ -84,7 +84,8 @@ Sign in at `/admin/login`. The first owner is `admin@nawaratrend.com` / `Admin@1
 - **Dashboard**: sales today / 7 / 30 days (vs the previous 30), daily sales chart, orders by status, best sellers, sales by category and payment method, low stock, latest orders and recent activity.
 - **Orders**: filter by status, payment, date or search; open an order to confirm → pack → ship → deliver (or cancel/return, which restocks), set courier and tracking, payment status and private notes; download a CSV.
 - **Products**: price, MRP, cost and margin, stock (editable from the list), low-stock alert, SKU, sizes, highlights, photos, status (on sale / draft / archived), featured, and sales per product.
-- **Categories**, **Customers** (orders, spend, addresses, notes, disable account) and **Messages** from the contact form.
+- **Categories**, **Customers → Registered users** (mobile/email verified, last sign-in, orders, spend, addresses, OTP and sign-in history, team actions, notes, suspend/reactivate, and sign-ups still waiting for their code) and **Messages** from the contact form.
+- **Communication**: **Email templates** (edit with a formatting toolbar and placeholders, live preview, test email, on/off, version history with restore, sender name/address), **OTP / SMS** (code length, expiry, resend wait, attempt and resend limits, per-number and per-connection hourly caps, provider status and a test message, log retention) and **Delivery logs** (email log and OTP/SMS log: search, filters, details, CSV, retry failed emails).
 - **Team** (owners): add people as owner / manager / staff, reset passwords, disable access, unlock accounts.
 - **Activity log** (owners, managers): every change and sign-in, with who and from where.
 - **Settings**: free-delivery threshold, delivery charge, Cash on Delivery on/off, store contact details.
@@ -95,18 +96,32 @@ Sign in at `/admin/login`. The first owner is `admin@nawaratrend.com` / `Admin@1
 | Manager | Everything except the team |
 | Staff | Orders, customers, messages and stock levels (view-only for products, categories and settings) |
 
+Finer permissions (who may suspend customers, edit templates, change OTP settings, view/export logs, see full mobile numbers) are set per role in `server/src/lib/permissions.js`.
+
+### Customer accounts (mobile + OTP)
+
+- **Sign up** (`/login?tab=register`): name, mobile (required, unique, stored as `+91XXXXXXXXXX`), email (optional), password + confirmation, terms. A 6-digit code is texted; the account is created only after the code is verified (in one database transaction, so two people can never claim one number). An email address gets a "Registration confirmation" email; email problems never block the account.
+- **Sign in** with mobile + password ("Remember me" = 30 days, otherwise until the browser closes). **Forgot password** (`/reset-password`): mobile → code → new password; all other devices are signed out.
+- **Codes**: from a secure random source, stored only as an HMAC, single use; a resend cancels the previous code. Defaults: 6 digits, 5 minutes, 5 wrong tries, 3 resends 60 s apart, 5 codes per number and 20 per connection per hour (all changeable within safe limits).
+- **SMS provider**: `server/src/lib/sms/providers.js` (Renflair today; add another provider there without touching the sign-up code). The API key lives only in `.env`.
+- Accounts without a mobile number (older email-only sign-ups) can no longer sign in: they need to create a new account with their mobile.
+
 ### Security
 
 - Passwords are hashed with bcrypt; admin passwords need 8+ characters with a letter and a number.
 - 5 wrong passwords lock an account for 15 minutes; sign-in endpoints are also rate-limited per connection.
 - Admin sessions last 8 hours and are re-checked on every request: changing a password, disabling someone or "Sign out everywhere" ends their sessions at once.
-- Customer and admin tokens are separate, so a customer token can never open the admin API.
+- Customers sign in with an HttpOnly, SameSite=Lax session cookie (Secure in production); only its hash is stored, so signing out really ends it. Every change on the storefront API needs the CSRF token (double-submit cookie). Admins use a separate bearer token, so a customer session can never open the admin API.
 - The server recalculates every price and the delivery charge, and locks stock while an order is placed.
 - `helmet` security headers, CORS limited to `CLIENT_ORIGIN`, 100 kB request limit, and the server refuses to start without a strong `JWT_SECRET`.
 
 ## Store API (public)
 
-`GET /api/store/catalog`, `POST /api/store/contact`, `POST /api/store/auth/register|login`, `GET /api/store/auth/me`, `GET /api/store/orders/mine`, `POST /api/store/orders`.
+`GET /api/store/catalog`, `POST /api/store/contact`, `GET /api/store/auth/csrf`, `POST /api/store/auth/register` → `/auth/register/verify`, `POST /api/store/auth/otp/resend`, `POST /api/store/auth/login|logout|logout-everywhere`, `POST /api/store/auth/forgot` → `/auth/forgot/verify` → `/auth/forgot/reset`, `GET /api/store/auth/me`, `GET /api/store/orders/mine`, `POST /api/store/orders`.
+
+## Tests
+
+`cd server && npm test` runs the sign-up / OTP / sign-in / reset / admin-access tests against a separate `nawaratrend_test` database (created and wiped on every run; needs the local MySQL). Texts and emails are simulated, nothing is sent.
 
 ## SEO, cookies and WhatsApp
 

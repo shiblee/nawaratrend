@@ -46,12 +46,12 @@ export function initCheckout(){
     $("whoBox").innerHTML = c
       ? `<div><b>Signed in as ${esc(c.name)}</b><span>${esc(c.contact)}</span></div><div class="btns"><button type="button" class="btn btn-line" id="whoOut">Sign out</button></div>`
       : `<div><b>Have an account?</b><span>Sign in to track this order later, or continue as a guest.</span></div><div class="btns"><a class="btn btn-ink" href="/login?next=/checkout">Sign in</a></div>`;
-    const out = $("whoOut"); if(out) out.onclick = () => { logout(); renderWho(); };
+    const out = $("whoOut"); if(out) out.onclick = async () => { await logout(); renderWho(); };
     // fill in what we know about the customer, without overwriting anything typed
     if(c){
       if(!$("aName").value && c.name !== "Customer") $("aName").value = c.name;
-      if(c.contact.includes("@")){ if(!$("aEmail").value) $("aEmail").value = c.contact; }
-      else if(!$("aPhone").value) $("aPhone").value = c.contact;
+      if(c.email && !$("aEmail").value) $("aEmail").value = c.email;
+      if(c.phone && !$("aPhone").value) $("aPhone").value = c.phone;
     }
   }
 

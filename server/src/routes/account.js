@@ -1,4 +1,5 @@
-/* Customer accounts: sign-up / sign-in, profile and photo, password (change and reset by email),
+/* Customer accounts: sign-up with mobile OTP, sign-in with mobile + password, profile and photo, password
+   (change, and reset by mobile OTP),
    sign out everywhere, the customer's own orders with tracking, and public order tracking for guests.
    Every order query is limited to the signed-in customer's own orders. */
 import express from "express";
@@ -6,11 +7,12 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { pool } from "../config/db.js";
-import { ah, HttpError, str, EMAIL, mobile10, password, clientIp, jsonList } from "../lib/http.js";
+import { ah, HttpError, str, EMAIL, mobile10, password, clientIp, jsonList, normalizePhone, nationalPhone } from "../lib/http.js";
 import { getSettings } from "../lib/store.js";
 import { STATUS, PROGRESS, DEFAULT_MESSAGE, PAYMENT_STATUS, PAY_METHOD } from "../lib/orders.js";
-import { queueEmail, siteUrl } from "../lib/email/index.js";
-import { requireCustomer, signCustomerToken } from "../middleware/auth.js";
+import { queueEmail, customerVars } from "../lib/email/index.js";
+import { startOtp, resendOtp, verifyOtp, otpSettings, sessionInfo, inTransaction, sha256 } from "../lib/otp.js";
+import { requireCustomer, startCustomerSession, endCustomerSession, revokeCustomerSessions, ensureCsrfCookie } from "../middleware/auth.js";
 
 const router = express.Router();
 const limit = (windowMin, max, message, extra = {}) =>
@@ -18,8 +20,6 @@ const limit = (windowMin, max, message, extra = {}) =>
 const authLimit = limit(15, 20, "Too many attempts. Please wait a few minutes and try again.", { skipSuccessfulRequests: true });
 // compared against when no account matches, so "no such account" and "wrong password" take the same time
 const DUMMY_HASH = bcrypt.hashSync("no-account-placeholder", 12);
-const RESET_MINUTES = 30;
-const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
 /* ---------- profile photos ----------
    Served from an address that can't be guessed (signed with the server secret), so <img> tags work without sign-in
@@ -29,136 +29,215 @@ const avatarUrl = (c) => (c.avatar_at ? `/api/store/avatars/${c.id}-${avatarSig(
 export { avatarUrl };
 
 export const publicCustomer = (c) => ({
-  id: c.id, name: c.name, contact: c.email || c.phone, email: c.email || null, phone: c.phone || null,
-  avatar: avatarUrl(c), since: c.created_at || null,
+  id: c.id, name: c.name, contact: nationalPhone(c.phone) || c.email, email: c.email || null, phone: nationalPhone(c.phone),
+  phoneVerified: !!c.phone_verified_at, emailVerified: !!c.email_verified_at, avatar: avatarUrl(c), since: c.created_at || null,
 });
 
-const loadCustomer = async (id) => {
-  const [rows] = await pool.query(
+const loadCustomer = async (id, conn = pool) => {
+  const [rows] = await conn.query(
     "SELECT c.*, a.updated_at AS avatar_at FROM customers c LEFT JOIN customer_avatars a ON a.customer_id = c.id WHERE c.id = ?", [id]);
   return rows[0];
 };
 
-const parseContact = (v) => {
-  const s = str(v, "contact", { max: 150, msg: "Enter your mobile number or email" });
-  if (EMAIL.test(s)) return { email: s.toLowerCase(), phone: null };
-  const m = mobile10(s);
-  if (m) return { email: null, phone: m };
-  throw new HttpError(400, "Enter a valid mobile number or email", { field: "contact" });
+const parseMobile = (v, field = "mobile") => {
+  const p = normalizePhone(v);
+  if (!p) throw new HttpError(400, "Enter a valid 10-digit Indian mobile number", { field });
+  return p;
 };
+const confirmMatches = (pw, again, field = "confirmPassword") => {
+  if (typeof again !== "string" || again !== pw) throw new HttpError(400, "The two passwords don't match", { field });
+};
+const remembered = (v) => v === true || v === 1 || v === "1" || v === "true";
 
-const customerName = (c) => (c.name || "").split(" ")[0] || "there";
+/* ---------- sign up (mobile OTP) ----------
+   1. POST /auth/register        details checked, a pending sign-up is saved, a code is texted
+   2. POST /auth/register/verify the code is checked; only now is the customer account created (in one transaction)
+   POST /auth/otp/resend         a new code for the same sign-up (or password reset)                          */
+router.get("/auth/csrf", (req, res) => { res.set("Cache-Control", "no-store"); res.json({ csrf: ensureCsrfCookie(req, res) }); });
 
-/* ---------- sign up / sign in ---------- */
 router.post("/auth/register", authLimit, ah(async (req, res) => {
-  const name = str(req.body?.name, "name", { min: 2, max: 100 });
-  const { email, phone } = parseContact(req.body?.contact);
-  const pw = password(req.body?.password);
-  const [dupe] = await pool.query("SELECT id FROM customers WHERE email = ? OR phone = ?", [email, phone]);
-  if (dupe.length) throw new HttpError(409, "An account with this mobile number or email already exists. Please sign in.");
-  const [r] = await pool.query("INSERT INTO customers (name, email, phone, password, last_login_at) VALUES (?, ?, ?, ?, NOW())",
-    [name, email, phone, await bcrypt.hash(pw, 12)]);
-  const c = await loadCustomer(r.insertId);
-  // the dedupe key means a customer can only ever get one welcome email
-  if (email) await queueEmail({ key: "welcome", to: email, vars: { customer_name: customerName(c), customer_email: email },
-    customerId: c.id, trigger: "registration", dedupeKey: `welcome:${c.id}` });
-  res.status(201).json({ token: signCustomerToken(c), customer: publicCustomer(c) });
+  const b = req.body || {};
+  const name = str(b.name, "name", { min: 2, max: 100, msg: "Enter your full name (2 to 100 characters)" });
+  const phone = parseMobile(b.mobile);
+  const email = str(b.email, "email", { optional: true, max: 150, pattern: EMAIL, msg: "Check the email address, for example name@gmail.com" })?.toLowerCase() || null;
+  const pw = password(b.password);
+  confirmMatches(pw, b.confirmPassword);
+  if (!remembered(b.acceptTerms)) throw new HttpError(400, "Please accept the Terms and Privacy Policy to create an account", { field: "acceptTerms" });
+
+  const [taken] = await pool.query("SELECT id FROM customers WHERE phone = ?", [phone.e164]);
+  if (taken.length) throw new HttpError(409, "An account with this mobile number already exists. Please sign in instead.", { field: "mobile", code: "mobile_taken" });
+  if (email) {
+    const [e] = await pool.query("SELECT id FROM customers WHERE email = ?", [email]);
+    if (e.length) throw new HttpError(409, "This email address is already used by another account. Use a different one, or leave it empty.", { field: "email", code: "email_taken" });
+  }
+  const cfg = otpSettings(await getSettings());
+  if (!cfg.enabled) throw new HttpError(503, "New accounts can't be created right now because mobile verification is unavailable. Please try again later.", { code: "otp_disabled" });
+
+  // an earlier unfinished sign-up for this number is replaced (only whoever holds the phone can finish either)
+  await pool.query("UPDATE pending_registrations SET status = 'cancelled', password_hash = NULL WHERE phone = ? AND status = 'pending'", [phone.e164]);
+  const [ins] = await pool.query(
+    "INSERT INTO pending_registrations (name, phone, email, password_hash, ip, expires_at) VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL ? HOUR)",
+    [name, phone.e164, email, await bcrypt.hash(pw, 12), clientIp(req), cfg.pending_hours]);
+  const { row, sent } = await startOtp({ purpose: "registration", phone: phone.e164, pendingId: ins.insertId, ip: clientIp(req) });
+  res.status(201).json({ ...sessionInfo(row, cfg), sent,
+    message: sent ? `We've sent a ${cfg.length}-digit code to your mobile.` : "We couldn't send the code just now. Please tap \"Resend code\" in a moment." });
 }));
 
+router.post("/auth/register/verify", authLimit, ah(async (req, res) => {
+  const out = await inTransaction(async (conn) => {
+    const otp = await verifyOtp(conn, req.body?.session, req.body?.otp, { purpose: "registration" });
+    const [[p]] = await conn.query("SELECT * FROM pending_registrations WHERE id = ? FOR UPDATE", [otp.pending_id]);
+    if (!p || p.status !== "pending" || new Date(p.expires_at) <= new Date() || !p.password_hash) {
+      throw new HttpError(410, "This sign-up has expired. Please fill in the form again.", { code: "registration_expired" });
+    }
+    let id;
+    try {
+      const [r] = await conn.query(
+        "INSERT INTO customers (name, email, phone, phone_verified_at, password) VALUES (?, ?, ?, NOW(), ?)", [p.name, p.email, p.phone, p.password_hash]);
+      id = r.insertId;
+    } catch (err) {
+      // someone else finished signing up with this number (or email) a moment earlier: never overwrite their account
+      if (err.code === "ER_DUP_ENTRY") {
+        const emailClash = /email/i.test(err.message);
+        throw new HttpError(409, emailClash ? "This email address is already used by another account. Please sign up again without it, or with a different one."
+          : "An account with this mobile number already exists. Please sign in instead.", { code: emailClash ? "email_taken" : "mobile_taken" });
+      }
+      throw err;
+    }
+    await conn.query("UPDATE pending_registrations SET status = 'completed', customer_id = ?, completed_at = NOW(), password_hash = NULL WHERE id = ?", [id, p.id]);
+    await conn.query("UPDATE otp_verifications SET status = 'used', customer_id = ? WHERE id = ?", [id, otp.id]);
+    await conn.query("UPDATE sms_logs SET customer_id = ? WHERE otp_id = ?", [id, otp.id]);
+    return id;
+  });
+  const c = await loadCustomer(out);
+  // the account is active whatever happens to the email: queueEmail never throws and sends in the background
+  if (c.email) await queueEmail({ key: "registration_confirmation", to: c.email, vars: customerVars(c), customerId: c.id, trigger: "registration",
+    dedupeKey: `registration_confirmation:${c.id}` });
+  await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember) });
+  res.status(201).json({ customer: publicCustomer(c) });
+}));
+
+const OTP_PURPOSES = { registration: "registration", reset: "password_reset", password_reset: "password_reset" };
+router.post("/auth/otp/resend", limit(15, 15, "Too many requests. Please wait a few minutes."), ah(async (req, res) => {
+  const purpose = OTP_PURPOSES[req.body?.purpose] || "registration";
+  if (purpose === "registration") {
+    const [[p]] = await pool.query(
+      "SELECT p.status, p.expires_at FROM otp_verifications o JOIN pending_registrations p ON p.id = o.pending_id WHERE o.public_id = ?", [String(req.body?.session || "")]);
+    if (p && (p.status !== "pending" || new Date(p.expires_at) <= new Date())) throw new HttpError(410, "This sign-up has expired. Please fill in the form again.", { code: "registration_expired" });
+  }
+  const { row, sent, cfg } = await resendOtp(req.body?.session, { purpose, ip: clientIp(req) });
+  res.json({ ...sessionInfo(row, cfg), sent,
+    message: sent ? "We've sent you a new code. The previous code no longer works." : "We couldn't send the code just now. Please try again in a moment." });
+}));
+
+/* ---------- sign in / out ---------- */
 router.post("/auth/login", authLimit, ah(async (req, res) => {
-  const { email, phone } = parseContact(req.body?.contact);
+  const phone = parseMobile(req.body?.mobile);
   const pw = typeof req.body?.password === "string" ? req.body.password : "";
-  const [rows] = await pool.query("SELECT * FROM customers WHERE " + (email ? "email = ?" : "phone = ?"), [email || phone]);
+  const [rows] = await pool.query("SELECT * FROM customers WHERE phone = ?", [phone.e164]);
   const c = rows[0];
-  const fail = new HttpError(401, "Wrong mobile number/email or password");
+  const fail = new HttpError(401, "Wrong mobile number or password");
   if (!c || !c.password) { await bcrypt.compare(pw, DUMMY_HASH); throw fail; }
-  if (!c.is_active) throw new HttpError(403, "This account has been disabled. Please contact us.");
-  if (c.locked_until && new Date(c.locked_until) > new Date()) throw new HttpError(429, "Too many wrong passwords. Please try again in 15 minutes.");
+  if (c.locked_until && new Date(c.locked_until) > new Date()) throw new HttpError(429, "Too many wrong passwords. Please try again in 15 minutes, or reset your password.");
   if (!(await bcrypt.compare(pw, c.password))) {
     await pool.query(
       "UPDATE customers SET failed_attempts = failed_attempts + 1, locked_until = IF(failed_attempts >= 5, NOW() + INTERVAL 15 MINUTE, NULL) WHERE id = ?", [c.id]);
     throw fail;
   }
-  await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL, last_login_at = NOW() WHERE id = ?", [c.id]);
-  const fresh = await loadCustomer(c.id);
-  res.json({ token: signCustomerToken(fresh), customer: publicCustomer(fresh) });
+  // only someone who knows the password learns that the account is suspended
+  if (!c.is_active) throw new HttpError(403, "This account has been suspended. Please contact us for help.", { code: "suspended" });
+  await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL WHERE id = ?", [c.id]);
+  await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember) });
+  res.json({ customer: publicCustomer(await loadCustomer(c.id)) });
 }));
 
-router.get("/auth/me", requireCustomer, ah(async (req, res) => res.json({ customer: publicCustomer(req.customer) })));
+router.get("/auth/me", requireCustomer, ah(async (req, res) => { res.set("Cache-Control", "no-store"); res.json({ customer: publicCustomer(req.customer) }); }));
 
-// ends every session, on every device (this one included)
-router.post("/auth/logout-everywhere", requireCustomer, ah(async (req, res) => {
-  await pool.query("UPDATE customers SET token_version = token_version + 1 WHERE id = ?", [req.customer.id]);
+router.post("/auth/logout", ah(async (req, res) => {
+  await endCustomerSession(req, res, "logout");
   res.json({ ok: true });
 }));
 
-/* ---------- forgotten password ---------- */
-const GENERIC_RESET = "If an account matches, we've emailed a link to reset the password. It may take a minute to arrive (check spam too).";
+// ends every session, on every device (this one included)
+router.post("/auth/logout-everywhere", requireCustomer, ah(async (req, res) => {
+  await revokeCustomerSessions(req.customer.id, "logout_everywhere");
+  await endCustomerSession(req, res, "logout_everywhere");
+  res.json({ ok: true });
+}));
+
+/* ---------- forgotten password (mobile OTP) ----------
+   1. POST /auth/forgot         { mobile }              → a code is texted if the number has an account
+   2. POST /auth/forgot/verify  { session, otp }        → a short-lived reset token
+   3. POST /auth/forgot/reset   { session, resetToken, password, confirmPassword }
+   Step 1 answers the same way whether or not the number has an account. */
+const RESET_TOKEN_MINUTES = 10;
+const GENERIC_FORGOT = "If an account uses this number, we've sent it a verification code.";
 
 router.post("/auth/forgot", limit(15, 5, "Too many reset requests. Please wait 15 minutes."), ah(async (req, res) => {
-  const { email, phone } = parseContact(req.body?.contact);
-  const [rows] = await pool.query("SELECT * FROM customers WHERE " + (email ? "email = ?" : "phone = ?"), [email || phone]);
-  const c = rows[0];
-  // the reply is the same whether or not the account exists, so this can't be used to find out who has an account
-  if (!c || !c.is_active || !c.email) {
-    return res.json({ ok: true, message: phone && c && !c.email
-      ? "This account has no email address, so we can't send a reset link. Please message us on WhatsApp and we'll help."
-      : GENERIC_RESET });
-  }
-  const [[{ recent }]] = await pool.query(
-    "SELECT COUNT(*) AS recent FROM password_resets WHERE customer_id = ? AND created_at > NOW() - INTERVAL 1 HOUR", [c.id]);
-  if (recent < 3) {
-    const token = crypto.randomBytes(32).toString("hex");
-    const [r] = await pool.query("INSERT INTO password_resets (customer_id, token_hash, expires_at, ip) VALUES (?, ?, NOW() + INTERVAL ? MINUTE, ?)",
-      [c.id, sha256(token), RESET_MINUTES, clientIp(req)]);
-    const site = siteUrl(await getSettings());
-    await queueEmail({ key: "password_reset", to: c.email, customerId: c.id, trigger: "customer", dedupeKey: `password_reset:${r.insertId}`,
-      vars: { customer_name: customerName(c), reset_url: `${site}/reset-password?token=${token}`, reset_expires_minutes: String(RESET_MINUTES) } });
-  }
-  res.json({ ok: true, message: GENERIC_RESET });
+  const phone = parseMobile(req.body?.mobile);
+  const [rows] = await pool.query("SELECT id, is_active FROM customers WHERE phone = ?", [phone.e164]);
+  const c = rows[0]?.is_active ? rows[0] : null;
+  const { row, cfg } = await startOtp({ purpose: "password_reset", phone: phone.e164, customerId: c?.id || null, ip: clientIp(req), decoy: !c });
+  res.json({ ...sessionInfo(row, cfg), message: GENERIC_FORGOT });
 }));
 
-router.post("/auth/reset", limit(15, 10, "Too many attempts. Please wait 15 minutes."), ah(async (req, res) => {
-  const token = str(req.body?.token, "token", { max: 100, pattern: /^[a-f0-9]{64}$/, msg: "This reset link isn't valid. Please ask for a new one." });
+router.post("/auth/forgot/verify", limit(15, 20, "Too many attempts. Please wait 15 minutes."), ah(async (req, res) => {
+  const token = crypto.randomBytes(32).toString("hex");
+  await inTransaction(async (conn) => {
+    const otp = await verifyOtp(conn, req.body?.session, req.body?.otp, { purpose: "password_reset" });
+    await conn.query("UPDATE otp_verifications SET reset_token_hash = ?, reset_expires_at = NOW() + INTERVAL ? MINUTE WHERE id = ?",
+      [sha256(token), RESET_TOKEN_MINUTES, otp.id]);
+  });
+  res.json({ resetToken: token, expiresIn: RESET_TOKEN_MINUTES * 60 });
+}));
+
+router.post("/auth/forgot/reset", limit(15, 10, "Too many attempts. Please wait 15 minutes."), ah(async (req, res) => {
   const pw = password(req.body?.password);
-  const [rows] = await pool.query(
-    `SELECT r.id, r.customer_id FROM password_resets r JOIN customers c ON c.id = r.customer_id
-     WHERE r.token_hash = ? AND r.used_at IS NULL AND r.expires_at > NOW() AND c.is_active = 1`, [sha256(token)]);
-  if (!rows[0]) throw new HttpError(400, "This reset link has expired or was already used. Please ask for a new one.");
-  const id = rows[0].customer_id;
-  await pool.query("UPDATE customers SET password = ?, token_version = token_version + 1, failed_attempts = 0, locked_until = NULL, last_login_at = NOW() WHERE id = ?",
-    [await bcrypt.hash(pw, 12), id]);
-  // this link and any other open links for the account stop working
-  await pool.query("UPDATE password_resets SET used_at = NOW() WHERE customer_id = ? AND used_at IS NULL", [id]);
+  confirmMatches(pw, req.body?.confirmPassword);
+  const token = String(req.body?.resetToken || "");
+  const id = await inTransaction(async (conn) => {
+    const [[o]] = await conn.query("SELECT * FROM otp_verifications WHERE public_id = ? AND purpose = 'password_reset' FOR UPDATE", [String(req.body?.session || "")]);
+    const valid = o && o.status === "verified" && o.customer_id && o.reset_token_hash && /^[a-f0-9]{64}$/.test(token)
+      && crypto.timingSafeEqual(Buffer.from(o.reset_token_hash), Buffer.from(sha256(token))) && new Date(o.reset_expires_at) > new Date();
+    if (!valid) throw new HttpError(410, "This reset has expired. Please start again.", { code: "reset_expired" });
+    const [[c]] = await conn.query("SELECT id, is_active FROM customers WHERE id = ? FOR UPDATE", [o.customer_id]);
+    if (!c?.is_active) throw new HttpError(410, "This reset has expired. Please start again.", { code: "reset_expired" });
+    await conn.query(
+      `UPDATE customers SET password = ?, token_version = token_version + 1, failed_attempts = 0, locked_until = NULL,
+         phone_verified_at = COALESCE(phone_verified_at, NOW()) WHERE id = ?`, [await bcrypt.hash(pw, 12), c.id]);
+    await conn.query("UPDATE otp_verifications SET status = 'used', reset_token_hash = NULL WHERE id = ?", [o.id]);
+    await revokeCustomerSessions(c.id, "password_reset", conn);
+    return c.id;
+  });
   const c = await loadCustomer(id);
-  await queueEmail({ key: "password_changed", to: c.email, vars: { customer_name: customerName(c) }, customerId: id, trigger: "customer",
+  await queueEmail({ key: "password_changed", to: c.email, vars: customerVars(c), customerId: id, trigger: "customer",
     dedupeKey: `password_changed:${id}:${c.token_version}` });
-  res.json({ token: signCustomerToken(c), customer: publicCustomer(c) });
+  await startCustomerSession(req, res, id, { remember: false });
+  res.json({ customer: publicCustomer(c) });
 }));
 
-/* ---------- profile ---------- */
+/* ---------- profile ----------
+   The mobile number is the sign-in and can't be changed here (it would need verifying again); the email can,
+   with the current password. */
 router.put("/account/profile", requireCustomer, authLimit, ah(async (req, res) => {
   const b = req.body || {};
   const c = await loadCustomer(req.customer.id);
   const name = str(b.name, "name", { min: 2, max: 100 });
   const email = str(b.email, "email", { optional: true, max: 150, pattern: EMAIL, msg: "Check the email address" })?.toLowerCase() || null;
-  let phone = null;
-  if (b.phone) { phone = mobile10(b.phone); if (!phone) throw new HttpError(400, "Enter a valid 10-digit mobile number", { field: "phone" }); }
-  if (!email && !phone) throw new HttpError(400, "Keep at least a mobile number or an email, so you can sign in", { field: "email" });
-
-  // changing how you sign in needs the current password, so someone at an unlocked device can't take the account over
-  const contactChanged = email !== (c.email || null) || phone !== (c.phone || null);
-  if (contactChanged) {
+  const emailChanged = email !== (c.email || null);
+  if (emailChanged) {
     const current = typeof b.currentPassword === "string" ? b.currentPassword : "";
-    if (!current) throw new HttpError(400, "Enter your current password to change your email or mobile number", { field: "currentPassword" });
+    if (!current) throw new HttpError(400, "Enter your current password to change your email", { field: "currentPassword" });
     if (!(await bcrypt.compare(current, c.password || DUMMY_HASH))) throw new HttpError(400, "Your current password is wrong", { field: "currentPassword" });
-    const [dupe] = await pool.query("SELECT id FROM customers WHERE id <> ? AND ((? IS NOT NULL AND email = ?) OR (? IS NOT NULL AND phone = ?))",
-      [c.id, email, email, phone, phone]);
-    if (dupe.length) throw new HttpError(409, "Another account already uses this email or mobile number");
+    if (email) {
+      const [dupe] = await pool.query("SELECT id FROM customers WHERE id <> ? AND email = ?", [c.id, email]);
+      if (dupe.length) throw new HttpError(409, "Another account already uses this email", { field: "email" });
+    }
   }
-  await pool.query("UPDATE customers SET name = ?, email = ?, phone = ? WHERE id = ?", [name, email, phone, c.id]);
-  if (email && email !== c.email) {
-    await queueEmail({ key: "welcome", to: email, vars: { customer_name: customerName({ name }), customer_email: email }, customerId: c.id,
+  await pool.query(`UPDATE customers SET name = ?, email = ?${emailChanged ? ", email_verified_at = NULL" : ""} WHERE id = ?`, [name, email, c.id]);
+  if (email && emailChanged) {
+    const fresh = await loadCustomer(c.id);
+    await queueEmail({ key: "welcome", to: email, vars: customerVars(fresh), customerId: c.id,
       trigger: "customer", dedupeKey: `welcome:${c.id}` });   // only if they never had a welcome email before
   }
   res.json({ customer: publicCustomer(await loadCustomer(c.id)) });
@@ -167,15 +246,18 @@ router.put("/account/profile", requireCustomer, authLimit, ah(async (req, res) =
 router.put("/account/password", requireCustomer, authLimit, ah(async (req, res) => {
   const current = typeof req.body?.currentPassword === "string" ? req.body.currentPassword : "";
   const next = password(req.body?.newPassword, "newPassword");
+  if (req.body?.confirmPassword !== undefined) confirmMatches(next, req.body.confirmPassword);
   const c = await loadCustomer(req.customer.id);
   if (!(await bcrypt.compare(current, c.password || DUMMY_HASH))) throw new HttpError(400, "Your current password is wrong", { field: "currentPassword" });
   if (current === next) throw new HttpError(400, "Choose a password different from the current one", { field: "newPassword" });
   await pool.query("UPDATE customers SET password = ?, token_version = token_version + 1 WHERE id = ?", [await bcrypt.hash(next, 12), c.id]);
-  const fresh = await loadCustomer(c.id);
-  await queueEmail({ key: "password_changed", to: fresh.email, vars: { customer_name: customerName(fresh) }, customerId: c.id, trigger: "customer",
-    dedupeKey: `password_changed:${c.id}:${fresh.token_version}` });
   // other devices are signed out; this one gets a fresh session
-  res.json({ token: signCustomerToken(fresh), customer: publicCustomer(fresh) });
+  await revokeCustomerSessions(c.id, "password_change");
+  await startCustomerSession(req, res, c.id, { remember: false });
+  const fresh = await loadCustomer(c.id);
+  await queueEmail({ key: "password_changed", to: fresh.email, vars: customerVars(fresh), customerId: c.id, trigger: "customer",
+    dedupeKey: `password_changed:${c.id}:${fresh.token_version}` });
+  res.json({ customer: publicCustomer(fresh) });
 }));
 
 /* ---------- profile photo ---------- */

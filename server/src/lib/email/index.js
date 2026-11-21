@@ -10,7 +10,7 @@ import { getTransport, safeError } from "./transport.js";
 
 const RETRY_MINUTES = [2, 10, 30];
 const MAX_ATTEMPTS = RETRY_MINUTES.length + 1;
-export const EMAIL_STATUS = ["queued", "sending", "sent", "failed", "skipped"];
+export const EMAIL_STATUS = ["queued", "sending", "sent", "delivered", "failed", "bounced", "skipped"];
 
 const money = (v) => "₹" + Number(v || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
 const longDate = (v) => new Date(v).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
@@ -26,6 +26,7 @@ export function emailSettings(s) {
     from_name: s["email.from_name"] || s.store_name || "NawaraTrend",
     from_address: s["email.from_address"] || `info@${domain}`,
     reply_to: s["email.reply_to"] || "",
+    company_name: s["email.company_name"] || "Nawara Trend",
     support_email: s["email.support_email"] || s["email.reply_to"] || s["email.from_address"] || `info@${domain}`,
   };
 }
@@ -50,8 +51,20 @@ export async function getTemplate(key, conn = pool) {
 export function baseVars(s) {
   const site = siteUrl(s), es = emailSettings(s);
   return {
-    store_name: s.store_name || "NawaraTrend", support_email: es.support_email, support_phone: s.phone || "",
-    site_url: site, account_url: `${site}/account`, login_url: `${site}/login`, address: s.address || "",
+    store_name: s.store_name || "NawaraTrend", company_name: s["email.company_name"] || "Nawara Trend",
+    support_email: es.support_email, support_phone: s.phone || "",
+    site_url: site, website_url: site, account_url: `${site}/account`, login_url: `${site}/login`, address: s.address || "",
+  };
+}
+
+/** Placeholders about the customer themselves, for account emails. */
+export function customerVars(c) {
+  const d = String(c.phone || "").replace(/\D/g, "").slice(-10);
+  return {
+    customer_name: (c.name || "").split(" ")[0] || "there",
+    customer_email: c.email || "", email: c.email || "", customer_phone: d,
+    mobile_number: d.length === 10 ? `+91 ${d.slice(0, 5)} ${d.slice(5)}` : "",
+    registration_date: c.created_at ? longDate(c.created_at) : longDate(new Date()),
   };
 }
 

@@ -6,7 +6,9 @@ import { pool } from "../../config/db.js";
 import { ah, HttpError, str, oneOf, bool, paging, URL_RE } from "../../lib/http.js";
 import { audit } from "../../lib/store.js";
 import { NEXT, RESTOCK, NOT_SALE, STATUS_KEYS, PAYMENT_KEYS, STATUS_EMAIL, PAYMENT_EMAIL } from "../../lib/orders.js";
-import { queueOrderEmail, getTemplate } from "../../lib/email/index.js";
+import { queueOrderEmail, getTemplate, queueEmail, customerVars } from "../../lib/email/index.js";
+import { requirePerm, revokeCustomerSessions } from "../../middleware/auth.js";
+import { can } from "../../lib/permissions.js";
 import { avatarUrl } from "../account.js";
 
 const router = express.Router();
@@ -178,50 +180,98 @@ router.patch("/orders/:id", ah(async (req, res) => {
 }));
 
 /* ---------- Customers ---------- */
-router.get("/customers", ah(async (req, res) => {
+const customerRow = (r) => ({ ...r, is_active: !!r.is_active, spent: Number(r.spent || 0),
+  status: r.is_active ? "active" : "suspended", mobile_verified: !!r.phone_verified_at,
+  email_verified: r.email ? (r.email_verified_at ? "yes" : "no") : "not_provided" });
+
+router.get("/customers", requirePerm("customers.view"), ah(async (req, res) => {
   const { page, limit, offset } = paging(req.query);
+  // sign-ups still waiting for their mobile code are not accounts yet; they're listed separately
+  if (req.query.status === "pending") {
+    const where = ["p.status = 'pending'", "p.expires_at > NOW()"], args = [];
+    if (req.query.search) { const s = `%${req.query.search}%`; where.push("(p.name LIKE ? OR p.email LIKE ? OR p.phone LIKE ?)"); args.push(s, s, s); }
+    const w = "WHERE " + where.join(" AND ");
+    const [rows] = await pool.query(
+      `SELECT p.id, p.name, p.email, p.phone, p.created_at, p.expires_at,
+         (SELECT o.status FROM otp_verifications o WHERE o.pending_id = p.id ORDER BY o.id DESC LIMIT 1) AS otp_status
+       FROM pending_registrations p ${w} ORDER BY p.created_at DESC LIMIT ? OFFSET ?`, [...args, limit, offset]);
+    const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM pending_registrations p ${w}`, args);
+    return res.json({ pending: true, rows: rows.map((r) => ({ ...r, status: "pending", mobile_verified: false })), total, page, limit });
+  }
   const where = [], args = [];
-  if (req.query.search) { const s = `%${req.query.search}%`; where.push("(c.name LIKE ? OR c.email LIKE ? OR c.phone LIKE ?)"); args.push(s, s, s); }
+  if (req.query.search) { const s = `%${req.query.search}%`; where.push("(c.name LIKE ? OR c.email LIKE ? OR c.phone LIKE ? OR c.id = ?)"); args.push(s, s, s, Number(req.query.search) || 0); }
   if (req.query.active === "0" || req.query.active === "1") { where.push("c.is_active = ?"); args.push(Number(req.query.active)); }
+  if (req.query.status === "active") where.push("c.is_active = 1");
+  if (req.query.status === "suspended") where.push("c.is_active = 0");
+  if (req.query.mobile_verified === "1") where.push("c.phone_verified_at IS NOT NULL");
+  if (req.query.mobile_verified === "0") where.push("c.phone_verified_at IS NULL");
   const w = where.length ? "WHERE " + where.join(" AND ") : "";
-  const sorts = { newest: "c.created_at DESC", spent: "spent DESC", orders: "orders DESC", name: "c.name" };
+  const sorts = { newest: "c.created_at DESC", spent: "spent DESC", orders: "orders DESC", name: "c.name", login: "c.last_login_at DESC" };
   const [rows] = await pool.query(
-    `SELECT c.id, c.name, c.email, c.phone, c.is_active, c.created_at, c.last_login_at,
+    `SELECT c.id, c.name, c.email, c.email_verified_at, c.phone, c.phone_verified_at, c.is_active, c.created_at, c.last_login_at,
        COUNT(o.id) AS orders, COALESCE(SUM(IF(o.status NOT IN (${SALE_SQL}), o.total, 0)),0) AS spent, MAX(o.created_at) AS last_order_at
      FROM customers c LEFT JOIN orders o ON o.customer_id = c.id ${w} GROUP BY c.id ORDER BY ${sorts[req.query.sort] || sorts.newest} LIMIT ? OFFSET ?`,
     [...args, limit, offset]);
   const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM customers c ${w}`, args);
-  res.json({ rows: rows.map((r) => ({ ...r, is_active: !!r.is_active, spent: Number(r.spent) })), total, page, limit });
+  const [[{ pending }]] = await pool.query("SELECT COUNT(*) AS pending FROM pending_registrations WHERE status = 'pending' AND expires_at > NOW()");
+  res.json({ rows: rows.map(customerRow), total, page, limit, pendingCount: pending });
 }));
 
-router.get("/customers/:id", ah(async (req, res) => {
+router.get("/customers/:id", requirePerm("customers.view"), ah(async (req, res) => {
   const [rows] = await pool.query(
-    `SELECT c.id, c.name, c.email, c.phone, c.is_active, c.notes, c.created_at, c.last_login_at, c.locked_until, a.updated_at AS avatar_at
+    `SELECT c.id, c.name, c.email, c.email_verified_at, c.phone, c.phone_verified_at, c.is_active, c.notes, c.created_at, c.last_login_at, c.last_login_ip,
+       c.locked_until, a.updated_at AS avatar_at
      FROM customers c LEFT JOIN customer_avatars a ON a.customer_id = c.id WHERE c.id = ?`, [req.params.id]);
   if (!rows[0]) throw new HttpError(404, "Customer not found");
+  const id = rows[0].id;
   const [emails] = await pool.query(
-    "SELECT id, template_key, recipient, subject, status, order_number, created_at FROM email_logs WHERE customer_id = ? ORDER BY id DESC LIMIT 50", [req.params.id]);
+    "SELECT id, template_key, recipient, subject, status, order_number, created_at FROM email_logs WHERE customer_id = ? ORDER BY id DESC LIMIT 50", [id]);
   const [orders] = await pool.query(
-    "SELECT id, order_number, status, payment_method, payment_status, total, created_at FROM orders WHERE customer_id = ? ORDER BY created_at DESC", [req.params.id]);
+    "SELECT id, order_number, status, payment_method, payment_status, total, created_at FROM orders WHERE customer_id = ? ORDER BY created_at DESC", [id]);
   const valid = orders.filter((o) => !NOT_SALE.includes(o.status));
   const spent = valid.reduce((s, o) => s + Number(o.total), 0);
   const [addresses] = await pool.query(
     `SELECT ship_line1, ship_line2, ship_city, ship_state, ship_pin, MAX(created_at) AS last_used FROM orders WHERE customer_id = ?
-     GROUP BY ship_line1, ship_line2, ship_city, ship_state, ship_pin ORDER BY last_used DESC LIMIT 5`, [req.params.id]);
+     GROUP BY ship_line1, ship_line2, ship_city, ship_state, ship_pin ORDER BY last_used DESC LIMIT 5`, [id]);
+  // OTP events: sign-up and password resets for this account (no codes are ever stored)
+  const [otp] = await pool.query(
+    `SELECT o.id, o.purpose, o.status, o.attempts, o.total_attempts, o.resends, o.created_at, o.verified_at,
+       (SELECT l.status FROM sms_logs l WHERE l.otp_id = o.id ORDER BY l.id DESC LIMIT 1) AS sms_status
+     FROM otp_verifications o WHERE o.customer_id = ? AND o.decoy = 0 ORDER BY o.id DESC LIMIT 30`, [id]);
+  const [sessions] = await pool.query(
+    `SELECT id, ip, user_agent, remember, created_at, last_seen_at, expires_at, revoked_at, revoke_reason
+     FROM customer_sessions WHERE customer_id = ? ORDER BY id DESC LIMIT 20`, [id]);
+  const [adminLog] = await pool.query(
+    `SELECT l.id, l.action, l.details, l.created_at, a.name AS admin_name FROM audit_logs l LEFT JOIN admins a ON a.id = l.admin_id
+     WHERE l.entity = 'customer' AND l.entity_id = ? ORDER BY l.id DESC LIMIT 30`, [String(id)]);
   const { avatar_at, ...c } = rows[0];
-  res.json({ ...c, avatar: avatarUrl(rows[0]), emails, is_active: !!c.is_active, orders: orders.map(money),
-    stats: { orders: orders.length, spent, average: valid.length ? Math.round(spent / valid.length) : 0 }, addresses });
+  const canLogs = can(req.admin, "logs.view");
+  res.json({ ...customerRow(c), avatar: avatarUrl(rows[0]), emails: canLogs ? emails : [], orders: orders.map(money),
+    stats: { orders: orders.length, spent, average: valid.length ? Math.round(spent / valid.length) : 0 }, addresses,
+    otp: canLogs ? otp : [], sessions: sessions.map((s) => ({ ...s, active: !s.revoked_at && new Date(s.expires_at) > new Date() })), adminLog });
 }));
 
-router.patch("/customers/:id", ah(async (req, res) => {
+router.patch("/customers/:id", requirePerm("customers.view"), ah(async (req, res) => {
   const set = {};
-  if (req.body?.is_active !== undefined) set.is_active = bool(req.body.is_active) ? 1 : 0;
+  if (req.body?.is_active !== undefined) {
+    if (!can(req.admin, "customers.status")) throw new HttpError(403, "You don't have permission to suspend or reactivate accounts");
+    set.is_active = bool(req.body.is_active) ? 1 : 0;
+  }
   if (req.body?.notes !== undefined) set.notes = str(req.body.notes, "notes", { optional: true, max: 2000 });
   if (!Object.keys(set).length) throw new HttpError(400, "Nothing to update");
-  const [r] = await pool.query("UPDATE customers SET ? WHERE id = ?", [set, req.params.id]);
-  if (!r.affectedRows) throw new HttpError(404, "Customer not found");
-  await audit(req, set.is_active === 0 ? "customer.disable" : set.is_active === 1 ? "customer.enable" : "customer.update", "customer", req.params.id, set);
-  res.json({ ok: true });
+  const [[before]] = await pool.query("SELECT * FROM customers WHERE id = ?", [req.params.id]);
+  if (!before) throw new HttpError(404, "Customer not found");
+  await pool.query("UPDATE customers SET ? WHERE id = ?", [set, before.id]);
+  const statusChanged = set.is_active !== undefined && set.is_active !== before.is_active;
+  if (statusChanged && !set.is_active) await revokeCustomerSessions(before.id, "suspended");
+  await audit(req, set.is_active === 0 ? "customer.disable" : set.is_active === 1 ? "customer.enable" : "customer.update", "customer", before.id,
+    set.notes !== undefined ? { notes: "updated" } : set);
+  let emailed = false;
+  if (statusChanged && before.email) {
+    const key = set.is_active ? "account_activated" : "account_deactivated";
+    emailed = !!(await queueEmail({ key, to: before.email, vars: customerVars(before), customerId: before.id, trigger: "admin", adminId: req.admin.id }));
+  }
+  res.json({ ok: true, emailed });
 }));
 
 export default router;

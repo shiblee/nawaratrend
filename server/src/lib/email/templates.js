@@ -7,7 +7,7 @@
      {{#if tracking_number}} … {{/if}}  shown only when the placeholder has a value (no nesting)
    order_items is the one placeholder that inserts ready-made HTML (a table built by the server). */
 
-export const COMMON_VARS = ["customer_name", "store_name", "support_email", "support_phone", "site_url", "account_url"];
+export const COMMON_VARS = ["customer_name", "store_name", "company_name", "support_email", "support_phone", "site_url", "website_url", "account_url"];
 export const ORDER_VARS = [
   "order_number", "order_date", "order_status", "order_total", "order_subtotal", "delivery_fee", "payment_method", "payment_status",
   "order_items", "shipping_address", "tracking_number", "courier_name", "tracking_url", "estimated_delivery_date",
@@ -16,7 +16,9 @@ export const ORDER_VARS = [
 export const VAR_HELP = {
   customer_name: "Customer's name", customer_email: "Customer's email", customer_phone: "Customer's mobile",
   store_name: "Store name (Settings)", support_email: "Support email (Email settings)", support_phone: "Store phone (Settings)",
-  site_url: "Website address", account_url: "Link to My account", login_url: "Link to the sign-in page",
+  site_url: "Website address", website_url: "Website address (same as site_url)", company_name: "Company name (Nawara Trend)",
+  mobile_number: "Customer's registered mobile, e.g. +91 98765 43210", email: "Customer's email address", registration_date: "Date the account was created",
+  verification_url: "Email verification link (future use)", account_url: "Link to My account", login_url: "Link to the sign-in page",
   reset_url: "One-time password reset link", reset_expires_minutes: "Minutes until the reset link expires",
   order_number: "Order number, e.g. NT2610123", order_date: "Date the order was placed", order_status: "Current order status",
   order_total: "Order total, e.g. ₹1,299", order_subtotal: "Items subtotal", delivery_fee: "Delivery charge (or Free)",
@@ -41,35 +43,67 @@ const orderEmail = (heading, intro, extra = "", label = "Track your order") =>
   `<h1>${heading}</h1>\n<p>Hi {{customer_name}},</p>\n<p>${intro}</p>\n${teamNote}\n${extra}\n${button("order_details_url", label)}\n${summary}`;
 
 export const TEMPLATES = {
+  registration_confirmation: {
+    name: "Registration confirmation", category: "account", vars: ["mobile_number", "email", "registration_date", "login_url"],
+    description: "Sent after a new customer verifies their mobile number, if they gave an email address.",
+    subject: "Welcome to {{company_name}} – Your Account Has Been Created Successfully",
+    html: `<h1>Welcome to {{company_name}}!</h1>
+<p>Dear {{customer_name}},</p>
+<p>We are delighted to have you with us.</p>
+<p>Your account has been successfully created, and your mobile number has been verified.</p>
+<p>You can now explore our latest collections and enjoy a seamless shopping experience.</p>
+<p><b>Registered Mobile:</b> {{mobile_number}}<br><b>Visit Our Store:</b> <a href="{{website_url}}">{{website_url}}</a></p>
+${button("website_url", "Start shopping")}
+<p>Thank you for choosing {{company_name}}.</p>
+<p>Warm Regards,<br>Team {{company_name}}</p>`,
+  },
   welcome: {
-    name: "Welcome (new account)", category: "account", vars: ["customer_email"],
-    description: "Sent when someone creates an account with an email address.",
-    subject: "Welcome to {{store_name}}, {{customer_name}}!",
+    name: "Welcome email", category: "account", vars: ["customer_email", "mobile_number"],
+    description: "Sent when a customer adds an email address to an existing account for the first time.",
+    subject: "Welcome to {{company_name}}, {{customer_name}}!",
     html: `<h1>Welcome, {{customer_name}}!</h1>
-<p>Your {{store_name}} account has been created successfully.</p>
+<p>Your {{company_name}} account now has this email address, so we can send you order updates here.</p>
 <p>From your account you can check out faster, see every order you've placed and follow each delivery step by step.</p>
 ${button("account_url", "Go to my account")}
-<p>You signed up with <b>{{customer_email}}</b>. If this wasn't you, just reply to this email and we'll sort it out.</p>`,
-  },
-  password_reset: {
-    name: "Password reset link", category: "account", essential: true, vars: ["reset_url", "reset_expires_minutes"],
-    description: "Sent when a customer asks to reset a forgotten password. Can't be turned off.",
-    subject: "Reset your {{store_name}} password",
-    html: `<h1>Reset your password</h1>
-<p>Hi {{customer_name}},</p>
-<p>We received a request to reset the password for your {{store_name}} account. Click the button below to choose a new one.</p>
-${button("reset_url", "Choose a new password")}
-<p>This link works once and expires in {{reset_expires_minutes}} minutes. If you didn't ask for this, you can ignore this email: your password stays the same.</p>`,
+<p>If this wasn't you, just reply to this email and we'll sort it out.</p>`,
   },
   password_changed: {
-    name: "Password changed", category: "account", vars: ["login_url"],
-    description: "Security notice sent after the password is changed or reset.",
-    subject: "Your {{store_name}} password was changed",
+    name: "Password changed", category: "account", essential: true, vars: ["login_url", "mobile_number"],
+    description: "Security notice sent after the password is changed or reset. Can't be turned off.",
+    subject: "Your {{company_name}} password was changed",
     html: `<h1>Your password was changed</h1>
 <p>Hi {{customer_name}},</p>
-<p>The password for your {{store_name}} account was just changed, and you've been signed out on your other devices.</p>
-<p>If this was you, there's nothing else to do. If it wasn't, please reset your password straight away and contact us.</p>
+<p>The password for your {{company_name}} account ({{mobile_number}}) was just changed, and you've been signed out on your other devices.</p>
+<p>If this was you, there's nothing else to do. If it wasn't, please reset your password straight away using "Forgot password?" on the sign-in page, and contact us at {{support_email}}.</p>
 ${button("login_url", "Sign in")}`,
+  },
+  account_activated: {
+    name: "Account reactivated", category: "account", vars: ["mobile_number", "login_url"],
+    description: "Sent when the team reactivates a suspended account.",
+    subject: "Your {{company_name}} account is active again",
+    html: `<h1>Your account is active again</h1>
+<p>Hi {{customer_name}},</p>
+<p>Good news: your {{company_name}} account ({{mobile_number}}) has been reactivated. You can sign in and shop as usual.</p>
+${button("login_url", "Sign in")}`,
+  },
+  account_deactivated: {
+    name: "Account suspended", category: "account", vars: ["mobile_number"],
+    description: "Sent when the team suspends an account.",
+    subject: "Your {{company_name}} account has been suspended",
+    html: `<h1>Your account has been suspended</h1>
+<p>Hi {{customer_name}},</p>
+<p>Your {{company_name}} account ({{mobile_number}}) has been suspended, so you can't sign in at the moment. Any orders already placed are not affected.</p>
+<p>If you think this is a mistake, please contact us at {{support_email}}{{#if support_phone}} or call {{support_phone}}{{/if}}.</p>`,
+  },
+  email_verification: {
+    name: "Email address verification", category: "account", vars: ["verification_url", "email"], disabledByDefault: true, future: true,
+    description: "For future use: asks the customer to confirm their email address. Not sent yet.",
+    subject: "Confirm your email address for {{company_name}}",
+    html: `<h1>Confirm your email address</h1>
+<p>Hi {{customer_name}},</p>
+<p>Please confirm that {{email}} is your email address, so we can send you order updates.</p>
+${button("verification_url", "Confirm my email")}
+<p>If you didn't add this address to a {{company_name}} account, you can ignore this email.</p>`,
   },
   order_placed: {
     name: "Order placed", category: "order", vars: [],

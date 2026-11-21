@@ -11,7 +11,8 @@ import adminSystemRoutes from "./routes/admin/system.js";
 import adminSeoRoutes from "./routes/admin/seo.js";
 import adminEmailRoutes from "./routes/admin/emails.js";
 import seoRoutes, { storefrontHtml } from "./routes/seo.js";
-import { requireAdmin } from "./middleware/auth.js";
+import { requireAdmin, csrfProtect } from "./middleware/auth.js";
+import adminCommRoutes from "./routes/admin/communication.js";
 import { HttpError } from "./lib/http.js";
 
 const app = express();
@@ -51,7 +52,8 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors({ origin: (origin, cb) => cb(null, !origin || origins.includes(origin)), maxAge: 600 }));
+// credentials: the storefront's sign-in is an HttpOnly cookie (only these origins may send it)
+app.use(cors({ origin: (origin, cb) => cb(null, !origin || origins.includes(origin)), credentials: true, maxAge: 600 }));
 // profile photos arrive as an image inside JSON (resized in the browser first), so that one route may send more
 app.use("/api/store/account/avatar", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "100kb" }));
@@ -59,10 +61,11 @@ app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-app.use("/api/store", storeRoutes, accountRoutes);
+// every change on the storefront API (sign-in, orders, contact form…) must carry the CSRF header
+app.use("/api/store", csrfProtect, storeRoutes, accountRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use(seoRoutes);   // /sitemap.xml, /robots.txt, /api/store/seo
-app.use("/api/admin", requireAdmin, adminCatalogRoutes, adminOrderRoutes, adminSystemRoutes, adminSeoRoutes, adminEmailRoutes);
+app.use("/api/admin", requireAdmin, adminCatalogRoutes, adminOrderRoutes, adminSystemRoutes, adminSeoRoutes, adminEmailRoutes, adminCommRoutes);
 
 app.use("/api", (req, res) => res.status(404).json({ message: "Not found" }));
 

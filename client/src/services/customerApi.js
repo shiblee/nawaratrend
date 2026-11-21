@@ -1,18 +1,20 @@
 /* Customer accounts, orders and the contact form: the storefront's connection to the backend.
    Server routes live in server/src/routes/account.js and store.js:
-     POST /api/store/auth/register | login | forgot | reset | logout-everywhere,  GET /api/store/auth/me
+     POST /api/store/auth/register → { session } then /auth/register/verify { session, otp }   (mobile OTP sign-up)
+     POST /api/store/auth/login { mobile, password, remember } | logout | logout-everywhere,  GET /api/store/auth/me
+     POST /api/store/auth/forgot { mobile } → /auth/forgot/verify { session, otp } → /auth/forgot/reset
+     POST /api/store/auth/otp/resend { session, purpose }
      PUT  /api/store/account/profile | password | avatar,  DELETE /api/store/account/avatar
      GET  /api/store/orders/mine?status=&q=&page=,  GET /api/store/orders/mine/:number,  POST /api/store/orders/track
-     POST /api/store/orders  { items:[{productId, qty, size}], address, payment } -> { orderId, total, ... }
-     POST /api/store/contact { topic, name, contact, order, message }
-   `contact` is a mobile number or an email. The server recalculates every price itself. */
+     POST /api/store/orders, POST /api/store/contact
+   Sign-in is an HttpOnly cookie the page can't read (so it can't be stolen by a script). Every change also
+   sends the CSRF token from the nt_csrf cookie. Only the customer's name/contact is cached here, for display. */
 
 import { BASE_URL } from "./api.js";
 
 // Kept so pages can show demo wording if this is ever switched back to an offline blueprint.
 export const MOCK = false;
 
-const TOKEN_KEY = "nt_customer_token";
 const CUSTOMER_KEY = "nt_customer";
 
 const store = {
@@ -20,16 +22,30 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode: stay signed in for this visit only */ } },
   del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
+store.del("nt_customer_token");   // from the old sign-in, which kept a token in the browser
 
-async function request(path, options = {}) {
-  const token = store.get(TOKEN_KEY);
+const readCookie = (name) => {
+  const m = document.cookie.split("; ").find((c) => c.startsWith(name + "="));
+  return m ? decodeURIComponent(m.slice(name.length + 1)) : "";
+};
+let csrfPromise = null;
+async function csrfToken() {
+  const t = readCookie("nt_csrf");
+  if (t) return t;
+  csrfPromise = csrfPromise || fetch(`${BASE_URL}/store/auth/csrf`, { credentials: "include" }).then((r) => r.json()).then((d) => d.csrf).finally(() => { csrfPromise = null; });
+  return (await csrfPromise) || readCookie("nt_csrf");
+}
+
+async function request(path, options = {}, retried = false) {
+  const method = (options.method || "GET").toUpperCase();
   let res;
   try {
     res = await fetch(`${BASE_URL}${path}`, {
       ...options,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(method !== "GET" ? { "X-CSRF-Token": await csrfToken() } : {}),
         ...options.headers,
       },
     });
@@ -37,18 +53,21 @@ async function request(path, options = {}) {
     throw new Error("We couldn't reach our server. Please check your connection and try again.");
   }
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && token) logout();   // expired or revoked session
+  // CSRF cookie missing or out of date (e.g. cleared): get a fresh one and try once more
+  if (res.status === 403 && data.code === "csrf" && !retried) {
+    document.cookie = "nt_csrf=; Max-Age=0; Path=/";
+    return request(path, options, true);
+  }
+  if (res.status === 401 && currentCustomer() && !path.startsWith("/store/auth/login")) store.del(CUSTOMER_KEY);   // session ended
   if (!res.ok) {
     const err = new Error(data.message || "Something went wrong. Please try again.");
-    err.field = data.field;
-    err.status = res.status;
+    Object.assign(err, { field: data.field, status: res.status, code: data.code, data });
     throw err;
   }
   return data;
 }
 
-function saveSession({ token, customer }) {
-  store.set(TOKEN_KEY, token);
+function saveCustomer({ customer }) {
   store.set(CUSTOMER_KEY, JSON.stringify(customer));
   return customer;
 }
@@ -61,44 +80,51 @@ export function currentCustomer() {
   try { return JSON.parse(store.get(CUSTOMER_KEY)) || null; } catch { return null; }
 }
 
-export const login = async ({ contact, password }) =>
-  saveSession(await request("/store/auth/login", { method: "POST", body: JSON.stringify({ contact, password }) }));
+const send = (method, path, body) => request(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
 
-export const register = async ({ name, contact, password }) =>
-  saveSession(await request("/store/auth/register", { method: "POST", body: JSON.stringify({ name, contact, password }) }));
+/* ---------- sign in / sign up ---------- */
+export const login = async ({ mobile, password, remember }) => saveCustomer(await send("POST", "/store/auth/login", { mobile, password, remember }));
 
-export function logout() {
-  store.del(TOKEN_KEY);
+/** Step 1 of sign-up: returns the OTP session { session, mobile, length, expiresIn, resendIn, resendsLeft, sent }. */
+export const register = (data) => send("POST", "/store/auth/register", data);
+/** Step 2: the code from the text message. Creates the account and signs in. */
+export const verifyRegistration = async (session, otp, remember) => saveCustomer(await send("POST", "/store/auth/register/verify", { session, otp, remember }));
+export const resendOtp = (session, purpose) => send("POST", "/store/auth/otp/resend", { session, purpose });
+
+/* ---------- forgotten password ---------- */
+export const forgotPassword = (mobile) => send("POST", "/store/auth/forgot", { mobile });
+export const verifyResetCode = (session, otp) => send("POST", "/store/auth/forgot/verify", { session, otp });
+export const resetPassword = async (session, resetToken, password, confirmPassword) =>
+  saveCustomer(await send("POST", "/store/auth/forgot/reset", { session, resetToken, password, confirmPassword }));
+
+/** Signs out on this device (the server ends the session). */
+export async function logout() {
   store.del(CUSTOMER_KEY);
+  try { await send("POST", "/store/auth/logout"); } catch { /* signed out locally anyway */ }
 }
 
-/** Checks the saved session with the server; signs out locally if it's no longer valid. */
+/** Checks the session with the server; forgets the saved name if it's no longer valid. */
 export async function refreshCustomer() {
-  if (!store.get(TOKEN_KEY)) return null;
   try {
     const { customer } = await request("/store/auth/me");
     store.set(CUSTOMER_KEY, JSON.stringify(customer));
     return customer;
   } catch (err) {
-    if (err.status === 401) return null;
+    if (err.status === 401) { store.del(CUSTOMER_KEY); return null; }
     return currentCustomer();   // server unreachable: keep showing the saved name
   }
 }
 
-const send = (method, path, body) => request(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
-const keepCustomer = (data) => { if (data.token) saveSession(data); else store.set(CUSTOMER_KEY, JSON.stringify(data.customer)); return data.customer; };
-
 /* ---------- account ---------- */
-export const updateProfile = async (data) => keepCustomer(await send("PUT", "/store/account/profile", data));
+export const updateProfile = async (data) => saveCustomer(await send("PUT", "/store/account/profile", data));
 /** Signs out other devices; this one gets a fresh session. */
-export const changePassword = async (currentPassword, newPassword) => keepCustomer(await send("PUT", "/store/account/password", { currentPassword, newPassword }));
-export const uploadAvatar = async (image) => keepCustomer(await send("PUT", "/store/account/avatar", { image }));
-export const removeAvatar = async () => keepCustomer(await send("DELETE", "/store/account/avatar"));
+export const changePassword = async (currentPassword, newPassword, confirmPassword) =>
+  saveCustomer(await send("PUT", "/store/account/password", { currentPassword, newPassword, confirmPassword }));
+export const uploadAvatar = async (image) => saveCustomer(await send("PUT", "/store/account/avatar", { image }));
+export const removeAvatar = async () => saveCustomer(await send("DELETE", "/store/account/avatar"));
 export async function logoutEverywhere() {
-  try { await send("POST", "/store/auth/logout-everywhere"); } finally { logout(); }
+  try { await send("POST", "/store/auth/logout-everywhere"); } finally { store.del(CUSTOMER_KEY); }
 }
-export const forgotPassword = (contact) => send("POST", "/store/auth/forgot", { contact });
-export const resetPassword = async (token, password) => saveSession(await send("POST", "/store/auth/reset", { token, password }));
 
 /* ---------- orders ---------- */
 const qs = (p) => { const s = new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(); return s ? `?${s}` : ""; };

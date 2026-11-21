@@ -19,6 +19,10 @@ echo "Installing server libraries…"
 echo "Uploading to ${HOST}…"
 rsync -rlt --delete --exclude tmp/ -e "ssh -o BatchMode=yes" "$PKG/" "$HOST:nawaratrend/"
 
+# new tables and columns (safe to run every time: it only adds what's missing)
+echo "Updating the database…"
+ssh -o BatchMode=yes "$HOST" 'cd ~/nawaratrend/server && ~/nodejs/bin/node src/config/initDb.js' 2>&1 | grep -v tput || { echo "Database update failed: the app was NOT restarted"; exit 1; }
+
 echo "Restarting…"
 ssh -o BatchMode=yes "$HOST" 'export TERM=dumb; chmod -R u+rwX,go+rX ~/nawaratrend && chmod 600 ~/nawaratrend/server/.env && mkdir -p ~/nawaratrend/server/tmp && touch ~/nawaratrend/server/tmp/restart.txt' 2>&1 | grep -v tput || true
 

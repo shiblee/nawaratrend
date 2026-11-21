@@ -4,13 +4,23 @@ import express from "express";
 import { pool } from "../../config/db.js";
 import { ah, HttpError, str, bool, paging, EMAIL } from "../../lib/http.js";
 import { audit, getSettings } from "../../lib/store.js";
-import { requireRole } from "../../middleware/auth.js";
+import { requirePerm } from "../../middleware/auth.js";
 import { TEMPLATES, VAR_HELP, validate, itemsTable } from "../../lib/email/templates.js";
 import { getTemplate, render, queueEmail, processQueue, emailSettings, siteUrl, EMAIL_STATUS } from "../../lib/email/index.js";
 import { getTransport } from "../../lib/email/transport.js";
 
 const router = express.Router();
-router.use("/emails", requireRole("owner", "manager"));
+// templates and sender details: templates.edit; the log: logs.view; CSV: logs.export (see lib/permissions.js)
+router.use("/emails/templates", requirePerm("templates.edit"));
+router.use("/emails/settings", requirePerm("templates.edit"));
+router.use("/emails/logs", requirePerm("logs.view"));
+
+/** Keeps every saved version, so the History panel can show who changed what and bring an old version back. */
+async function saveVersion(key, action, adminId) {
+  const [[t]] = await pool.query("SELECT * FROM email_templates WHERE `key` = ?", [key]);
+  if (t) await pool.query("INSERT INTO email_template_versions (template_key, version, subject, html, text, enabled, action, admin_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [key, t.version, t.subject, t.html, t.text, t.enabled, action, adminId]);
+}
 
 /* ---------- templates ---------- */
 const money = (v) => "₹" + Number(v).toLocaleString("en-IN");
@@ -18,7 +28,9 @@ async function sampleVars() {
   const site = siteUrl(await getSettings());
   const items = [{ product_name: "Wireless Bluetooth Earbuds", qty: 1, line_total: 1299 }, { product_name: "Men's Cotton Slim-Fit Shirt", size: "L", qty: 2, line_total: 1398 }];
   return {
-    customer_name: "Priya", customer_email: "priya@example.com", customer_phone: "9876543210",
+    customer_name: "Priya", customer_email: "priya@example.com", customer_phone: "9876543210", email: "priya@example.com",
+    mobile_number: "+91 98765 43210", registration_date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
+    verification_url: `${site}/verify-email?token=sample`,
     reset_url: `${site}/reset-password?token=sample`, reset_expires_minutes: "30",
     order_number: "NT26101234", order_date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
     order_status: "Shipped", order_total: money(2697), order_subtotal: money(2697), delivery_fee: "Free", payment_method: "UPI", payment_status: "Paid",
@@ -75,6 +87,7 @@ router.put("/emails/templates/:key", ah(async (req, res) => {
     `INSERT INTO email_templates (\`key\`, subject, html, text, enabled, version, updated_by) VALUES (?, ?, ?, ?, ?, 1, ?)
      ON DUPLICATE KEY UPDATE subject = VALUES(subject), html = VALUES(html), text = VALUES(text), enabled = VALUES(enabled), version = version + 1, updated_by = VALUES(updated_by)`,
     [key, form.subject, form.html, form.text, enabled ? 1 : 0, req.admin.id]);
+  await saveVersion(key, "edit", req.admin.id);
   const changed = ["subject", "html", "text"].filter((k) => (before[k] || "") !== form[k]);
   await audit(req, "email_template.update", "email_template", key, { name: TEMPLATES[key].name, changed, ...(enabled !== before.enabled ? { enabled: [before.enabled, enabled] } : {}) });
   res.json(await getTemplate(key));
@@ -89,8 +102,17 @@ router.patch("/emails/templates/:key", ah(async (req, res) => {
     `INSERT INTO email_templates (\`key\`, subject, html, text, enabled, version, updated_by) VALUES (?, ?, ?, ?, ?, 1, ?)
      ON DUPLICATE KEY UPDATE enabled = VALUES(enabled), updated_by = VALUES(updated_by)`,
     [key, t.subject, t.html, t.text, enabled ? 1 : 0, req.admin.id]);
+  await saveVersion(key, enabled ? "enable" : "disable", req.admin.id);
   await audit(req, enabled ? "email_template.enable" : "email_template.disable", "email_template", key, { name: TEMPLATES[key].name });
   res.json({ ok: true });
+}));
+
+router.get("/emails/templates/:key/history", ah(async (req, res) => {
+  const key = templateKey(req.params.key);
+  const [rows] = await pool.query(
+    `SELECT v.id, v.version, v.subject, v.html, v.text, v.enabled, v.action, v.created_at, a.name AS admin_name
+     FROM email_template_versions v LEFT JOIN admins a ON a.id = v.admin_id WHERE v.template_key = ? ORDER BY v.id DESC LIMIT 50`, [key]);
+  res.json(rows.map((r) => ({ ...r, enabled: !!r.enabled })));
 }));
 
 // back to the built-in wording (on/off stays as it is)
@@ -102,6 +124,7 @@ router.post("/emails/templates/:key/reset", ah(async (req, res) => {
     `INSERT INTO email_templates (\`key\`, subject, html, text, enabled, version, updated_by) VALUES (?, ?, ?, ?, ?, 1, ?)
      ON DUPLICATE KEY UPDATE subject = VALUES(subject), html = VALUES(html), text = VALUES(text), version = version + 1, updated_by = VALUES(updated_by)`,
     [key, def.subject, def.html, def.text, t.enabled ? 1 : 0, req.admin.id]);
+  await saveVersion(key, "reset", req.admin.id);
   await audit(req, "email_template.reset", "email_template", key, { name: def.name });
   res.json(await getTemplate(key));
 }));
@@ -134,6 +157,7 @@ function logFilters(q) {
   const where = [], args = [];
   if (EMAIL_STATUS.includes(q.status)) { where.push("e.status = ?"); args.push(q.status); }
   if (TEMPLATES[q.template]) { where.push("e.template_key = ?"); args.push(q.template); }
+  if (q.event && TEMPLATES[q.event]) { where.push("e.template_key = ?"); args.push(q.event); }
   if (["account", "order", "test"].includes(q.category)) { where.push("e.category = ?"); args.push(q.category); }
   if (["registration", "order", "admin", "system", "test", "retry", "customer"].includes(q.trigger)) { where.push("e.trigger_source = ?"); args.push(q.trigger); }
   if (/^\d{4}-\d{2}-\d{2}$/.test(q.from || "")) { where.push("e.created_at >= ?"); args.push(q.from); }
@@ -148,7 +172,8 @@ function logFilters(q) {
   return { w: where.length ? "WHERE " + where.join(" AND ") : "", args };
 }
 const LIST_COLS = `e.id, e.template_key, e.category, e.recipient, e.customer_id, c.name AS customer_name, e.order_id, e.order_number, e.subject,
-  e.status, e.attempts, e.max_attempts, e.next_attempt_at, e.last_error, e.trigger_source, e.created_at, e.sent_at, a.name AS triggered_by_name`;
+  e.status, e.attempts, e.max_attempts, e.next_attempt_at, e.last_error, e.trigger_source, e.created_at, e.sent_at, e.delivered_at, e.template_version,
+  a.name AS triggered_by_name`;
 const LIST_JOIN = "FROM email_logs e LEFT JOIN customers c ON c.id = e.customer_id LEFT JOIN admins a ON a.id = e.triggered_by";
 
 router.get("/emails/logs", ah(async (req, res) => {
@@ -161,10 +186,10 @@ router.get("/emails/logs", ah(async (req, res) => {
     statusCounts: Object.fromEntries(counts.map((c) => [c.status, c.n])) });
 }));
 
-router.get("/emails/logs/export.csv", ah(async (req, res) => {
+router.get("/emails/logs/export.csv", requirePerm("logs.export"), ah(async (req, res) => {
   const { w, args } = logFilters(req.query);
   const [rows] = await pool.query(`SELECT ${LIST_COLS}, e.provider_message_id ${LIST_JOIN} ${w} ORDER BY e.id DESC LIMIT 10000`, args);
-  const cols = ["id", "created_at", "sent_at", "status", "name", "recipient", "customer_name", "order_number", "subject", "trigger_source", "triggered_by_name", "attempts", "last_error", "provider_message_id"];
+  const cols = ["id", "created_at", "sent_at", "delivered_at", "status", "template_version", "name", "recipient", "customer_name", "order_number", "subject", "trigger_source", "triggered_by_name", "attempts", "last_error", "provider_message_id"];
   const cell = (v) => { let s = v instanceof Date ? v.toISOString() : String(v ?? ""); if (/^[=+\-@]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
   const csv = [cols.join(","), ...rows.map((r) => cols.map((c) => cell(c === "name" ? TEMPLATES[r.template_key]?.name || r.template_key : r[c])).join(","))].join("\r\n");
   await audit(req, "emails.export", "email", null, { rows: rows.length, filters: req.query });
@@ -207,6 +232,8 @@ const SETTING_RULES = {
   "email.from_name": (v) => str(v, "sender name", { min: 2, max: 60 }),
   "email.from_address": (v) => str(v, "sender email", { max: 150, pattern: EMAIL, msg: "Enter a valid sender email" }),
   "email.reply_to": (v) => str(v, "reply-to email", { optional: true, max: 150, pattern: EMAIL, msg: "Enter a valid reply-to email" }) || "",
+  "email.company_name": (v) => str(v, "company name", { min: 2, max: 80 }),
+  "email.log_retention_days": (v) => String(Math.max(0, Math.min(3650, parseInt(v, 10) || 0))),
   "email.support_email": (v) => str(v, "support email", { optional: true, max: 150, pattern: EMAIL, msg: "Enter a valid support email" }) || "",
 };
 
@@ -216,7 +243,7 @@ router.get("/emails/settings", ah(async (req, res) => {
     "SELECT COUNT(*) AS total, SUM(status='sent') AS sent, SUM(status='failed') AS failed, SUM(status='queued') AS queued FROM email_logs WHERE created_at >= NOW() - INTERVAL 30 DAY");
   const kind = getTransport().kind;
   res.json({
-    ...emailSettings(s),
+    ...emailSettings(s), log_retention_days: Number(s["email.log_retention_days"] || 0),
     // how mail leaves the server is set in .env (with any passwords), so it's shown but not editable here
     transport: { kind, label: { sendmail: "This server's mail system", smtp: `SMTP (${process.env.SMTP_HOST || "not set"})`, log: "Not sending: development mode" }[kind] || kind },
     last30: { total: Number(last30.total || 0), sent: Number(last30.sent || 0), failed: Number(last30.failed || 0), queued: Number(last30.queued || 0) },

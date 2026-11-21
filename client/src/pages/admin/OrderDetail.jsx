@@ -143,7 +143,7 @@ export default function OrderDetail() {
           </Card>
 
           <Card>
-            <CardHeader title="Emails to the customer" sub="Every email sent about this order" action={isManager && <Link to={`/admin/emails?order=${o.id}`} className="text-sm font-medium text-slate-600 hover:underline">Open in email log →</Link>} />
+            <CardHeader title="Emails to the customer" sub="Every email sent about this order" action={isManager && <Link to={`/admin/communication/logs?order=${o.id}`} className="text-sm font-medium text-slate-600 hover:underline">Open in email log →</Link>} />
             {o.emails.length ? (
               <ul className="divide-y divide-slate-100 text-sm">
                 {o.emails.map((e) => (

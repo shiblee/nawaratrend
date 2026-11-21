@@ -4,25 +4,44 @@
   <div class="wrap">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/login">Sign in</a><span aria-hidden="true">/</span><span aria-current="page">Reset password</span></nav>
     <h1 id="rsTitle">Forgot your <span>password?</span></h1>
-    <p class="x-intro" id="rsIntro">Enter the email or mobile number of your account and we'll email you a link to choose a new password.</p>
+    <p class="x-intro" id="rsIntro">Enter the mobile number of your account and we'll text you a code to reset it.</p>
   </div>
 </section>
 
 <section class="x-body">
   <div class="wrap lg-wrap">
+    <ol class="steps" aria-label="Steps"><li id="st1" aria-current="step">Mobile</li><li id="st2">Code</li><li id="st3">New password</li></ol>
+
     <form class="card lg-form" id="rsAsk" novalidate>
-      <div class="fld"><label for="rsContact">Email or mobile number</label><input id="rsContact" autocomplete="username" maxlength="150"><p class="err"></p></div>
+      <div class="fld"><label for="rsMobile">Mobile number</label>
+        <div class="tel"><span aria-hidden="true">+91</span><input id="rsMobile" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="14" placeholder="98765 43210"></div><p class="err"></p></div>
+      <p class="form-msg" role="alert"></p>
+      <button type="submit" class="btn btn-ink"><span class="lbl">Send me a code</span><span class="spin" aria-hidden="true"></span></button>
+      <p class="lg-alt">Remembered it? <a class="link" href="/login">Sign in</a></p>
+    </form>
+
+    <form class="card lg-form" id="rsCode" novalidate hidden>
+      <div class="otp-head">
+        <h2>Enter the code</h2>
+        <p id="rsTo"></p>
+      </div>
+      <div id="rsBoxes"></div>
       <p class="form-msg" role="alert"></p>
       <p class="ok-msg" role="status"></p>
-      <button type="submit" class="btn btn-ink"><span class="lbl">Email me a reset link</span><span class="spin" aria-hidden="true"></span></button>
-      <p class="lg-alt">Remembered it? <a class="link" href="/login">Sign in</a> · No email on your account? <a class="link" href="https://wa.me/919807562620?text=Hi%20NawaraTrend%2C%20I%20need%20help%20signing%20in%20to%20my%20account.">WhatsApp us</a></p>
+      <button type="submit" class="btn btn-ink"><span class="lbl">Verify code</span><span class="spin" aria-hidden="true"></span></button>
+      <div class="otp-meta">
+        <button type="button" class="link" id="rsResend" disabled>Resend code</button>
+        <button type="button" class="link" id="rsBack">Use a different number</button>
+      </div>
     </form>
 
     <form class="card lg-form" id="rsSet" novalidate hidden>
-      <div class="fields one" id="rsFields"></div>
+      <div class="fld"><label for="rsNew">New password <small>(8+ characters, with a letter and a number)</small></label><div class="pw"><input id="rsNew" type="password" autocomplete="new-password" maxlength="128"><button type="button" class="pw-show" aria-controls="rsNew" aria-pressed="false">Show</button></div>
+        <div class="meter" id="rsMeter" aria-live="polite"><b><i></i></b><span></span></div><p class="err"></p></div>
+      <div class="fld"><label for="rsAgain">Confirm new password</label><div class="pw"><input id="rsAgain" type="password" autocomplete="new-password" maxlength="128"><button type="button" class="pw-show" aria-controls="rsAgain" aria-pressed="false">Show</button></div><p class="err"></p></div>
       <p class="form-msg" role="alert"></p>
       <button type="submit" class="btn btn-ink"><span class="lbl">Save new password</span><span class="spin" aria-hidden="true"></span></button>
-      <p class="lg-alt">Link not working? <a class="link" href="/reset-password">Ask for a new one</a></p>
+      <p class="lg-alt">You'll be signed in here, and signed out on every other device.</p>
     </form>
   </div>
 </section>

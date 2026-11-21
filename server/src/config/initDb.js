@@ -4,6 +4,7 @@
 import "dotenv/config";   // first, so the database settings below come from .env
 
 import bcrypt from "bcryptjs";
+import { pathToFileURL } from "url";
 import { pool } from "./db.js";
 
 const DEFAULT_ADMIN_EMAIL = "admin@nawaratrend.com";
@@ -246,6 +247,120 @@ const TABLES = [
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_attempt_email FOREIGN KEY (email_id) REFERENCES email_logs(id) ON DELETE CASCADE
   )`,
+
+  /* ---------- sign-up with mobile OTP ----------
+     A sign-up waits here until its mobile number is verified; only then is the customer account created
+     (customers.phone is UNIQUE, so two sign-ups racing for one number can never both win).
+     The password is kept only as a hash, and even that is wiped once the sign-up is finished or abandoned. */
+  `CREATE TABLE IF NOT EXISTS pending_registrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    email VARCHAR(150) DEFAULT NULL,
+    password_hash VARCHAR(255) DEFAULT NULL,
+    status ENUM('pending','completed','expired','cancelled') NOT NULL DEFAULT 'pending',
+    customer_id INT DEFAULT NULL,
+    ip VARCHAR(64) DEFAULT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME DEFAULT NULL,
+    INDEX idx_pending_phone (phone, status),
+    INDEX idx_pending_expires (status, expires_at),
+    CONSTRAINT fk_pending_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
+  )`,
+
+  /* One verification session per sign-up / password reset. Only an HMAC of the current code is stored;
+     a resend replaces it (so older codes stop working at once). public_id is what the browser holds. */
+  `CREATE TABLE IF NOT EXISTS otp_verifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(32) NOT NULL UNIQUE,
+    purpose ENUM('registration','password_reset') NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    customer_id INT DEFAULT NULL,
+    pending_id INT DEFAULT NULL,
+    code_hash CHAR(64) NOT NULL,
+    code_expires_at DATETIME NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    total_attempts INT NOT NULL DEFAULT 0,
+    resends INT NOT NULL DEFAULT 0,
+    last_sent_at DATETIME DEFAULT NULL,
+    last_send_ok TINYINT(1) NOT NULL DEFAULT 0,
+    status ENUM('pending','verified','expired','locked','cancelled','used') NOT NULL DEFAULT 'pending',
+    reset_token_hash CHAR(64) DEFAULT NULL,
+    reset_expires_at DATETIME DEFAULT NULL,
+    decoy TINYINT(1) NOT NULL DEFAULT 0,
+    ip VARCHAR(64) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verified_at DATETIME DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_otp_phone (phone, created_at),
+    INDEX idx_otp_ip (ip, created_at),
+    CONSTRAINT fk_otp_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+    CONSTRAINT fk_otp_pending FOREIGN KEY (pending_id) REFERENCES pending_registrations(id) ON DELETE SET NULL
+  )`,
+
+  // every text message sent (never the code itself)
+  `CREATE TABLE IF NOT EXISTS sms_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    otp_id INT DEFAULT NULL,
+    customer_id INT DEFAULT NULL,
+    pending_id INT DEFAULT NULL,
+    phone VARCHAR(20) NOT NULL,
+    purpose VARCHAR(30) NOT NULL,
+    provider VARCHAR(30) NOT NULL,
+    status ENUM('queued','sent','delivered','failed') NOT NULL DEFAULT 'queued',
+    provider_message_id VARCHAR(120) DEFAULT NULL,
+    provider_response VARCHAR(500) DEFAULT NULL,
+    failure_reason VARCHAR(500) DEFAULT NULL,
+    otp_expires_at DATETIME DEFAULT NULL,
+    trigger_source VARCHAR(20) NOT NULL DEFAULT 'customer',
+    triggered_by INT DEFAULT NULL,
+    ip VARCHAR(64) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sent_at DATETIME DEFAULT NULL,
+    delivered_at DATETIME DEFAULT NULL,
+    INDEX idx_sms_created (created_at),
+    INDEX idx_sms_phone (phone, created_at),
+    INDEX idx_sms_customer (customer_id),
+    CONSTRAINT fk_sms_otp FOREIGN KEY (otp_id) REFERENCES otp_verifications(id) ON DELETE SET NULL,
+    CONSTRAINT fk_sms_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+    CONSTRAINT fk_sms_pending FOREIGN KEY (pending_id) REFERENCES pending_registrations(id) ON DELETE SET NULL,
+    CONSTRAINT fk_sms_admin FOREIGN KEY (triggered_by) REFERENCES admins(id) ON DELETE SET NULL
+  )`,
+
+  /* Signed-in customer sessions. The browser holds a random token in an HttpOnly cookie; only its hash is
+     stored. Signing out (here or everywhere) revokes the row, so a copied cookie stops working too. */
+  `CREATE TABLE IF NOT EXISTS customer_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    remember TINYINT(1) NOT NULL DEFAULT 0,
+    ip VARCHAR(64) DEFAULT NULL,
+    user_agent VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_seen_at DATETIME DEFAULT NULL,
+    expires_at DATETIME NOT NULL,
+    revoked_at DATETIME DEFAULT NULL,
+    revoke_reason VARCHAR(40) DEFAULT NULL,
+    INDEX idx_csess_customer (customer_id, created_at),
+    CONSTRAINT fk_csess_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+  )`,
+
+  // every saved version of an email template (Emails → template → History)
+  `CREATE TABLE IF NOT EXISTS email_template_versions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    template_key VARCHAR(40) NOT NULL,
+    version INT NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    html MEDIUMTEXT NOT NULL,
+    text MEDIUMTEXT,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    action VARCHAR(20) NOT NULL DEFAULT 'edit',
+    admin_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_tplv_key (template_key, version),
+    CONSTRAINT fk_tplv_admin FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
+  )`,
 ];
 
 const SITE = (process.env.SITE_URL || "http://localhost:3001").replace(/\/+$/, "");
@@ -288,6 +403,20 @@ const SETTINGS = {
   "email.from_address": "",
   "email.reply_to": "",
   "email.support_email": "",
+  "email.company_name": "Nawara Trend",
+  "email.log_retention_days": "0",
+
+  // Mobile OTP (Communication → OTP / SMS). The SMS provider's API key stays in .env.
+  "otp.enabled": "1",
+  "otp.length": "6",
+  "otp.expiry_minutes": "5",
+  "otp.resend_seconds": "60",
+  "otp.max_attempts": "5",
+  "otp.max_resends": "3",
+  "otp.phone_hourly_limit": "5",
+  "otp.ip_hourly_limit": "20",
+  "otp.pending_hours": "24",
+  "sms.log_retention_days": "180",
 };
 
 const CATEGORIES = [
@@ -338,7 +467,7 @@ const isEmpty = async (table) => {
   return n === 0;
 };
 
-const run = async () => {
+export async function initDatabase() {
   for (const sql of TABLES) await pool.query(sql);
   // upgrades for databases created by an earlier version
   await pool.query("ALTER TABLE settings MODIFY value TEXT NOT NULL");
@@ -359,6 +488,15 @@ const run = async () => {
   if (await addColumn("order_status_history", "actor", "VARCHAR(10) NOT NULL DEFAULT 'system' AFTER admin_id")) {
     await pool.query("UPDATE order_status_history SET actor = IF(admin_id IS NULL, 'customer', 'admin')");
   }
+  // mobile-first accounts: verified flags, last sign-in address, and numbers stored as +91XXXXXXXXXX
+  await addColumn("customers", "phone_verified_at", "DATETIME DEFAULT NULL AFTER phone");
+  await addColumn("customers", "email_verified_at", "DATETIME DEFAULT NULL AFTER email");
+  await addColumn("customers", "last_login_ip", "VARCHAR(64) DEFAULT NULL AFTER last_login_at");
+  const [moved] = await pool.query("UPDATE customers SET phone = CONCAT('+91', phone) WHERE phone REGEXP '^[6-9][0-9]{9}$'");
+  if (moved.affectedRows) console.log(`Stored ${moved.affectedRows} mobile numbers as +91XXXXXXXXXX`);
+  // email delivery tracking for providers that report it (bounced / delivered)
+  await pool.query("ALTER TABLE email_logs MODIFY status ENUM('queued','sending','sent','delivered','failed','bounced','skipped') NOT NULL DEFAULT 'queued'");
+  await addColumn("email_logs", "delivered_at", "DATETIME DEFAULT NULL AFTER sent_at");
   console.log(`Tables ready (${TABLES.length})`);
 
   for (const [key, value] of Object.entries(SETTINGS)) {
@@ -401,10 +539,12 @@ const run = async () => {
   }
 
   console.log("Database initialized successfully");
-  process.exit(0);
-};
+}
 
-run().catch((err) => {
-  console.error("Database init failed:", err.message);
-  process.exit(1);
-});
+// run directly (npm run init-db), not when imported by the tests
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  initDatabase().then(() => process.exit(0)).catch((err) => {
+    console.error("Database init failed:", err.message);
+    process.exit(1);
+  });
+}
