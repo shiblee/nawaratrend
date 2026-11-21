@@ -47,7 +47,11 @@ const products = [
   {id:"kids-blue-alien-water-bottle-500ml", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Blue Alien Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A fun 500 ml kids water bottle, a Fashion Double Drinking Cup with a cheeky 3D blue alien topper, a 2-in-1 lid for straw or direct drinking, a push-button lock against spills and a carry strap.",
    points:["500 ml capacity, just right for a school day","2-in-1 lid: drink with the straw or sip directly","Flip-open lid with push-button lock: no spills, no leaks","BPA-free, lightweight and durable with a carry strap"],
-   img:"https://nawaratrend.com/products/kids-blue-alien-water-bottle/1.jpg"}
+   img:"https://nawaratrend.com/products/kids-blue-alien-water-bottle/1.jpg"},
+  {id:"kids-pink-bunny-water-bottle-500ml", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Pink Bunny Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Pink", price:649, mrp:927, rate:0, reviews:0, stock:50,
+   desc:"A pretty pink 500 ml kids water bottle, a Fashion Double Drinking Cup with a cute 3D bunny topper, a 2-in-1 lid for straw or direct drinking, a leak-proof push-button lock and a printed carry strap.",
+   points:["500 ml capacity, about 22 cm tall and 7.5 cm wide","2-in-1 lid: drink with the straw or sip directly","Push-button flip lid with secure lock and silicone seal: leak-proof","BPA-free, food-grade, lightweight with a carry strap"],
+   img:"https://nawaratrend.com/products/kids-pink-bunny-water-bottle/1.jpg"}
 ];
 
 const ICON = {
