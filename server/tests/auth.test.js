@@ -142,6 +142,13 @@ test("resend: cooldown, the old code stops working, and the resend limit holds",
   assert.equal(tooMany.data.code, "otp_resend_limit");
 });
 
+test("sign-up without a confirmation password works", async () => {
+  const b = browser(); await b.csrf();
+  const r = await b.post("/store/auth/register", { name: "No Confirm", mobile: mobile(), password: "Secret123", acceptTerms: true });
+  assert.equal(r.status, 201);
+  takeTestCode();
+});
+
 test("form validation: email format, weak password, mismatched confirmation, terms", async () => {
   const b = browser(); await b.csrf();
   const phone = mobile();

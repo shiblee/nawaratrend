@@ -15,7 +15,6 @@ const RULES = {
   upMobile: v => !v.trim() ? "Enter your mobile number." : mobileProblem(v),
   upEmail: v => emailProblem(v.trim()),
   upPass: v => !v ? "Choose a password." : passwordProblem(v),
-  upPass2: v => !v ? "Type the password again." : v !== $("upPass").value ? "The two passwords don't match." : "",
   upTerms: (v, el) => el.checked ? "" : "Please accept the Terms and Privacy Policy.",
 };
 
@@ -81,11 +80,11 @@ export function initLogin({ navigate }){
   fUp.addEventListener("submit", e => {
     e.preventDefault();
     fUp.querySelector(".form-msg").textContent = "";
-    if(firstBad(["upName", "upMobile", "upEmail", "upPass", "upPass2", "upTerms"])) return;
+    if(firstBad(["upName", "upMobile", "upEmail", "upPass", "upTerms"])) return;
     busy(fUp.querySelector("button[type=submit]"), async () => {
       try {
         const r = await register({ name: $("upName").value.trim(), mobile: mobileDigits($("upMobile").value), email: $("upEmail").value.trim(),
-          password: $("upPass").value, confirmPassword: $("upPass2").value, acceptTerms: $("upTerms").checked });
+          password: $("upPass").value, acceptTerms: $("upTerms").checked });
         if(!alive) return;
         remember = true;
         openOtp(r);
@@ -96,7 +95,7 @@ export function initLogin({ navigate }){
           $("goIn").onclick = () => { $("inMobile").value = $("upMobile").value; show("in"); $("inPass").focus(); };
           return;
         }
-        showErr(fUp, err, { name: $("upName"), mobile: $("upMobile"), email: $("upEmail"), password: $("upPass"), confirmPassword: $("upPass2"), acceptTerms: $("upTerms") });
+        showErr(fUp, err, { name: $("upName"), mobile: $("upMobile"), email: $("upEmail"), password: $("upPass"), acceptTerms: $("upTerms") });
       }
     });
   });

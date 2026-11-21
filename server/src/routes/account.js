@@ -61,7 +61,7 @@ router.post("/auth/register", authLimit, ah(async (req, res) => {
   const phone = parseMobile(b.mobile);
   const email = str(b.email, "email", { optional: true, max: 150, pattern: EMAIL, msg: "Check the email address, for example name@gmail.com" })?.toLowerCase() || null;
   const pw = password(b.password);
-  confirmMatches(pw, b.confirmPassword);
+  if (b.confirmPassword !== undefined) confirmMatches(pw, b.confirmPassword);   // the sign-up form no longer asks twice
   if (!remembered(b.acceptTerms)) throw new HttpError(400, "Please accept the Terms and Privacy Policy to create an account", { field: "acceptTerms" });
 
   const [taken] = await pool.query("SELECT id FROM customers WHERE phone = ?", [phone.e164]);
