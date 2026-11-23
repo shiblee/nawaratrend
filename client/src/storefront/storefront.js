@@ -63,7 +63,13 @@ const products = [
   {id:"cute-food-veggie-3d-puffy-stickers", cat:"school-essentials", name:"Cute Food & Veggie 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
    desc:"A sheet of cute food and veggie 3D puffy stickers that are easy to peel and water resistant, for notebooks, water bottles, phone cases and gifting.",
    points:["3D puffy design that stands out","Easy to peel and water resistant","For notebooks, water bottles and phone cases","Great for birthday and return gifts"],
-   img:"https://nawaratrend.com/products/cute-food-veggie-3d-puffy-stickers/1.jpg"}
+   img:"https://nawaratrend.com/products/cute-food-veggie-3d-puffy-stickers/1.jpg"},
+  {id:"kids-backpack-pencil-pouch", cat:"school-essentials", name:"Kids Backpack Shape Pencil Pouch, Multi-Zip Stationery Bag with Transparent Round Pocket, Water Resistant, 5 Colours", price:299, mrp:427, rate:0, reviews:0, stock:50,
+   colors:[{name:"Yellow",hex:"#F5C518",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/2.webp"},{name:"Green",hex:"#8DBB8F",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg"},{name:"Purple",hex:"#8B5FBF",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/3.webp"},{name:"Blue",hex:"#1E73D2",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/4.webp"},{name:"Grey",hex:"#8A8D93",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/5.webp"}],
+   desc:"A mini school bag shaped pencil pouch with multiple zip compartments, a transparent round pocket and a fun cartoon print, in five colours.",
+   points:["Mini school bag shape with cartoon print","Multiple zips and a transparent round pocket","Water resistant, easy to clean","Five colours: choose one or mix several"],
+   images:["https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg","https://nawaratrend.com/products/kids-backpack-pencil-pouch/2.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/3.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/4.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/5.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/6.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/7.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/8.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/9.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/10.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/11.webp"],
+   img:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg"}
 ];
 
 const ICON = {
