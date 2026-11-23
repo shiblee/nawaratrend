@@ -1,5 +1,5 @@
 /* Product detail page. Call after initStorefront with the product id from the URL; returns a cleanup function. */
-import { actions, ordered, inr, off, art, catName, check, stars, pad, wish, ratingHtml } from "./storefront.js";
+import { actions, ordered, inr, off, art, catName, check, stars, wish, ratingHtml } from "./storefront.js";
 import { productCard } from "./card.js";
 
 const $ = id => document.getElementById(id);
@@ -86,19 +86,19 @@ export function initProduct(id){
   $("pCrumbs").insertAdjacentHTML("beforeend", `<span aria-hidden="true">/</span><a href="/shop/${p.cat}">${cat}</a><span aria-hidden="true">/</span><span aria-current="page"></span>`);
   $("pCrumbs").lastElementChild.textContent = p.name;
   $("gMain").style.background = `var(--${p.cat}-bg)`;
-  $("gOff").textContent = `${off(p)}% OFF`;
+  if(off(p) > 0) $("gOff").textContent = `${off(p)}% off`; else $("gOff").hidden = true;
   const showPhoto = gallery(p, reduce);
   const catTag = $("pCat");
   catTag.textContent = cat; catTag.href = `/shop/${p.cat}`;
   catTag.style.background = `var(--${p.cat}-bg)`; catTag.style.color = `var(--${p.cat})`;
-  $("pCode").textContent = `Product code NT-${pad(p.no)}`;
+  $("pCode").textContent = p.code ? `Product code ${p.code}` : "";
   $("pName").textContent = p.name;
   const fresh = !!ratingHtml(p);
   $("pRating").innerHTML = fresh ? `${ratingHtml(p, true)}<u>Be the first to review</u>`
     : `<span class="st" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><u>${p.reviews} reviews</u>`;
   $("pPrice").textContent = inr(p.price);
   $("pMrp").textContent = inr(p.mrp);
-  $("pSave").textContent = `Save ${inr(p.mrp - p.price)} (${off(p)}%)`;
+  $("pSave").textContent = `Save ${inr(p.mrp - p.price)}`;
   $("pDesc").textContent = p.desc;
   const st = $("pStock");
   const soldOut = p.stock === 0;
@@ -216,13 +216,13 @@ export function initProduct(id){
   $("sbAdd").onclick = doAdd;
 
   /* ---------- Ask on WhatsApp (prefilled message) ---------- */
-  const msg = `Hi NawaraTrend, I have a question about "${p.name}" (NT-${pad(p.no)}).`;
+  const msg = `Hi NawaraTrend, I have a question about "${p.name}"${p.code ? ` (${p.code})` : ""}.`;
   $("pAsk").href = "https://wa.me/919807562620?text=" + encodeURIComponent(msg);
   $("rvWrite").href = "https://wa.me/919807562620?text=" + encodeURIComponent(`Hi, I'd like to share a review for "${p.name}": `);
 
   /* ---------- Tabs ---------- */
   $("pPoints").innerHTML = p.points.map(x => `<li><span class="ck">${check}</span>${x}</li>`).join("");
-  const rows = [["Product code", `NT-${pad(p.no)}`], ["Category", `<a href="/shop/${p.cat}">${cat}</a>`]]
+  const rows = [...(p.code ? [["Product code", p.code]] : []), ["Category", `<a href="/shop/${p.cat}">${cat}</a>`]]
     .concat(p.sizes ? [["Sizes", p.sizes.join(", ")]] : [])
     .concat(p.colors ? [["Colours", p.colors.map(c => c.name).join(", ")]] : [])
     .concat([["MRP", inr(p.mrp)], ["Our price", `${inr(p.price)} (${off(p)}% off)`], ["Ships from", "Lucknow, Uttar Pradesh"],

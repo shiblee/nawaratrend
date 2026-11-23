@@ -7,12 +7,11 @@
     <div class="pdp-grid">
       <div class="gallery">
         <div class="g-main" id="gMain" tabindex="0" aria-roledescription="carousel" aria-label="Product photos">
-          <span class="g-off" id="gOff"></span>
           <div class="g-art" id="gArt"></div>
           <button type="button" class="g-arrow prev" id="gPrev" aria-label="Previous photo" hidden>←</button>
           <button type="button" class="g-arrow next" id="gNext" aria-label="Next photo" hidden>→</button>
-          <span class="g-count" id="gCount" aria-live="polite" hidden></span>
         </div>
+        <span class="g-count" id="gCount" aria-live="polite" hidden></span>
         <div class="g-thumbs" id="gThumbs" role="group" aria-label="Choose a photo" hidden></div>
         <div class="g-tools">
           <button type="button" class="g-btn wish" id="gWish" aria-pressed="false" aria-label="Save to wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2 0 3.4 1.1 5.2 3 1.8-1.9 3.2-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
@@ -26,7 +25,7 @@
         <a class="bb-rating" href="#tab-rv" id="pRating"></a>
 
         <div class="bb-price">
-          <div class="pr-row"><b id="pPrice"></b><s id="pMrp"></s><span class="save" id="pSave"></span></div>
+          <div class="pr-row"><b id="pPrice"></b><s id="pMrp"></s><span class="off-badge" id="gOff"></span><span class="save" id="pSave"></span></div>
           <small>Inclusive of all taxes</small>
         </div>
         <p class="bb-desc" id="pDesc"></p>

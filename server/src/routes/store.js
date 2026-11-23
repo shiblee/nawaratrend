@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import { pool } from "../config/db.js";
 import { ah, HttpError, str, num, oneOf, EMAIL, mobile10, clientIp, jsonList } from "../lib/http.js";
 import { getSettings, audit } from "../lib/store.js";
+import { assignProductCodes, productCode } from "../lib/codes.js";
 import { queueOrderEmail } from "../lib/email/index.js";
 import { optionalCustomer } from "../middleware/auth.js";
 
@@ -16,7 +17,7 @@ const limit = (windowMin, max, message) =>
 const publicProduct = (r) => {
   const images = jsonList(r.images);
   return {
-    id: r.slug, cat: r.category_slug, name: r.name, desc: r.description || "",
+    id: r.slug, code: productCode(r.code_no), cat: r.category_slug, name: r.name, desc: r.description || "",
     price: Number(r.price), mrp: Number(r.mrp), rate: Number(r.rating), reviews: r.review_count,
     stock: r.stock, left: r.stock > 0 && r.stock <= r.low_stock_threshold ? r.stock : undefined,
     points: jsonList(r.highlights), sizes: jsonList(r.sizes).length ? jsonList(r.sizes) : undefined,
@@ -27,11 +28,13 @@ const publicProduct = (r) => {
 
 router.get("/catalog", ah(async (req, res) => {
   const [cats] = await pool.query("SELECT slug, name FROM categories WHERE is_active = 1 ORDER BY sort_order, name");
-  const [rows] = await pool.query(
+  const load = async () => (await pool.query(
     `SELECT p.*, c.slug AS category_slug FROM products p
      JOIN categories c ON c.id = p.category_id AND c.is_active = 1
      WHERE p.status = 'active' ORDER BY p.sort_order, p.id`
-  );
+  ))[0];
+  let rows = await load();
+  if (rows.some((r) => !r.code_no) && await assignProductCodes()) rows = await load();   // added straight into the database
   const s = await getSettings();
   res.set("Cache-Control", "no-store");
   res.json({

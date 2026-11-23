@@ -24,53 +24,53 @@ const categories = [
   {k:"school-essentials", n:"School Essentials"}
 ];
 const products = [
-  {id:"mens-premium-black-shirt", cat:"fashion", name:"Men's Premium Black Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+  {id:"mens-premium-black-shirt", code:"NT-01", cat:"fashion", name:"Men's Premium Black Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A classic black shirt that goes from office meetings to evening plans, with a crisp spread collar, buttoned cuffs and an embroidered horse-rider emblem.",
    points:["Crisp spread collar that holds its shape","Embroidered horse-rider emblem on the chest","Comfortable fit for office, occasions and everyday wear"],
    img:"https://nawaratrend.com/products/mens-black-shirt/1.jpg"},
-  {id:"mens-premium-sage-green-shirt", cat:"fashion", name:"Men's Premium Sage Green Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+  {id:"mens-premium-sage-green-shirt", code:"NT-02", cat:"fashion", name:"Men's Premium Sage Green Shirt, Full Sleeve with Embroidered Emblem", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A fresh sage green shirt with a sharp spread collar, breathable fabric and an embroidered horse-rider emblem, for workdays and weekends alike.",
    points:["Soft sage green shade that suits every season","Embroidered horse-rider emblem on the chest","Breathable fabric for all-day comfort"],
    img:"https://nawaratrend.com/products/mens-sage-green-shirt/1.jpg"},
-  {id:"mens-premium-coffee-brown-shirt", cat:"fashion", name:"Men's Premium Coffee Brown Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+  {id:"mens-premium-coffee-brown-shirt", code:"NT-03", cat:"fashion", name:"Men's Premium Coffee Brown Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A rich coffee brown shirt with our signature gold Nawara Trend crown embroidery, tan buttons and a sharp spread collar.",
    points:["Rich coffee brown shade with tan buttons","Signature gold Nawara Trend crown embroidery on the chest","Woven Nawara Trend label at the neck"],
    img:"https://nawaratrend.com/products/mens-coffee-brown-shirt/1.jpg"},
-  {id:"mens-premium-navy-blue-shirt", cat:"fashion", name:"Men's Premium Navy Blue Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
+  {id:"mens-premium-navy-blue-shirt", code:"NT-04", cat:"fashion", name:"Men's Premium Navy Blue Shirt, Full Sleeve with Gold NT Crown Embroidery", price:499, mrp:713, rate:0, reviews:0, stock:50, sizes:["M","L","XL"],
    desc:"A deep navy blue shirt with our signature gold Nawara Trend crown embroidery, a premium spread collar and tonal navy buttons.",
    points:["Deep navy blue shade with tonal navy buttons","Signature gold Nawara Trend crown embroidery on the chest","Premium spread collar with woven Nawara Trend label"],
    img:"https://nawaratrend.com/products/mens-navy-blue-shirt/1.jpg"},
-  {id:"kids-puppy-water-bottle-500ml-blue", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Puppy Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Sky Blue", price:649, mrp:927, rate:0, reviews:0, stock:50,
+  {id:"kids-puppy-water-bottle-500ml-blue", code:"NT-05", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Puppy Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Sky Blue", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A cute and sturdy 500 ml water bottle for kids, a Fashion Double Drinking Cup with a 3D puppy topper, a 2-in-1 lid for straw or direct drinking, a push-button lock against spills and a carry strap for school, sports and trips.",
    points:["500 ml capacity, about 21 cm tall and 7.5 cm wide","2-in-1 lid: drink with the straw or sip directly","Push-button flip lid with secure lock: no spills, no leaks","BPA-free, lightweight and durable with a carry strap"],
    img:"https://nawaratrend.com/products/kids-puppy-water-bottle/1.jpg"},
-  {id:"kids-blue-alien-water-bottle-500ml", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Blue Alien Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap", price:649, mrp:927, rate:0, reviews:0, stock:50,
+  {id:"kids-blue-alien-water-bottle-500ml", code:"NT-06", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Blue Alien Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A fun 500 ml kids water bottle, a Fashion Double Drinking Cup with a cheeky 3D blue alien topper, a 2-in-1 lid for straw or direct drinking, a push-button lock against spills and a carry strap.",
    points:["500 ml capacity, just right for a school day","2-in-1 lid: drink with the straw or sip directly","Flip-open lid with push-button lock: no spills, no leaks","BPA-free, lightweight and durable with a carry strap"],
    img:"https://nawaratrend.com/products/kids-blue-alien-water-bottle/1.jpg"},
-  {id:"kids-pink-bunny-water-bottle-500ml", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Pink Bunny Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Pink", price:649, mrp:927, rate:0, reviews:0, stock:50,
+  {id:"kids-pink-bunny-water-bottle-500ml", code:"NT-07", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Pink Bunny Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Pink", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A pretty pink 500 ml kids water bottle, a Fashion Double Drinking Cup with a cute 3D bunny topper, a 2-in-1 lid for straw or direct drinking, a leak-proof push-button lock and a printed carry strap.",
    points:["500 ml capacity, about 22 cm tall and 7.5 cm wide","2-in-1 lid: drink with the straw or sip directly","Push-button flip lid with secure lock and silicone seal: leak-proof","BPA-free, food-grade, lightweight with a carry strap"],
    img:"https://nawaratrend.com/products/kids-pink-bunny-water-bottle/4.webp"},
-  {id:"kids-pink-kitty-water-bottle-500ml", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Kitty Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Pink", price:649, mrp:927, rate:0, reviews:0, stock:50,
+  {id:"kids-pink-kitty-water-bottle-500ml", code:"NT-08", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Kitty Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Pink", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A cute pink 500 ml kids water bottle, a Fashion Double Drinking Cup with a 3D kitty topper, a dual drinking lid for straw or direct sipping, a push-button lock and a printed carry strap.",
    points:["500 ml capacity, just right for a school day","Dual drinking design: straw or direct sip","Flip-open lid with push-button secure lock: no spills","Lightweight and durable with a printed carry strap"],
    img:"https://nawaratrend.com/products/kids-pink-kitty-water-bottle/1.jpg"},
-  {id:"cute-panda-3d-puffy-stickers", cat:"school-essentials", name:"Cute Panda 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
+  {id:"cute-panda-3d-puffy-stickers", code:"NT-09", cat:"school-essentials", name:"Cute Panda 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
    desc:"A sheet of adorable panda 3D puffy stickers that are easy to peel and water resistant, for notebooks, water bottles, phone cases and gifting.",
    points:["3D puffy design that stands out","Easy to peel and water resistant","For notebooks, water bottles and phone cases","Great for birthday and return gifts"],
    img:"https://nawaratrend.com/products/cute-panda-3d-puffy-stickers/2.webp"},
-  {id:"cute-food-veggie-3d-puffy-stickers", cat:"school-essentials", name:"Cute Food & Veggie 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
+  {id:"cute-food-veggie-3d-puffy-stickers", code:"NT-10", cat:"school-essentials", name:"Cute Food & Veggie 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
    desc:"A sheet of cute food and veggie 3D puffy stickers that are easy to peel and water resistant, for notebooks, water bottles, phone cases and gifting.",
    points:["3D puffy design that stands out","Easy to peel and water resistant","For notebooks, water bottles and phone cases","Great for birthday and return gifts"],
    img:"https://nawaratrend.com/products/cute-food-veggie-3d-puffy-stickers/1.jpg"},
-  {id:"kids-backpack-pencil-pouch", cat:"school-essentials", name:"Kids Backpack Shape Pencil Pouch, Multi-Zip Stationery Bag with Transparent Round Pocket, Water Resistant, 5 Colours", price:299, mrp:427, rate:0, reviews:0, stock:50,
+  {id:"kids-backpack-pencil-pouch", code:"NT-11", cat:"school-essentials", name:"Kids Backpack Shape Pencil Pouch, Multi-Zip Stationery Bag with Transparent Round Pocket, Water Resistant, 5 Colours", price:299, mrp:427, rate:0, reviews:0, stock:50,
    colors:[{name:"Yellow",hex:"#F5C518",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/2.webp"},{name:"Green",hex:"#8DBB8F",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg"},{name:"Purple",hex:"#8B5FBF",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/3.webp"},{name:"Blue",hex:"#1E73D2",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/4.webp"},{name:"Grey",hex:"#8A8D93",image:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/5.webp"}],
    desc:"A mini school bag shaped pencil pouch with multiple zip compartments, a transparent round pocket and a fun cartoon print, in five colours.",
    points:["Mini school bag shape with cartoon print","Multiple zips and a transparent round pocket","Water resistant, easy to clean","Five colours: choose one or mix several"],
    images:["https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg","https://nawaratrend.com/products/kids-backpack-pencil-pouch/2.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/3.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/4.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/5.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/6.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/7.webp"],
    img:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg"},
-  {id:"burger-panda-keychain-pouch", cat:"accessories", name:"Cute Burger Keychain Pouch with 3D Panda, Soft Silicone Mini Storage Pouch & Bag Charm for Coins, Earbuds & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
+  {id:"burger-panda-keychain-pouch", code:"NT-12", cat:"accessories", name:"Cute Burger Keychain Pouch with 3D Panda, Soft Silicone Mini Storage Pouch & Bag Charm for Coins, Earbuds & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
    desc:"A burger-shaped soft silicone keychain pouch with an adorable 3D panda on top: a keychain, bag charm and mini pouch for coins and earbuds in one.",
    points:["Adorable 3D panda on top","Mini pouch for coins and earbuds","Soft, durable and flexible silicone","Keychain and bag charm in one"],
    img:"https://nawaratrend.com/products/burger-panda-keychain-pouch/1.jpg"}
@@ -90,6 +90,8 @@ const check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const heart = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2 0 3.4 1.1 5.2 3 1.8-1.9 3.2-3 5.2-3 3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>';
 const inr = n => "₹" + n.toLocaleString("en-IN");
 const off = p => Math.round((1 - p.price/p.mrp)*100);
+/** "30% OFF" beside a price (never on the photo, where it would cover the picture). */
+export const offBadge = p => off(p) > 0 ? `<span class="off-badge">${off(p)}% off</span>` : "";
 const pad = n => String(n).padStart(2,"0");
 const catName = k => (categories.find(c => c.k===k)||{}).n || k;
 const stars = r => "★★★★★".slice(0, Math.round(r)) + "☆☆☆☆☆".slice(0, 5 - Math.round(r));
@@ -388,7 +390,7 @@ export function initStorefront(){
       const el = document.createElement("article");
       el.className = "spread"; el.id = `p-${p.id}`; el.dataset.id = p.id;
       el.innerHTML = `
-        <div class="stage">${art(p)}<span class="off">−${off(p)}%</span><button class="wish" data-wish="${p.id}" aria-pressed="false" aria-label="Save ${p.name} to wishlist">${heart}</button></div>
+        <div class="stage">${art(p)}<button class="wish" data-wish="${p.id}" aria-pressed="false" aria-label="Save ${p.name} to wishlist">${heart}</button></div>
         <div class="info">
           <div class="info-top"><span class="tag" style="background:var(--${c.k}-bg);color:var(--${c.k})">${c.n}</span></div>
           <h4><a href="/product/${p.id}" class="pd-link">${p.name}</a></h4>
@@ -397,7 +399,7 @@ export function initStorefront(){
           <div class="meta">${ratingHtml(p, true) || `<div class="rating"><span class="stars" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><span>(${p.reviews} reviews)</span></div>`}
           ${p.left ? `<span class="stock">Only ${p.left} left</span>` : ""}</div>
           <div class="buy">
-            <div class="price"><b>${inr(p.price)}</b><s>${inr(p.mrp)}</s><span class="save">Save ${inr(p.mrp-p.price)}</span></div>
+            <div class="price"><b>${inr(p.price)}</b><s>${inr(p.mrp)}</s>${offBadge(p)}<span class="save">Save ${inr(p.mrp-p.price)}</span></div>
             <div class="actions">
               ${p.sizes || p.colors || p.stock === 0 ? "" : `<div class="qty"><button data-q="-1" aria-label="Decrease quantity">−</button><output>1</output><button data-q="1" aria-label="Increase quantity">+</button></div>`}
               ${buyControl(p, "add")}

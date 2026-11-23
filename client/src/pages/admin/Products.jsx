@@ -74,7 +74,7 @@ export default function Products() {
               <tr key={p.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3">
                   <Link to={`/admin/products/${p.id}`} className="font-medium text-slate-900 hover:underline">{p.name}</Link>
-                  <div className="text-xs text-slate-500">{p.sku || "No SKU"} · /product/{p.slug}{p.is_featured ? " · ★ Featured" : ""}{p.sizes.length ? ` · Sizes ${p.sizes.join(", ")}` : ""}{p.colors.length ? ` · Colours ${p.colors.map((c) => c.name).join(", ")}` : ""}</div>
+                  <div className="text-xs text-slate-500">{p.code}{p.sku ? ` · ${p.sku}` : ""} · /product/{p.slug}{p.is_featured ? " · ★ Featured" : ""}{p.sizes.length ? ` · Sizes ${p.sizes.join(", ")}` : ""}{p.colors.length ? ` · Colours ${p.colors.map((c) => c.name).join(", ")}` : ""}</div>
                 </td>
                 <td className="px-4 py-3 text-slate-600">{p.category_name || <span className="text-red-600">None</span>}</td>
                 <td className="px-4 py-3 text-right tabular-nums"><div className="font-semibold">{money(p.price)}</div>{p.mrp > p.price && <div className="text-xs text-slate-400 line-through">{money(p.mrp)}</div>}</td>

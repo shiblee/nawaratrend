@@ -180,7 +180,8 @@ export default function ProductEdit() {
             <div className="grid grid-cols-2 gap-3 p-5">
               <Field label="In stock" error={fe("stock")}><Input type="number" min="0" step="1" value={f.stock} onChange={set("stock")} /></Field>
               <Field label="Alert when below" error={fe("low stock alert")}><Input type="number" min="0" step="1" value={f.low_stock_threshold} onChange={set("low_stock_threshold")} /></Field>
-              <Field label="SKU / code" error={fe("SKU")} className="col-span-2"><Input value={f.sku} onChange={set("sku")} maxLength={60} placeholder="NT-009" /></Field>
+              <Field label="Product code" hint="(permanent)"><Input value={p?.code || "Given when saved"} disabled readOnly /></Field>
+              <Field label="SKU" hint="(your own, optional)" error={fe("SKU")}><Input value={f.sku} onChange={set("sku")} maxLength={60} placeholder="NT-SH-BLK-001" /></Field>
             </div>
           </Card>
 

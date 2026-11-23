@@ -6,6 +6,7 @@ import "dotenv/config";   // first, so the database settings below come from .en
 import bcrypt from "bcryptjs";
 import { pathToFileURL } from "url";
 import { pool } from "./db.js";
+import { assignProductCodes } from "../lib/codes.js";
 
 const DEFAULT_ADMIN_EMAIL = "admin@nawaratrend.com";
 const DEFAULT_ADMIN_PASSWORD = "Admin@123";
@@ -42,6 +43,7 @@ const TABLES = [
   `CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     slug VARCHAR(80) NOT NULL UNIQUE,
+    code_no INT DEFAULT NULL UNIQUE,
     category_id INT DEFAULT NULL,
     name VARCHAR(150) NOT NULL,
     description TEXT,
@@ -348,6 +350,12 @@ const TABLES = [
     CONSTRAINT fk_csess_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
   )`,
 
+  // last number handed out, e.g. for product codes
+  `CREATE TABLE IF NOT EXISTS counters (
+    name VARCHAR(40) PRIMARY KEY,
+    value INT NOT NULL DEFAULT 0
+  )`,
+
   // every saved version of an email template (Emails → template → History)
   `CREATE TABLE IF NOT EXISTS email_template_versions (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -478,6 +486,9 @@ export async function initDatabase() {
   // colour options: [{ name, hex, image }] on the product, and the colour chosen on each order line
   await addColumn("products", "colors", "JSON DEFAULT NULL AFTER sizes");
   await addColumn("order_items", "color", "VARCHAR(40) DEFAULT NULL AFTER size");
+  // permanent product codes (see lib/codes.js)
+  await addColumn("products", "code_no", "INT DEFAULT NULL UNIQUE AFTER slug");
+  await pool.query("INSERT IGNORE INTO counters (name, value) VALUES ('product_code', 0)");
   // customer accounts: sign out everywhere / after a password change
   await addColumn("customers", "token_version", "INT NOT NULL DEFAULT 0 AFTER locked_until");
   // order tracking: more statuses, refunds, courier link and expected delivery (existing values are all kept)
@@ -532,6 +543,8 @@ export async function initDatabase() {
     }
     console.log(`Seeded ${PRODUCTS.length} products`);
   }
+  const coded = await assignProductCodes();
+  if (coded) console.log(`Gave ${coded} products a permanent code`);
 
   const [existing] = await pool.query("SELECT id FROM admins WHERE email = ?", [DEFAULT_ADMIN_EMAIL]);
   if (existing.length === 0) {

@@ -162,6 +162,7 @@ header.site .mobile-nav .wrap{max-height:calc(100vh - var(--hdr) - 40px);overflo
 .spot-price{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:6px;font-variant-numeric:tabular-nums}
 .spot-price b{font-size:1.4rem;font-family:var(--display)}
 .spot-price s{color:var(--muted)}
+.off-badge{display:inline-block;background:var(--marigold);color:var(--ink);font-weight:800;font-size:.74rem;line-height:1.3;padding:3px 9px;border-radius:999px;text-transform:uppercase;white-space:nowrap;font-variant-numeric:tabular-nums}
 .save{background:#E3F2EA;color:var(--ok);font-weight:700;font-size:.8rem;padding:2px 8px;border-radius:6px}
 .spot-actions{display:flex;flex-direction:column;align-items:stretch;gap:6px}
 .spot-actions a{text-align:center;font-weight:600;font-size:.9rem;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
@@ -257,7 +258,6 @@ header.site .mobile-nav .wrap{max-height:calc(100vh - var(--hdr) - 40px);overflo
 .stage .art{transition:transform .5s ease}
 .spread:hover .stage .art svg,.spread:hover .stage .art img{transform:scale(1.08) rotate(-3deg)}
 .stage .art svg,.stage .art img{transition:transform .5s ease}
-.stage .off{position:absolute;top:16px;left:16px;background:var(--marigold);color:var(--ink);font-weight:800;font-size:.82rem;padding:5px 11px;border-radius:999px;z-index:1;font-variant-numeric:tabular-nums}
 .info{padding:30px 32px 28px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .info-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .info-top .mono{color:var(--muted)}
@@ -525,7 +525,7 @@ header.site .icon-btn:hover{background:rgba(255,255,255,.08)}
 .hb-link{display:block;border-radius:24px;transition:transform .3s}
 .hb-link:hover{transform:translateY(-3px)}
 @media (max-width:640px){.hero-banner{padding-block:14px 18px}.hero-banner img,.hb-link{border-radius:16px}.hero-crest{width:70px;height:70px}}
-.spot-off,.stage .off{background:var(--gold-grad);box-shadow:0 4px 12px -4px rgba(150,100,0,.5)}
+.spot-off,.off-badge{background:var(--gold-grad);box-shadow:0 4px 12px -4px rgba(150,100,0,.5)}
 
 /* Trust band: maroon seals with gold icons */
 .trust-band{background:var(--surface);border-block:1px solid var(--line)}

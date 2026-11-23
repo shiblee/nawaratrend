@@ -2,6 +2,7 @@
 import express from "express";
 import { pool } from "../../config/db.js";
 import { ah, HttpError, str, num, oneOf, strList, bool, colorList, paging, slugify, jsonList, URL_RE } from "../../lib/http.js";
+import { assignProductCodes, productCode } from "../../lib/codes.js";
 import { audit } from "../../lib/store.js";
 import { requireRole } from "../../middleware/auth.js";
 
@@ -12,7 +13,7 @@ const canEdit = requireRole("owner", "manager");
 const shape = (r) => ({
   ...r, price: Number(r.price), mrp: Number(r.mrp), cost_price: r.cost_price == null ? null : Number(r.cost_price),
   rating: Number(r.rating), highlights: jsonList(r.highlights), sizes: jsonList(r.sizes), colors: jsonList(r.colors), images: jsonList(r.images),
-  is_featured: !!r.is_featured,
+  is_featured: !!r.is_featured, code: productCode(r.code_no),
 });
 
 function readProduct(b) {
@@ -51,9 +52,13 @@ async function ensureUnique(field, value, id) {
 }
 
 router.get("/products", ah(async (req, res) => {
+  await assignProductCodes();   // anything added straight into the database
   const { page, limit, offset } = paging(req.query);
   const where = [], args = [];
-  if (req.query.search) { where.push("(p.name LIKE ? OR p.sku LIKE ? OR p.slug LIKE ?)"); const s = `%${req.query.search}%`; args.push(s, s, s); }
+  if (req.query.search) {
+    const s = `%${req.query.search}%`, code = String(req.query.search).trim().match(/^nt-?0*([1-9]\d{0,8})$/i);   // "NT-09"
+    where.push(`(p.name LIKE ? OR p.sku LIKE ? OR p.slug LIKE ?${code ? " OR p.code_no = ?" : ""})`); args.push(s, s, s, ...(code ? [Number(code[1])] : []));
+  }
   if (req.query.category) { where.push("p.category_id = ?"); args.push(Number(req.query.category)); }
   if (["active", "draft", "archived"].includes(req.query.status)) { where.push("p.status = ?"); args.push(req.query.status); }
   if (req.query.stock === "low") where.push("p.stock > 0 AND p.stock <= p.low_stock_threshold");
@@ -83,6 +88,7 @@ router.post("/products", canEdit, ah(async (req, res) => {
   const p = readProduct(req.body || {});
   await ensureUnique("slug", p.slug); await ensureUnique("sku", p.sku);
   const [r] = await pool.query("INSERT INTO products SET ?", [p]);
+  await assignProductCodes();
   await audit(req, "product.create", "product", r.insertId, { name: p.name, price: p.price, stock: p.stock });
   res.status(201).json({ id: r.insertId });
 }));
