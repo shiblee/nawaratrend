@@ -72,7 +72,7 @@ export function customerVars(c) {
 export async function orderVars(orderId, conn = pool) {
   const [[o]] = await conn.query("SELECT * FROM orders WHERE id = ?", [orderId]);
   if (!o) return null;
-  const [items] = await conn.query("SELECT product_name, size, qty, line_total FROM order_items WHERE order_id = ? ORDER BY id", [orderId]);
+  const [items] = await conn.query("SELECT product_name, size, color, qty, line_total FROM order_items WHERE order_id = ? ORDER BY id", [orderId]);
   const [cust] = o.customer_id ? await conn.query("SELECT name, email FROM customers WHERE id = ?", [o.customer_id]) : [[]];
   const site = siteUrl(await getSettings(conn));
   const c = cust[0];

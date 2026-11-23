@@ -5,7 +5,7 @@ import { useAdminAuth } from "../../context/AdminAuthContext.jsx";
 import { Alert, Button, Card, CardHeader, Field, Input, Select, Stat, Textarea, Toggle, money, num, useLoad, useToast, PRODUCT_STATUS } from "../../components/admin/ui.jsx";
 
 const EMPTY = { name: "", slug: "", category_id: "", description: "", price: "", mrp: "", cost_price: "", sku: "", stock: 0, low_stock_threshold: 5,
-  rating: 0, review_count: 0, highlights: "", sizes: "", images: "", status: "active", is_featured: false, sort_order: 0, seo_title: "", seo_description: "" };
+  rating: 0, review_count: 0, highlights: "", sizes: "", colors: [], images: "", status: "active", is_featured: false, sort_order: 0, seo_title: "", seo_description: "" };
 const lines = (s) => s.split("\n").map((x) => x.trim()).filter(Boolean);
 
 export default function ProductEdit() {
@@ -33,6 +33,8 @@ export default function ProductEdit() {
   const price = Number(f.price) || 0, mrp = Number(f.mrp) || 0, cost = f.cost_price === "" ? null : Number(f.cost_price);
   const discount = mrp > price && price ? Math.round((1 - price / mrp) * 100) : 0;
   const profit = cost != null && price ? price - cost : null;
+
+  const setColor = (i, k, v) => setF({ ...f, colors: f.colors.map((c, j) => (j === i ? { ...c, [k]: v } : c)) });
 
   const submit = async (e) => {
     e.preventDefault();
@@ -95,6 +97,28 @@ export default function ProductEdit() {
               <Field label="Sizes" hint="(comma-separated; leave empty if the product has no sizes)" error={fe("sizes")} className="sm:col-span-2">
                 <Input value={f.sizes} onChange={set("sizes")} placeholder="S, M, L, XL" />
               </Field>
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Colours" sub="Customers can choose one or several colours, each with its own quantity. Leave empty if the product has no colours. Remove a colour when it runs out: stock is counted for the whole product." />
+            <div className="space-y-3 p-5">
+              {fe("colors") && <Alert>{fe("colors")}</Alert>}
+              {f.colors.map((c, i) => (
+                <div key={i} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 p-2">
+                  <input type="color" value={c.hex} onChange={(e) => setColor(i, "hex", e.target.value)} aria-label={`Swatch for ${c.name || "new colour"}`} className="h-10 w-12 cursor-pointer rounded-lg border border-slate-300 bg-white p-1" />
+                  <div className="w-36"><Input value={c.name} onChange={(e) => setColor(i, "name", e.target.value)} placeholder="Yellow" maxLength={40} required aria-label="Colour name" /></div>
+                  <div className="min-w-40 flex-1">
+                    <Select value={c.image || ""} onChange={(e) => setColor(i, "image", e.target.value || null)} aria-label={`Photo for ${c.name || "new colour"}`}>
+                      <option value="">No photo (swatch only)</option>
+                      {[...new Set([...lines(f.images), ...(c.image ? [c.image] : [])])].map((src, j) => <option key={src} value={src}>Photo {j + 1} ({src.split("/").pop()})</option>)}
+                    </Select>
+                  </div>
+                  {c.image && <img src={c.image} alt="" className="h-10 w-10 rounded-lg object-cover" />}
+                  <Button type="button" variant="ghost" size="sm" className="!text-red-600" onClick={() => setF({ ...f, colors: f.colors.filter((_, j) => j !== i) })}>Remove</Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => setF({ ...f, colors: [...f.colors, { name: "", hex: "#F5C518", image: null }] })}>+ Add a colour</Button>
             </div>
           </Card>
 

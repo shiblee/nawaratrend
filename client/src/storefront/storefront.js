@@ -111,7 +111,8 @@ export function loadCatalog(){
       BANNER = d.settings.banner && /^https?:\/\//i.test(d.settings.banner.image) ? d.settings.banner : null;
       categories.splice(0, categories.length, ...d.categories.map(c => ({k: safe(c.k), n: safe(c.n)})));
       products.splice(0, products.length, ...d.products.map(p => ({...p, id: safe(p.id), cat: safe(p.cat), name: safe(p.name), desc: safe(p.desc),
-        points: (p.points || []).map(safe), sizes: p.sizes && p.sizes.map(safe)})));
+        points: (p.points || []).map(safe), sizes: p.sizes && p.sizes.map(safe),
+        colors: p.colors && p.colors.map(c => ({...c, name: safe(c.name)}))})));
       regroup();
       restoreSaved();
       return "live";
@@ -125,10 +126,10 @@ export function loadCatalog(){
   return catalogPromise;
 }
 
-/** The "add" control for a product: a size picker link, a disabled "Out of stock" button, or a real add button. */
+/** The "add" control for a product: a size or colour picker link, a disabled "Out of stock" button, or a real add button. */
 export const buyControl = (p, cls, label = "Add to cart") =>
   p.stock === 0 ? `<button type="button" class="btn btn-ink ${cls}" disabled>Out of stock</button>`
-  : p.sizes ? `<a class="btn btn-ink ${cls}" href="/product/${p.id}">Choose size</a>`
+  : p.sizes || p.colors ? `<a class="btn btn-ink ${cls}" href="/product/${p.id}">Choose ${p.sizes && p.colors ? "options" : p.sizes ? "size" : "colour"}</a>`
   : `<button type="button" class="btn btn-ink ${cls}" data-buy>${label}</button>`;
 
 // a real photo fills the frame (over a blurred copy of itself, so any shape fits); otherwise the category icon on a plinth
@@ -141,19 +142,29 @@ export const ratingHtml = (p, long) => p.reviews > 0 && p.rate > 0
   ? null : `<span class="new-badge">New${long ? " arrival" : ""}</span>`;
 
 // Cart and wishlist live at module level so they survive moving between pages, and are saved in the
-// browser so they survive a refresh. Cart keys are "productId" or "productId|size".
+// browser so they survive a refresh. Cart keys are "productId", "productId|size" or "productId|size|colour"
+// (the size is empty for a product that only has colours: "productId||Yellow").
 const cart = {}; // key -> qty
 const wish = new Set();
-export const cartKey = (id, size) => size ? `${id}|${size}` : id;
-export const parseKey = key => { const [id, size] = key.split("|"); return {id, size: size || null}; };
+export const cartKey = (id, size, color) => color ? `${id}|${size || ""}|${color}` : size ? `${id}|${size}` : id;
+export const parseKey = key => { const [id, size, color] = key.split("|"); return {id, size: size || null, color: color || null}; };
+/** "Size M · Yellow · " in front of a price or quantity; empty when the product has no options. */
+export const optsText = ({size, color}) => [size && `Size ${size}`, color].filter(Boolean).map(x => x + " · ").join("");
+/** The small picture on a cart line: the photo of the colour chosen, otherwise the category icon. */
+export const lineThumb = (p, color) => {
+  const img = p.colors?.find(c => c.name === color)?.image;
+  return `<span class="thumb" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${img ? `<img src="${img}" alt="">` : svg(p.cat, 1.8)}</span>`;
+};
 const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode: keep for this visit only */ } },
 };
 function restoreSaved(){
   const known = id => products.some(p => p.id === id);
+  // a colour that's no longer sold (or a product that gained or lost its colours) can't stay in the cart
+  const colorOk = ({id, color}) => { const cs = products.find(p => p.id === id)?.colors; return cs ? cs.some(c => c.name === color) : !color; };
   Object.keys(cart).forEach(k => delete cart[k]);
-  Object.entries(store.get("nt_cart") || {}).forEach(([k, q]) => { if(known(parseKey(k).id) && q > 0) cart[k] = Math.min(10, q|0); });
+  Object.entries(store.get("nt_cart") || {}).forEach(([k, q]) => { const l = parseKey(k); if(known(l.id) && colorOk(l) && q > 0) cart[k] = Math.min(10, q|0); });
   wish.clear();
   (store.get("nt_wish") || []).forEach(id => known(id) && wish.add(id));
 }
@@ -224,15 +235,19 @@ export function initStorefront(){
 
   /* ---------- Cart ---------- */
   const inCart = id => Object.keys(cart).filter(k => parseKey(k).id === id).reduce((s, k) => s + cart[k], 0);
-  /** Returns false (and explains why) if the item can't be added. Sized products need a size. */
-  function addToCart(p, q=1, size=null){
-    if(p.sizes && !size){ say("Please choose a size on the product page"); return false; }
+  const addToCart = (p, q=1, size=null) => addLines(p, [{q, size, color: null}]);
+  /** Adds several options of one product together, e.g. two yellow and one green: lines = [{q, size, color}].
+      Returns false (and explains why) if they can't all be added. */
+  function addLines(p, lines){
+    if(p.sizes && lines.some(l => !l.size)){ say("Please choose a size on the product page"); return false; }
+    if(p.colors && (!lines.length || lines.some(l => !l.color))){ say("Please choose a colour on the product page"); return false; }
+    const q = lines.reduce((s, l) => s + l.q, 0);
     if(p.stock === 0){ say(`Sorry, ${p.name} is out of stock`); return false; }
     if(p.stock != null && inCart(p.id) + q > p.stock){ say(`Only ${p.stock} of this item in stock`); return false; }
-    const k = cartKey(p.id, size);
-    cart[k] = Math.min(10, (cart[k]||0) + q);
+    lines.forEach(l => { const k = cartKey(p.id, l.size, l.color); cart[k] = Math.min(10, (cart[k]||0) + l.q); });
     renderCart();
-    say(`Added to cart: ${p.name}${size ? ` (Size ${size})` : ""}`);
+    const [one] = lines, opts = [one.size && `Size ${one.size}`, lines.length > 1 ? `${lines.length} colours` : one.color].filter(Boolean).join(", ");
+    say(`Added to cart: ${p.name}${opts ? ` (${opts})` : ""}`);
     return true;
   }
   function renderCart(){
@@ -247,10 +262,10 @@ export function initStorefront(){
       `<div class="bar"><i style="width:${Math.min(100, total/FREE_SHIP*100)}%"></i></div>`;
     $("checkout").hidden = count === 0;
     $("dItems").innerHTML = count ? keys.map(k => {
-      const {p, size, q} = line(k);
+      const {p, size, color, q} = line(k);
       return `<div class="d-item" data-key="${k}">
-        <span class="thumb" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${svg(p.cat,1.8)}</span>
-        <div><b>${p.name}</b><span class="sm">${size ? `Size ${size} · ` : ""}${inr(p.price)} each</span>
+        ${lineThumb(p, color)}
+        <div><b>${p.name}</b><span class="sm">${optsText({size, color})}${inr(p.price)} each</span>
           <div class="qty"><button data-d="-1" aria-label="Decrease">−</button><output>${q}</output><button data-d="1" aria-label="Increase">+</button></div></div>
         <div style="text-align:right"><b style="font-variant-numeric:tabular-nums">${inr(p.price*q)}</b><button class="rm" data-rm>Remove</button></div>
       </div>`;
@@ -374,7 +389,7 @@ export function initStorefront(){
           <div class="buy">
             <div class="price"><b>${inr(p.price)}</b><s>${inr(p.mrp)}</s><span class="save">Save ${inr(p.mrp-p.price)}</span></div>
             <div class="actions">
-              ${p.sizes || p.stock === 0 ? "" : `<div class="qty"><button data-q="-1" aria-label="Decrease quantity">−</button><output>1</output><button data-q="1" aria-label="Increase quantity">+</button></div>`}
+              ${p.sizes || p.colors || p.stock === 0 ? "" : `<div class="qty"><button data-q="-1" aria-label="Decrease quantity">−</button><output>1</output><button data-q="1" aria-label="Increase quantity">+</button></div>`}
               ${buyControl(p, "add")}
             </div>
           </div>
@@ -414,7 +429,7 @@ export function initStorefront(){
   }
 
   const clearCart = () => { Object.keys(cart).forEach(id => delete cart[id]); renderCart(); };
-  Object.assign(actions, {addToCart, toggleWish, say, openCart, renderCart, clearCart});
+  Object.assign(actions, {addToCart, addLines, toggleWish, say, openCart, renderCart, clearCart});
   renderCart();
   wish.forEach(id => document.querySelectorAll(`[data-wish="${id}"]`).forEach(b => b.setAttribute("aria-pressed", true)));
   $("wishCount").textContent = wish.size; $("wishCount").dataset.n = wish.size;

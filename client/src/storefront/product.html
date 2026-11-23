@@ -39,7 +39,14 @@
           <p class="opt-err" id="sizeErr" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></svg>Please choose a size first.</p>
         </div>
 
-        <div class="opt">
+        <div class="opt" id="colorBox" hidden>
+          <div class="opt-head"><b>Colour</b><span id="colorSel">Choose one or more</span></div>
+          <div class="colors" id="colors" role="group" aria-label="Colour: choose one or more"></div>
+          <p class="opt-err" id="colorErr" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></svg>Please choose at least one colour.</p>
+          <p class="color-sum" id="colorSum" aria-live="polite" hidden></p>
+        </div>
+
+        <div class="opt" id="qtyBox">
           <div class="opt-head"><b>Quantity</b></div>
           <div class="qty big"><button type="button" id="qMinus" aria-label="Decrease quantity">−</button><output id="qOut">1</output><button type="button" id="qPlus" aria-label="Increase quantity">+</button></div>
         </div>

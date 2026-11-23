@@ -128,7 +128,7 @@ export async function buildSeo(rawPath, conf) {
       Object.assign(out, { status: 404, title: full("Product not found"), description: "This product isn't available any more.", robots: "noindex, follow" });
     } else {
       const price = Number(p.price), mrp = Number(p.mrp), off = mrp > price ? Math.round((1 - price / mrp) * 100) : 0;
-      const images = jsonList(p.images);
+      const images = jsonList(p.images), colors = jsonList(p.colors).map((x) => x.name);
       Object.assign(out, {
         title: full(p.seo_title || `${p.name} at ₹${price.toLocaleString("en-IN")}${off ? ` (${off}% off)` : ""}`),
         description: p.seo_description || clip(`${String(p.description || p.name).replace(/[.!\s]+$/, "")}. ${off ? `Now ${off}% off. ` : ""}100% genuine, free delivery on orders ₹${c.store.free_shipping_threshold.toLocaleString("en-IN")}+.`, 160),
@@ -141,7 +141,7 @@ export async function buildSeo(rawPath, conf) {
       out.jsonLd.push({
         "@type": "Product", "@id": `${out.canonical}#product`, name: p.name, description: clip(p.description || p.name, 5000),
         sku: p.sku || p.slug, image: images.length ? images : c.shareImage ? [c.shareImage] : undefined,
-        brand: { "@type": "Brand", name }, category: p.category_name || undefined, url: out.canonical,
+        brand: { "@type": "Brand", name }, category: p.category_name || undefined, color: colors.join(", ") || undefined, url: out.canonical,
         offers: {
           "@type": "Offer", url: out.canonical, priceCurrency: "INR", price: price.toFixed(2),
           // the MRP, so Google can show the saving as a struck-through price
@@ -168,6 +168,7 @@ export async function buildSeo(rawPath, conf) {
         + `<p><strong>${inr(price)}</strong>${off ? ` <s>MRP ${inr(mrp)}</s> (${off}% off)` : ""}. ${p.stock > 0 ? "In stock" : "Out of stock"}.</p>`
         + String(p.description || "").split(/\n\s*\n/).map((t) => `<p>${esc(t.trim())}</p>`).join("")
         + (highlights.length ? `<h2>Highlights</h2><ul>${highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>` : "")
+        + (colors.length ? `<p>Available colours: ${esc(colors.join(", "))}</p>` : "")
         + images.map((src, i) => `<img src="${esc(src)}" alt="${esc(`${p.name}, photo ${i + 1} of ${images.length}`)}" loading="lazy">`).join("")
         + (p.category_name ? `<p>More in <a href="/shop/${esc(p.category_slug)}">${esc(p.category_name)}</a></p>` : "") + `</article>`;
     }

@@ -105,6 +105,25 @@ export function paging(q, { maxLimit = 100, defLimit = 20 } = {}) {
 
 export const slugify = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70);
 
+/** Colour options → [{ name, hex, image }]. Names are plain text (no symbols): they are part of the cart key in the browser. */
+export function colorList(v, field = "colors") {
+  if (v == null) return [];
+  if (!Array.isArray(v) || v.length > 20) bad(field, "Add up to 20 colours");
+  const seen = new Set();
+  return v.map((c, i) => {
+    const f = `${field}[${i + 1}]`;
+    const name = str(c?.name, f, { max: 40, pattern: /^[\p{L}\p{M}\p{N} -]+$/u, msg: "Colour names can use letters, numbers, spaces and hyphens" });
+    if (seen.has(name.toLowerCase())) bad(f, `The colour "${name}" is listed twice`);
+    seen.add(name.toLowerCase());
+    const hex = str(c?.hex, f, { pattern: /^#[0-9a-f]{6}$/i, msg: `Choose a swatch colour for ${name}` });
+    const image = str(c?.image, f, { optional: true, max: 500, pattern: URL_RE, msg: `The photo for ${name} must be a link starting with https://` });
+    return { name, hex, image: image || null };
+  });
+}
+
+/** "Size M · Yellow": the options chosen on an order line, or "" when there are none. */
+export const optionsLabel = (i) => [i.size && `Size ${i.size}`, i.color].filter(Boolean).join(" · ");
+
 /** JSON column → array (mysql2 already parses JSON, but older rows may be strings). */
 export const jsonList = (v) => {
   if (Array.isArray(v)) return v;

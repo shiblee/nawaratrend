@@ -20,6 +20,7 @@ const publicProduct = (r) => {
     price: Number(r.price), mrp: Number(r.mrp), rate: Number(r.rating), reviews: r.review_count,
     stock: r.stock, left: r.stock > 0 && r.stock <= r.low_stock_threshold ? r.stock : undefined,
     points: jsonList(r.highlights), sizes: jsonList(r.sizes).length ? jsonList(r.sizes) : undefined,
+    colors: jsonList(r.colors).length ? jsonList(r.colors) : undefined,
     img: images[0], images: images.length > 1 ? images : undefined, featured: !!r.is_featured,
   };
 };
@@ -66,6 +67,7 @@ router.post("/orders", limit(60, 20, "Too many orders from this connection. Plea
     slug: str(it?.productId, `items[${i + 1}].productId`, { max: 80 }),
     qty: num(it?.qty, `items[${i + 1}].qty`, { int: true, min: 1, max: 10 }),
     size: str(it?.size, `items[${i + 1}].size`, { optional: true, max: 20 }),
+    color: str(it?.color, `items[${i + 1}].color`, { optional: true, max: 40 }),
   }));
   const a = b.address || {};
   const phone = mobile10(a.phone);
@@ -94,9 +96,13 @@ router.post("/orders", limit(60, 20, "Too many orders from this connection. Plea
       if (!p) throw new HttpError(409, "One of the products in your cart is no longer available. Please review your cart.");
       const sizes = jsonList(p.sizes);
       if (sizes.length && !sizes.includes(it.size)) throw new HttpError(400, `Please choose a size for ${p.name}`);
+      const colors = jsonList(p.colors).map((c) => c.name);
+      if (colors.length && !colors.includes(it.color)) {
+        throw new HttpError(400, it.color ? `${p.name} isn't available in ${it.color} any more. Please choose another colour.` : `Please choose a colour for ${p.name}`);
+      }
       need[p.id] = (need[p.id] || 0) + it.qty;
       const unit = Number(p.price);
-      return { p, qty: it.qty, size: sizes.length ? it.size : null, unit, total: unit * it.qty };
+      return { p, qty: it.qty, size: sizes.length ? it.size : null, color: colors.length ? it.color : null, unit, total: unit * it.qty };
     });
     for (const p of rows) {
       if (need[p.id] > p.stock) {
@@ -125,8 +131,8 @@ router.post("/orders", limit(60, 20, "Too many orders from this connection. Plea
     }
     for (const l of lines) {
       await conn.query(
-        "INSERT INTO order_items (order_id, product_id, product_name, product_slug, size, unit_price, qty, line_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [orderId, l.p.id, l.p.name, l.p.slug, l.size, l.unit, l.qty, l.total]);
+        "INSERT INTO order_items (order_id, product_id, product_name, product_slug, size, color, unit_price, qty, line_total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [orderId, l.p.id, l.p.name, l.p.slug, l.size, l.color, l.unit, l.qty, l.total]);
     }
     for (const [pid, qty] of Object.entries(need)) await conn.query("UPDATE products SET stock = stock - ? WHERE id = ?", [qty, pid]);
     await conn.query("INSERT INTO order_status_history (order_id, status, note, actor) VALUES (?, 'pending', NULL, ?)",

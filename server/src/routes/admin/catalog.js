@@ -1,7 +1,7 @@
 /* Products and categories. Everyone can view; managers and owners can change. */
 import express from "express";
 import { pool } from "../../config/db.js";
-import { ah, HttpError, str, num, oneOf, strList, bool, paging, slugify, jsonList, URL_RE } from "../../lib/http.js";
+import { ah, HttpError, str, num, oneOf, strList, bool, colorList, paging, slugify, jsonList, URL_RE } from "../../lib/http.js";
 import { audit } from "../../lib/store.js";
 import { requireRole } from "../../middleware/auth.js";
 
@@ -11,7 +11,7 @@ const canEdit = requireRole("owner", "manager");
 /* ---------- Products ---------- */
 const shape = (r) => ({
   ...r, price: Number(r.price), mrp: Number(r.mrp), cost_price: r.cost_price == null ? null : Number(r.cost_price),
-  rating: Number(r.rating), highlights: jsonList(r.highlights), sizes: jsonList(r.sizes), images: jsonList(r.images),
+  rating: Number(r.rating), highlights: jsonList(r.highlights), sizes: jsonList(r.sizes), colors: jsonList(r.colors), images: jsonList(r.images),
   is_featured: !!r.is_featured,
 });
 
@@ -33,7 +33,9 @@ function readProduct(b) {
     review_count: num(b.review_count ?? 0, "review count", { int: true, min: 0, max: 10000000 }),
     highlights: JSON.stringify(strList(b.highlights, "highlights", { maxItems: 8, maxLen: 120 })),
     sizes: JSON.stringify(strList(b.sizes, "sizes", { maxItems: 15, maxLen: 20 })),
-    images: JSON.stringify(strList(b.images, "images", { maxItems: 10, maxLen: 500, pattern: URL_RE })),
+    // left alone when not sent, so an older open copy of the form can't wipe the colours
+    ...(b.colors === undefined ? {} : { colors: JSON.stringify(colorList(b.colors)) }),
+    images: JSON.stringify(strList(b.images, "images", { maxItems: 20, maxLen: 500, pattern: URL_RE })),
     status: oneOf(b.status ?? "active", "status", ["active", "draft", "archived"]),
     is_featured: bool(b.is_featured) ? 1 : 0,
     sort_order: num(b.sort_order ?? 0, "sort order", { int: true, min: 0, max: 100000 }),

@@ -6,6 +6,7 @@
      {{customer_name}}                  a placeholder; HTML-escaped in the HTML body
      {{#if tracking_number}} … {{/if}}  shown only when the placeholder has a value (no nesting)
    order_items is the one placeholder that inserts ready-made HTML (a table built by the server). */
+import { optionsLabel } from "../http.js";
 
 export const COMMON_VARS = ["customer_name", "store_name", "company_name", "support_email", "support_phone", "site_url", "website_url", "account_url"];
 export const ORDER_VARS = [
@@ -276,10 +277,10 @@ ${e(ctx.store_name)}${ctx.address ? ` · ${e(ctx.address)}` : ""}<br>
 /** The items table that {{order_items}} inserts. */
 export function itemsTable(items, money) {
   const e = escapeHtml;
-  const rows = items.map((i) => `<tr><td style="padding:8px 0;border-bottom:1px solid #EEE">${e(i.product_name)}${i.size ? ` <span style="color:#6B7280">(Size ${e(i.size)})</span>` : ""}<br><span style="color:#6B7280;font-size:13px">Qty ${i.qty}</span></td><td style="padding:8px 0;border-bottom:1px solid #EEE;text-align:right;white-space:nowrap">${money(i.line_total)}</td></tr>`).join("");
+  const rows = items.map((i) => `<tr><td style="padding:8px 0;border-bottom:1px solid #EEE">${e(i.product_name)}${optionsLabel(i) ? ` <span style="color:#6B7280">(${e(optionsLabel(i))})</span>` : ""}<br><span style="color:#6B7280;font-size:13px">Qty ${i.qty}</span></td><td style="padding:8px 0;border-bottom:1px solid #EEE;text-align:right;white-space:nowrap">${money(i.line_total)}</td></tr>`).join("");
   return {
     html: `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;margin:8px 0 16px">${rows}</table>`,
-    text: items.map((i) => `- ${i.qty} x ${i.product_name}${i.size ? ` (Size ${i.size})` : ""}: ${money(i.line_total)}`).join("\n"),
+    text: items.map((i) => `- ${i.qty} x ${i.product_name}${optionsLabel(i) ? ` (${optionsLabel(i)})` : ""}: ${money(i.line_total)}`).join("\n"),
   };
 }
 

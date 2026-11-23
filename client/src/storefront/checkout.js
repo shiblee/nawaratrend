@@ -1,6 +1,6 @@
 /* Checkout page: account step, delivery address, payment choice and order summary.
    Orders go through services/customerApi.js (a blueprint until the database is connected). */
-import { actions, ordered, svg, inr, cart, parseKey, FREE_SHIP, DELIVERY_FEE, COD_ENABLED } from "./storefront.js";
+import { actions, ordered, inr, cart, parseKey, optsText, lineThumb, FREE_SHIP, DELIVERY_FEE, COD_ENABLED } from "./storefront.js";
 import { currentCustomer, logout, placeOrder, MOCK } from "../services/customerApi.js";
 
 const $ = id => document.getElementById(id);
@@ -63,9 +63,9 @@ export function initCheckout(){
     $("ckForm").hidden = ls.length === 0;
     $("ckIntro").hidden = ls.length === 0;
     if(!ls.length) return;
-    $("sumItems").innerHTML = ls.map(({p, qty, size}) => `<div class="sum-item">
-      <span class="thumb" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${svg(p.cat,1.8)}</span>
-      <div><b>${p.name}</b><small>${size ? `Size ${size} · ` : ""}${qty} × ${inr(p.price)}</small></div><span class="amt">${inr(p.price * qty)}</span></div>`).join("");
+    $("sumItems").innerHTML = ls.map(({p, qty, size, color}) => `<div class="sum-item">
+      ${lineThumb(p, color)}
+      <div><b>${p.name}</b><small>${optsText({size, color})}${qty} × ${inr(p.price)}</small></div><span class="amt">${inr(p.price * qty)}</span></div>`).join("");
     const t = totals();
     $("totals").innerHTML = `<div><span>Subtotal</span><b>${inr(t.sub)}</b></div>
       <div><span>Delivery</span>${t.ship ? `<b>${inr(t.ship)}</b>` : `<b class="free">Free</b>`}</div>
@@ -110,7 +110,7 @@ export function initCheckout(){
     const ls = lines(), t = totals();
     btn.classList.add("loading");
     try {
-      const res = await placeOrder({ items: ls.map(l => ({productId: l.p.id, qty: l.qty, size: l.size})), address, payment });
+      const res = await placeOrder({ items: ls.map(l => ({productId: l.p.id, qty: l.qty, size: l.size, color: l.color})), address, payment });
       if(ac.signal.aborted) return;   // left the page while the order was being placed
       placed = true;
       actions.clearCart();

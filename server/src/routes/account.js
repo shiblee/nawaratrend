@@ -321,15 +321,17 @@ const FILTERS = {
   closed: "o.status IN ('cancelled','returned')",
 };
 const firstImage = (v) => jsonList(v)[0] || null;
+/** The photo of the colour ordered, or the product's main photo. */
+const itemImage = (i) => jsonList(i.colors).find((c) => c.name === i.color)?.image || firstImage(i.images);
 
 async function itemsFor(orderIds) {
   if (!orderIds.length) return [];
   const [items] = await pool.query(
-    `SELECT oi.order_id, oi.product_name, oi.product_slug, oi.size, oi.unit_price, oi.qty, oi.line_total, p.images, p.status AS product_status
+    `SELECT oi.order_id, oi.product_name, oi.product_slug, oi.size, oi.color, oi.unit_price, oi.qty, oi.line_total, p.images, p.colors, p.status AS product_status
      FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id WHERE oi.order_id IN (?) ORDER BY oi.id`, [orderIds]);
   return items.map((i) => ({
-    order_id: i.order_id, name: i.product_name, slug: i.product_status === "active" ? i.product_slug : null, size: i.size,
-    qty: i.qty, unit_price: Number(i.unit_price), line_total: Number(i.line_total), image: firstImage(i.images),
+    order_id: i.order_id, name: i.product_name, slug: i.product_status === "active" ? i.product_slug : null, size: i.size, color: i.color,
+    qty: i.qty, unit_price: Number(i.unit_price), line_total: Number(i.line_total), image: itemImage(i),
   }));
 }
 

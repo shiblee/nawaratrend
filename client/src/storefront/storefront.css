@@ -394,6 +394,7 @@ footer ul a:hover::before{width:10px;margin-right:8px}
 .d-item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
 .d-item .thumb{width:64px;height:64px;border-radius:12px;display:grid;place-items:center}
 .d-item .thumb svg{width:28px;height:28px}
+.d-item .thumb img,.sum-item .thumb img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .d-item b{display:block;font-size:.92rem;line-height:1.3}
 .d-item .sm{font-size:.84rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .d-item .qty{height:36px;border-width:1.5px;margin-top:6px;width:max-content}

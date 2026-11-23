@@ -128,7 +128,7 @@ export default function OrderDetail() {
                 <li key={i.id} className="flex flex-wrap items-center gap-3 px-5 py-3 text-sm">
                   <div className="min-w-0 flex-1">
                     {i.product_id ? <Link to={`/admin/products/${i.product_id}`} className="font-medium hover:underline">{i.product_name}</Link> : <span className="font-medium">{i.product_name}</span>}
-                    <div className="text-xs text-slate-500">{i.size ? `Size ${i.size} · ` : ""}{money(i.unit_price)} each{i.current_stock != null ? ` · ${i.current_stock} in stock now` : " · product removed"}</div>
+                    <div className="text-xs text-slate-500">{i.size ? `Size ${i.size} · ` : ""}{i.color ? <b className="text-slate-700">{i.color} · </b> : ""}{money(i.unit_price)} each{i.current_stock != null ? ` · ${i.current_stock} in stock now` : " · product removed"}</div>
                   </div>
                   <span className="tabular-nums text-slate-600">× {i.qty}</span>
                   <span className="w-24 text-right font-semibold tabular-nums">{money(i.line_total)}</span>

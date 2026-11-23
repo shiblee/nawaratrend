@@ -33,6 +33,9 @@ function gallery(p, reduce){
     if(!reduce){ const a = $("gArt").firstElementChild; a.classList.add("fade"); }
     $("gCount").textContent = `${gi+1} / ${n} · ${photos[gi].label}`;
     th.querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === gi));
+    // keep the current thumbnail in view (scrolls the strip only, never the page)
+    const tb = th.children[gi];
+    if(tb) th.scrollTo({left: tb.offsetLeft - th.offsetLeft - (th.clientWidth - tb.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth"});
   };
 
   if(n > 1){
@@ -54,6 +57,8 @@ function gallery(p, reduce){
   gm.addEventListener("click", e => { if(e.target.closest(".g-tools,.g-arrow")) return; aim(e); gm.classList.toggle("zoom"); });
   gm.addEventListener("mousemove", e => { if(gm.classList.contains("zoom")) aim(e); });
   show(0);
+  /** Shows the photo with this address (used when a colour is chosen). */
+  return src => { const i = (p.images || []).indexOf(src); if(i >= 0) show(i); };
 }
 
 export function initProduct(id){
@@ -62,7 +67,9 @@ export function initProduct(id){
   const later = (fn, ms) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; };
   const cleanup = () => { ac.abort(); timers.forEach(clearTimeout); document.body.classList.remove("has-sticky"); };
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const { addToCart, toggleWish, say, openCart } = actions;
+  const { addLines, toggleWish, say, openCart } = actions;
+  const add = $("pAdd"), addLbl = add.querySelector("span");
+  const addText = () => p.colors && pickedQty() > 1 ? `Add ${pickedQty()} to cart` : "Add to cart";
   $("shopBtn").classList.add("on");
 
   const p = ordered.find(x => x.id === id);
@@ -80,7 +87,7 @@ export function initProduct(id){
   $("pCrumbs").lastElementChild.textContent = p.name;
   $("gMain").style.background = `var(--${p.cat}-bg)`;
   $("gOff").textContent = `${off(p)}% OFF`;
-  gallery(p, reduce);
+  const showPhoto = gallery(p, reduce);
   const catTag = $("pCat");
   catTag.textContent = cat; catTag.href = `/shop/${p.cat}`;
   catTag.style.background = `var(--${p.cat}-bg)`; catTag.style.color = `var(--${p.cat})`;
@@ -129,6 +136,56 @@ export function initProduct(id){
     return true;
   }
 
+  /* ---------- Colour ----------
+     One or several colours can be chosen; each has its own quantity and becomes its own cart line. */
+  const picked = new Map();   // colour name -> quantity
+  const pickedQty = () => [...picked.values()].reduce((s, n) => s + n, 0);
+  const total = () => p.colors ? pickedQty() : q;
+  function renderColors(){
+    const n = pickedQty(), full = p.stock != null && n >= p.stock;
+    $("colors").querySelectorAll(".clr").forEach(el => {
+      const c = el.dataset.c, has = picked.get(c) || 0;
+      el.classList.toggle("on", has > 0);
+      el.querySelector(".clr-pick").setAttribute("aria-pressed", has > 0);
+      el.querySelector(".clr-qty").hidden = !has;
+      el.querySelector("output").textContent = has || 1;
+      el.querySelector('[data-cq="1"]').disabled = has >= 10 || full;
+    });
+    const sel = $("colorSel");
+    sel.textContent = !picked.size ? "Choose one or more" : picked.size === 1 ? `Selected: ${[...picked.keys()][0]}` : `${picked.size} colours selected`;
+    sel.classList.toggle("chosen", picked.size > 0);
+    $("colorSum").hidden = !picked.size;
+    $("colorSum").innerHTML = `<span>${[...picked].map(([c, k]) => `${c} × ${k}`).join(", ")}</span><b>${inr(p.price * n)}</b>`;
+    if(picked.size){ $("colorErr").hidden = true; $("colorBox").classList.remove("invalid"); }
+    if(!soldOut && !add.classList.contains("added")) addLbl.textContent = addText();
+    ship();
+  }
+  if(p.colors){
+    $("colorBox").hidden = false; $("qtyBox").hidden = true;
+    $("colors").innerHTML = p.colors.map(c => `<div class="clr" data-c="${c.name}" style="--c:${c.hex}">
+      <button type="button" class="clr-pick" aria-pressed="false"${soldOut ? " disabled" : ""}><span class="clr-pic">${c.image ? `<img src="${c.image}" alt="" loading="lazy" decoding="async">` : ""}</span><span class="clr-name"><i aria-hidden="true"></i>${c.name}</span></button>
+      <span class="clr-tick" aria-hidden="true">${check}</span>
+      <div class="clr-qty" hidden><button type="button" data-cq="-1" aria-label="Fewer ${c.name}">−</button><output aria-label="Quantity of ${c.name}">1</output><button type="button" data-cq="1" aria-label="More ${c.name}">+</button></div>
+    </div>`).join("");
+    $("colors").addEventListener("click", e => {
+      const el = e.target.closest(".clr"), b = e.target.closest("button"); if(!el || !b) return;
+      const c = el.dataset.c, has = picked.get(c) || 0, room = p.stock == null || pickedQty() < p.stock;
+      const step = b.dataset.cq ? +b.dataset.cq : has ? -has : 1;   // tapping a chosen colour again removes it
+      if(step > 0 && !room){ say(`Only ${p.stock} left in stock`); return; }
+      const next = Math.min(10, has + step);
+      if(next > 0) picked.set(c, next); else { picked.delete(c); if(b.dataset.cq) el.querySelector(".clr-pick").focus(); }
+      if(!has && next > 0) showPhoto(p.colors.find(x => x.name === c).image);
+      renderColors();
+    });
+  }
+  function needColor(){
+    if(!p.colors || picked.size) return false;
+    $("colorErr").hidden = false; $("colorBox").classList.add("invalid");
+    $("colorBox").scrollIntoView({block:"center", behavior: reduce ? "auto" : "smooth"});
+    const s = $("colors"); s.classList.remove("shake"); void s.offsetWidth; s.classList.add("shake");
+    return true;
+  }
+
   /* ---------- Quantity ---------- */
   const MAXQ = p.stock ? Math.min(p.stock, 10) : 10;
   let q = 1;
@@ -138,20 +195,19 @@ export function initProduct(id){
 
   /* ---------- Free delivery note ---------- */
   function ship(){
-    const total = p.price * q, left = 999 - total, el = $("pShip");
+    const sum = p.price * Math.max(1, total()), left = 999 - sum, el = $("pShip");
     el.classList.toggle("free", left <= 0);
     el.innerHTML = left <= 0
       ? `✓ This order qualifies for free delivery`
-      : `Add ${inr(left)} more for free delivery <span class="bar"><i style="width:${Math.min(100, total/999*100)}%"></i></span>`;
+      : `Add ${inr(left)} more for free delivery <span class="bar"><i style="width:${Math.min(100, sum/999*100)}%"></i></span>`;
   }
 
   /* ---------- Buy ---------- */
-  const add = $("pAdd"), addLbl = add.querySelector("span");
   function doAdd(){
-    if(needSize()) return false;
-    if(!addToCart(p, q, size)) return false;
+    if(needSize() || needColor()) return false;
+    if(!addLines(p, p.colors ? [...picked].map(([color, n]) => ({q: n, size, color})) : [{q, size, color: null}])) return false;
     add.classList.add("added"); addLbl.textContent = "Added ✓";
-    later(() => { add.classList.remove("added"); addLbl.textContent = "Add to cart"; }, 1500);
+    later(() => { add.classList.remove("added"); addLbl.textContent = addText(); }, 1500);
     return true;
   }
   add.onclick = doAdd;
@@ -168,6 +224,7 @@ export function initProduct(id){
   $("pPoints").innerHTML = p.points.map(x => `<li><span class="ck">${check}</span>${x}</li>`).join("");
   const rows = [["Product code", `NT-${pad(p.no)}`], ["Category", `<a href="/shop/${p.cat}">${cat}</a>`]]
     .concat(p.sizes ? [["Sizes", p.sizes.join(", ")]] : [])
+    .concat(p.colors ? [["Colours", p.colors.map(c => c.name).join(", ")]] : [])
     .concat([["MRP", inr(p.mrp)], ["Our price", `${inr(p.price)} (${off(p)}% off)`], ["Ships from", "Lucknow, Uttar Pradesh"],
              ["Delivery", p.price >= 999 ? "Free delivery" : "Free on orders above ₹999"], ["Returns", `<a href="/refund-policy">7-day returns, see our policy</a>`]]);
   $("pDetails").innerHTML = rows.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");

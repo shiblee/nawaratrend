@@ -55,6 +55,7 @@ const TABLES = [
     review_count INT NOT NULL DEFAULT 0,
     highlights JSON DEFAULT NULL,
     sizes JSON DEFAULT NULL,
+    colors JSON DEFAULT NULL,
     images JSON DEFAULT NULL,
     status ENUM('active','draft','archived') NOT NULL DEFAULT 'active',
     is_featured TINYINT(1) NOT NULL DEFAULT 0,
@@ -118,6 +119,7 @@ const TABLES = [
     product_name VARCHAR(150) NOT NULL,
     product_slug VARCHAR(80) DEFAULT NULL,
     size VARCHAR(20) DEFAULT NULL,
+    color VARCHAR(40) DEFAULT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
     qty INT NOT NULL,
     line_total DECIMAL(10,2) NOT NULL,
@@ -473,6 +475,9 @@ export async function initDatabase() {
   await pool.query("ALTER TABLE settings MODIFY value TEXT NOT NULL");
   await addColumn("products", "seo_title", "VARCHAR(80) DEFAULT NULL AFTER sort_order");
   await addColumn("products", "seo_description", "VARCHAR(200) DEFAULT NULL AFTER seo_title");
+  // colour options: [{ name, hex, image }] on the product, and the colour chosen on each order line
+  await addColumn("products", "colors", "JSON DEFAULT NULL AFTER sizes");
+  await addColumn("order_items", "color", "VARCHAR(40) DEFAULT NULL AFTER size");
   // customer accounts: sign out everywhere / after a password change
   await addColumn("customers", "token_version", "INT NOT NULL DEFAULT 0 AFTER locked_until");
   // order tracking: more statuses, refunds, courier link and expected delivery (existing values are all kept)

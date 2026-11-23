@@ -90,7 +90,7 @@ export function orderHtml(o, { guest = false } = {}){
         <h2>Items</h2>
         <ul class="ov-items">${o.items.map(i => `<li>
           ${thumb(i)}
-          <div><b>${i.slug ? `<a href="/product/${esc(i.slug)}">${esc(i.name)}</a>` : esc(i.name)}</b><small>${i.size ? `Size ${esc(i.size)} · ` : ""}Qty ${i.qty}</small></div>
+          <div><b>${i.slug ? `<a href="/product/${esc(i.slug)}">${esc(i.name)}</a>` : esc(i.name)}</b><small>${i.size ? `Size ${esc(i.size)} · ` : ""}${i.color ? `${esc(i.color)} · ` : ""}Qty ${i.qty}</small></div>
           <span class="amt">${inr(i.line_total)}</span>
         </li>`).join("")}</ul>
         <div class="totals">

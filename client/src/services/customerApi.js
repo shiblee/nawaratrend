@@ -133,7 +133,7 @@ export const myOrders = (params = {}) => request(`/store/orders/mine${qs(params)
 export const myOrder = async (number) => (await request(`/store/orders/mine/${encodeURIComponent(number)}`)).order;
 export const trackOrder = (order, phone) => send("POST", "/store/orders/track", { order, phone });
 
-/** order = { items:[{productId, qty, size}], address:{...}, payment:"upi"|"card"|"cod" } */
+/** order = { items:[{productId, qty, size, color}], address:{...}, payment:"upi"|"card"|"cod" } */
 export const placeOrder = (order) => request("/store/orders", { method: "POST", body: JSON.stringify(order) });
 
 export const sendContact = (msg) => request("/store/contact", { method: "POST", body: JSON.stringify(msg) });

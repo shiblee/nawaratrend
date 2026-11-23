@@ -51,7 +51,7 @@ router.get("/orders/export.csv", ah(async (req, res) => {
   const [rows] = await pool.query(
     `SELECT o.order_number, o.created_at, o.status, o.payment_method, o.payment_status, o.subtotal, o.delivery_fee, o.total,
             o.ship_name, o.ship_phone, o.ship_email, o.ship_line1, o.ship_line2, o.ship_city, o.ship_state, o.ship_pin, o.courier, o.tracking_number, o.expected_delivery,
-            (SELECT GROUP_CONCAT(CONCAT(qty, ' x ', product_name, IF(size IS NULL, '', CONCAT(' (', size, ')'))) SEPARATOR '; ') FROM order_items WHERE order_id = o.id) AS items
+            (SELECT GROUP_CONCAT(CONCAT(qty, ' x ', product_name, IF(size IS NULL AND color IS NULL, '', CONCAT(' (', CONCAT_WS(', ', size, color), ')'))) SEPARATOR '; ') FROM order_items WHERE order_id = o.id) AS items
      FROM orders o ${w} ORDER BY o.created_at DESC LIMIT 10000`, args);
   const cols = ["order_number", "created_at", "status", "payment_method", "payment_status", "items", "subtotal", "delivery_fee", "total",
     "ship_name", "ship_phone", "ship_email", "ship_line1", "ship_line2", "ship_city", "ship_state", "ship_pin", "courier", "tracking_number", "expected_delivery"];
