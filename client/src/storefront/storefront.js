@@ -59,7 +59,11 @@ const products = [
   {id:"cute-panda-3d-puffy-stickers", cat:"school-essentials", name:"Cute Panda 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
    desc:"A sheet of adorable panda 3D puffy stickers that are easy to peel and water resistant, for notebooks, water bottles, phone cases and gifting.",
    points:["3D puffy design that stands out","Easy to peel and water resistant","For notebooks, water bottles and phone cases","Great for birthday and return gifts"],
-   img:"https://nawaratrend.com/products/cute-panda-3d-puffy-stickers/2.webp"}
+   img:"https://nawaratrend.com/products/cute-panda-3d-puffy-stickers/2.webp"},
+  {id:"cute-food-veggie-3d-puffy-stickers", cat:"school-essentials", name:"Cute Food & Veggie 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
+   desc:"A sheet of cute food and veggie 3D puffy stickers that are easy to peel and water resistant, for notebooks, water bottles, phone cases and gifting.",
+   points:["3D puffy design that stands out","Easy to peel and water resistant","For notebooks, water bottles and phone cases","Great for birthday and return gifts"],
+   img:"https://nawaratrend.com/products/cute-food-veggie-3d-puffy-stickers/1.jpg"}
 ];
 
 const ICON = {
