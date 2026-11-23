@@ -69,7 +69,11 @@ const products = [
    desc:"A mini school bag shaped pencil pouch with multiple zip compartments, a transparent round pocket and a fun cartoon print, in five colours.",
    points:["Mini school bag shape with cartoon print","Multiple zips and a transparent round pocket","Water resistant, easy to clean","Five colours: choose one or mix several"],
    images:["https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg","https://nawaratrend.com/products/kids-backpack-pencil-pouch/2.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/3.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/4.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/5.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/6.webp","https://nawaratrend.com/products/kids-backpack-pencil-pouch/7.webp"],
-   img:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg"}
+   img:"https://nawaratrend.com/products/kids-backpack-pencil-pouch/1.jpg"},
+  {id:"burger-panda-keychain-pouch", cat:"accessories", name:"Cute Burger Keychain Pouch with 3D Panda, Soft Silicone Mini Storage Pouch & Bag Charm for Coins, Earbuds & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
+   desc:"A burger-shaped soft silicone keychain pouch with an adorable 3D panda on top: a keychain, bag charm and mini pouch for coins and earbuds in one.",
+   points:["Adorable 3D panda on top","Mini pouch for coins and earbuds","Soft, durable and flexible silicone","Keychain and bag charm in one"],
+   img:"https://nawaratrend.com/products/burger-panda-keychain-pouch/1.jpg"}
 ];
 
 const ICON = {
