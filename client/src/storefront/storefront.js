@@ -55,7 +55,11 @@ const products = [
   {id:"kids-pink-kitty-water-bottle-500ml", cat:"school-essentials", name:"Kids Water Bottle 500 ml, Fashion Double Drinking Cup with Cute Kitty Topper, 2-in-1 Straw & Sip Lid, Lock and Carry Strap, Pink", price:649, mrp:927, rate:0, reviews:0, stock:50,
    desc:"A cute pink 500 ml kids water bottle, a Fashion Double Drinking Cup with a 3D kitty topper, a dual drinking lid for straw or direct sipping, a push-button lock and a printed carry strap.",
    points:["500 ml capacity, just right for a school day","Dual drinking design: straw or direct sip","Flip-open lid with push-button secure lock: no spills","Lightweight and durable with a printed carry strap"],
-   img:"https://nawaratrend.com/products/kids-pink-kitty-water-bottle/1.jpg"}
+   img:"https://nawaratrend.com/products/kids-pink-kitty-water-bottle/1.jpg"},
+  {id:"cute-panda-3d-puffy-stickers", cat:"school-essentials", name:"Cute Panda 3D Puffy Stickers for Kids, Easy-Peel Water Resistant Sticker Paste Sheet for Notebooks, Water Bottles & Phone Cases", price:149, mrp:213, rate:0, reviews:0, stock:50,
+   desc:"A sheet of adorable panda 3D puffy stickers that are easy to peel and water resistant, for notebooks, water bottles, phone cases and gifting.",
+   points:["3D puffy design that stands out","Easy to peel and water resistant","For notebooks, water bottles and phone cases","Great for birthday and return gifts"],
+   img:"https://nawaratrend.com/products/cute-panda-3d-puffy-stickers/1.jpg"}
 ];
 
 const ICON = {
