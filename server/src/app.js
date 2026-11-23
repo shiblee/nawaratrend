@@ -1,3 +1,4 @@
+import fs from "fs";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -59,7 +60,10 @@ app.use("/api/store/account/avatar", express.json({ limit: "1mb" }));
 app.use(express.json({ limit: "100kb" }));
 app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 300, standardHeaders: true, legacyHeaders: false, message: { message: "Too many requests. Please slow down." } }));
 
-app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+// the version this process started with (written by scripts/deploy.sh), so a deploy can tell when the new one is running
+let build;
+try { build = fs.readFileSync(new URL("../BUILD_ID", import.meta.url), "utf8").trim(); } catch { /* not deployed: no version */ }
+app.get("/api/health", (req, res) => res.set("Cache-Control", "no-store").json({ status: "ok", build }));
 
 // every change on the storefront API (sign-in, orders, contact form…) must carry the CSRF header
 app.use("/api/store", csrfProtect, storeRoutes, accountRoutes);

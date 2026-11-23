@@ -10,7 +10,6 @@ export function productCard(p, {later = setTimeout, delay = 0} = {}){
   el.className = "pc"; el.style.animationDelay = delay + "ms";
   el.innerHTML = `
     <a class="pc-stage" href="/product/${p.id}" aria-label="${p.name}">${art(p)}</a>
-    <button class="wish" data-wish="${p.id}" aria-pressed="${wish.has(p.id)}" aria-label="Save ${p.name} to wishlist">${heart}</button>
     <div class="pc-body">
       <div class="pc-top"><span class="tag" style="background:var(--${p.cat}-bg);color:var(--${p.cat})">${catName(p.cat)}</span>${ratingHtml(p) || `<span class="pc-rate"><span class="st">★</span> <b>${p.rate}</b> (${p.reviews})</span>`}</div>
       <h3><a href="/product/${p.id}">${p.name}</a></h3>
@@ -19,7 +18,7 @@ export function productCard(p, {later = setTimeout, delay = 0} = {}){
       ${p.left ? `<span class="stock">Only ${p.left} left</span>` : ""}
       <div class="pc-buy">
         <div class="pc-price"><div class="pc-now"><b>${inr(p.price)}</b>${offBadge(p)}</div><span><s>${inr(p.mrp)}</s><em>Save ${inr(p.mrp-p.price)}</em></span></div>
-        ${buyControl(p, "pc-add", cartIc + "Add")}
+        <div class="pc-act">${buyControl(p, "pc-add", cartIc + "Add")}<button class="wish" data-wish="${p.id}" aria-pressed="${wish.has(p.id)}" aria-label="Save ${p.name} to wishlist">${heart}</button></div>
       </div>
     </div>`;
   const add = el.querySelector("[data-buy]");

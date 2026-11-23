@@ -110,7 +110,7 @@ The site is live (since 24 Oct 2026) and updates go over SSH with one command, f
 ./scripts/deploy.sh
 ```
 
-It builds the shop, uploads it to `~/nawaratrend` on the server and restarts the app. Your products, orders and settings live in the database, so they're not affected.
+It builds the shop, uploads it to `~/nawaratrend` on the server, updates the database and restarts the app. It then waits until the new version is answering (`/api/health` shows which version is running) before removing old files, so visitors never get a page whose scripts are gone. If it stops with a message, the old files are still there and it is safe to run again. Your products, orders and settings live in the database, so they're not affected.
 
 How the server is set up (different from Steps 4–6 above, because GoDaddy's "Setup Node.js App" has no Node.js versions on this server):
 

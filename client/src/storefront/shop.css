@@ -71,7 +71,6 @@
 .pgrid.list{grid-template-columns:minmax(0,1fr)}
 .pgrid.list .pc{flex-direction:row}
 .pgrid.list .pc-stage{flex:0 0 38%;aspect-ratio:auto;min-height:260px}
-.pgrid.list .pc .wish{right:auto;left:calc(38% - 52px)}
 .pgrid.list .pc-body{padding:24px 26px}
 .pgrid.list h3{font-family:var(--display);font-size:1.45rem;letter-spacing:-.02em}
 .pgrid.list .pc-desc{display:block;color:var(--muted);line-height:1.6}
@@ -112,7 +111,6 @@
   .sort span{display:none}
   .pgrid.list .pc{flex-direction:column}
   .pgrid.list .pc-stage{flex:none;aspect-ratio:4/3;min-height:0}
-  .pgrid.list .pc .wish{left:auto;right:10px}
   .pgrid.list .pc-body{padding:16px}
   .pgrid.list .pc-rate{display:block}
 }

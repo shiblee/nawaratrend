@@ -390,7 +390,7 @@ export function initStorefront(){
       const el = document.createElement("article");
       el.className = "spread"; el.id = `p-${p.id}`; el.dataset.id = p.id;
       el.innerHTML = `
-        <div class="stage">${art(p)}<button class="wish" data-wish="${p.id}" aria-pressed="false" aria-label="Save ${p.name} to wishlist">${heart}</button></div>
+        <div class="stage">${art(p)}</div>
         <div class="info">
           <div class="info-top"><span class="tag" style="background:var(--${c.k}-bg);color:var(--${c.k})">${c.n}</span></div>
           <h4><a href="/product/${p.id}" class="pd-link">${p.name}</a></h4>
@@ -403,6 +403,7 @@ export function initStorefront(){
             <div class="actions">
               ${p.sizes || p.colors || p.stock === 0 ? "" : `<div class="qty"><button data-q="-1" aria-label="Decrease quantity">−</button><output>1</output><button data-q="1" aria-label="Increase quantity">+</button></div>`}
               ${buyControl(p, "add")}
+              <button class="wish" data-wish="${p.id}" aria-pressed="false" aria-label="Save ${p.name} to wishlist">${heart}</button>
             </div>
           </div>
         </div>`;
