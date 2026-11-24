@@ -46,6 +46,21 @@ router.get("/catalog", ah(async (req, res) => {
   });
 }));
 
+/* ---------- Product views (signed-in customers only) ----------
+   The product page reports each visit, so the team can see which products a customer keeps coming back to.
+   Guests aren't tracked, and the browser skips this when the customer has turned analytics cookies off. */
+router.post("/products/:slug/view", limit(10, 120, "Too many requests."), optionalCustomer, ah(async (req, res) => {
+  if (!req.customer) return res.status(204).end();
+  const [[p]] = await pool.query("SELECT id FROM products WHERE slug = ? AND status = 'active'", [String(req.params.slug).slice(0, 80)]);
+  if (!p) return res.status(204).end();
+  // a reload or quick back-and-forth within 10 minutes is the same visit
+  await pool.query(
+    `INSERT INTO customer_product_views (customer_id, product_id) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE views = views + IF(last_viewed_at < NOW() - INTERVAL 10 MINUTE, 1, 0), last_viewed_at = NOW()`,
+    [req.customer.id, p.id]);
+  res.status(204).end();
+}));
+
 /* ---------- Contact form ---------- */
 router.post("/contact", limit(10, 5, "Too many messages. Please try again in a few minutes."), ah(async (req, res) => {
   const b = req.body || {};

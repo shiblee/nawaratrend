@@ -72,12 +72,13 @@ function setCookie(res, name, value, { httpOnly = true, maxAgeSec = null } = {})
 }
 
 /** Signs the customer in on this browser. */
-export async function startCustomerSession(req, res, customerId, { remember = false } = {}) {
+/** method: how they got in (password, code, google, signup, reset, renewed), shown in the admin's sign-in history. */
+export async function startCustomerSession(req, res, customerId, { remember = false, method = null } = {}) {
   const token = crypto.randomBytes(32).toString("base64url");
   await pool.query(
-    `INSERT INTO customer_sessions (customer_id, token_hash, remember, ip, user_agent, last_seen_at, expires_at)
-     VALUES (?, ?, ?, ?, ?, NOW(), NOW() + INTERVAL ${remember ? `${REMEMBER_DAYS} DAY` : `${SHORT_HOURS} HOUR`})`,
-    [customerId, hash(token), remember ? 1 : 0, clientIp(req), String(req.get("user-agent") || "").slice(0, 255)]);
+    `INSERT INTO customer_sessions (customer_id, token_hash, remember, method, ip, user_agent, last_seen_at, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW() + INTERVAL ${remember ? `${REMEMBER_DAYS} DAY` : `${SHORT_HOURS} HOUR`})`,
+    [customerId, hash(token), remember ? 1 : 0, method, clientIp(req), String(req.get("user-agent") || "").slice(0, 255)]);
   await pool.query("UPDATE customers SET last_login_at = NOW(), last_login_ip = ? WHERE id = ?", [clientIp(req), customerId]);
   setCookie(res, SESSION_COOKIE, token, { maxAgeSec: remember ? REMEMBER_DAYS * 86400 : null });
 }

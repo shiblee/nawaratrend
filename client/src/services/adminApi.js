@@ -78,6 +78,8 @@ export const adminApi = {
   getCustomers: (p) => request(`/admin/customers${qs(p)}`),
   getCustomer: (id) => request(`/admin/customers/${id}`),
   updateCustomer: (id, d) => send("PATCH", `/admin/customers/${id}`, d),
+  getCustomerSessions: (id, p) => request(`/admin/customers/${id}/sessions${qs(p)}`),
+  getCustomerViews: (id, p) => request(`/admin/customers/${id}/views${qs(p)}`),
 
   getMessages: (p) => request(`/admin/messages${qs(p)}`),
   updateMessage: (id, status) => send("PATCH", `/admin/messages/${id}`, { status }),

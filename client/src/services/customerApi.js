@@ -142,6 +142,14 @@ export async function logoutEverywhere() {
   try { await send("POST", "/store/auth/logout-everywhere"); } finally { store.del(CUSTOMER_KEY); }
 }
 
+/* ---------- product visits ----------
+   Tells the store a signed-in customer opened a product (the team sees which products they view most).
+   Guests aren't tracked, and nothing is sent if the customer turned analytics cookies off. Never throws. */
+export function trackProductView(slug, consent) {
+  if (!currentCustomer() || (consent && !consent.analytics)) return;
+  send("POST", `/store/products/${encodeURIComponent(slug)}/view`).catch(() => {});
+}
+
 /* ---------- orders ---------- */
 const qs = (p) => { const s = new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(); return s ? `?${s}` : ""; };
 /** { orders, total, page, pages, counts } — filter: status ("active" | "delivered" | "closed"), q (order number or product), page */

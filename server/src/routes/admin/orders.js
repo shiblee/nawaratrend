@@ -10,6 +10,7 @@ import { queueOrderEmail, getTemplate, queueEmail, customerVars } from "../../li
 import { requirePerm, revokeCustomerSessions } from "../../middleware/auth.js";
 import { can } from "../../lib/permissions.js";
 import { avatarUrl } from "../account.js";
+import { productCode } from "../../lib/codes.js";
 
 const router = express.Router();
 export { NEXT };
@@ -40,9 +41,11 @@ router.get("/orders", ah(async (req, res) => {
             o.ship_state, o.customer_id, o.created_at, (SELECT SUM(qty) FROM order_items WHERE order_id = o.id) AS item_count
      FROM orders o ${w} ORDER BY o.created_at DESC LIMIT ? OFFSET ?`, [...args, limit, offset]);
   const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM orders o ${w}`, args);
-  const [counts] = await pool.query("SELECT status, COUNT(*) AS n FROM orders GROUP BY status");
+  const cid = Number(req.query.customer) || null;
+  const [counts] = await pool.query(`SELECT status, COUNT(*) AS n FROM orders ${cid ? "WHERE customer_id = ?" : ""} GROUP BY status`, cid ? [cid] : []);
+  const [[customer]] = cid ? await pool.query("SELECT id, name, phone FROM customers WHERE id = ?", [cid]) : [[null]];
   res.json({ rows: rows.map((r) => ({ ...r, total: Number(r.total), item_count: Number(r.item_count || 0) })), total, page, limit,
-    statusCounts: Object.fromEntries(counts.map((c) => [c.status, c.n])) });
+    statusCounts: Object.fromEntries(counts.map((c) => [c.status, c.n])), customer: customer || null });
 }));
 
 // Spreadsheet download of the filtered orders (opens in Excel / Google Sheets)
@@ -180,7 +183,7 @@ router.patch("/orders/:id", ah(async (req, res) => {
 }));
 
 /* ---------- Customers ---------- */
-const customerRow = (r) => ({ ...r, is_active: !!r.is_active, spent: Number(r.spent || 0),
+const customerRow = (r) => ({ ...r, is_active: !!r.is_active, spent: Number(r.spent || 0), product_views: Number(r.product_views || 0),
   status: r.is_active ? "active" : "suspended", mobile_verified: !!r.phone_verified_at,
   email_verified: r.email ? (r.email_verified_at ? "yes" : "no") : "not_provided" });
 
@@ -206,10 +209,13 @@ router.get("/customers", requirePerm("customers.view"), ah(async (req, res) => {
   if (req.query.mobile_verified === "1") where.push("c.phone_verified_at IS NOT NULL");
   if (req.query.mobile_verified === "0") where.push("c.phone_verified_at IS NULL");
   const w = where.length ? "WHERE " + where.join(" AND ") : "";
-  const sorts = { newest: "c.created_at DESC", spent: "spent DESC", orders: "orders DESC", name: "c.name", login: "c.last_login_at DESC" };
+  const sorts = { newest: "c.created_at DESC", spent: "spent DESC", orders: "orders DESC", name: "c.name", login: "c.last_login_at DESC", views: "product_views DESC" };
   const [rows] = await pool.query(
     `SELECT c.id, c.name, c.email, c.email_verified_at, c.phone, c.phone_verified_at, c.is_active, c.created_at, c.last_login_at,
-       COUNT(o.id) AS orders, COALESCE(SUM(IF(o.status NOT IN (${SALE_SQL}), o.total, 0)),0) AS spent, MAX(o.created_at) AS last_order_at
+       COUNT(o.id) AS orders, COALESCE(SUM(IF(o.status NOT IN (${SALE_SQL}), o.total, 0)),0) AS spent, MAX(o.created_at) AS last_order_at,
+       (SELECT COALESCE(SUM(v.views), 0) FROM customer_product_views v WHERE v.customer_id = c.id) AS product_views,
+       (SELECT p.name FROM customer_product_views v JOIN products p ON p.id = v.product_id WHERE v.customer_id = c.id
+          ORDER BY v.views DESC, v.last_viewed_at DESC LIMIT 1) AS top_product
      FROM customers c LEFT JOIN orders o ON o.customer_id = c.id ${w} GROUP BY c.id ORDER BY ${sorts[req.query.sort] || sorts.newest} LIMIT ? OFFSET ?`,
     [...args, limit, offset]);
   const [[{ total }]] = await pool.query(`SELECT COUNT(*) AS total FROM customers c ${w}`, args);
@@ -239,16 +245,72 @@ router.get("/customers/:id", requirePerm("customers.view"), ah(async (req, res) 
        (SELECT l.status FROM sms_logs l WHERE l.otp_id = o.id ORDER BY l.id DESC LIMIT 1) AS sms_status
      FROM otp_verifications o WHERE o.customer_id = ? AND o.decoy = 0 ORDER BY o.id DESC LIMIT 30`, [id]);
   const [sessions] = await pool.query(
-    `SELECT id, ip, user_agent, remember, created_at, last_seen_at, expires_at, revoked_at, revoke_reason
-     FROM customer_sessions WHERE customer_id = ? ORDER BY id DESC LIMIT 20`, [id]);
+    `SELECT id, method, ip, user_agent, remember, created_at, last_seen_at, expires_at, revoked_at, revoke_reason
+     FROM customer_sessions WHERE customer_id = ? ORDER BY created_at DESC, id DESC LIMIT 5`, [id]);
+  const [[{ signIns }]] = await pool.query("SELECT COUNT(*) AS signIns FROM customer_sessions WHERE customer_id = ?", [id]);
+  const views = await viewedProducts(id, 8, 0);
   const [adminLog] = await pool.query(
     `SELECT l.id, l.action, l.details, l.created_at, a.name AS admin_name FROM audit_logs l LEFT JOIN admins a ON a.id = l.admin_id
      WHERE l.entity = 'customer' AND l.entity_id = ? ORDER BY l.id DESC LIMIT 30`, [String(id)]);
   const { avatar_at, ...c } = rows[0];
   const canLogs = can(req.admin, "logs.view");
   res.json({ ...customerRow(c), avatar: avatarUrl(rows[0]), emails: canLogs ? emails : [], orders: orders.map(money),
-    stats: { orders: orders.length, spent, average: valid.length ? Math.round(spent / valid.length) : 0 }, addresses,
-    otp: canLogs ? otp : [], sessions: sessions.map((s) => ({ ...s, active: !s.revoked_at && new Date(s.expires_at) > new Date() })), adminLog });
+    stats: { orders: orders.length, spent, average: valid.length ? Math.round(spent / valid.length) : 0, signIns, ...views.stats }, addresses,
+    views: views.rows,
+    otp: canLogs ? otp : [], sessions: sessions.map(sessionRow), adminLog });
+}));
+
+/* ---------- a customer's sign-in history and the products they view ---------- */
+// how a session ended: signed out by them, ended for a reason, timed out, or still signed in
+function sessionRow(s) {
+  const now = new Date();
+  const state = s.revoked_at ? (s.revoke_reason === "logout" ? "signed_out" : "ended") : new Date(s.expires_at) <= now ? "expired" : "active";
+  return { ...s, remember: !!s.remember, state, active: state === "active",
+    ended_at: s.revoked_at || (state === "expired" ? s.expires_at : null) };
+}
+
+async function viewedProducts(customerId, limit, offset) {
+  const [rows] = await pool.query(
+    `SELECT v.views, v.first_viewed_at, v.last_viewed_at, p.id, p.name, p.slug, p.code_no, p.price, p.images, p.status, p.stock,
+       (SELECT COALESCE(SUM(i.qty), 0) FROM order_items i JOIN orders o ON o.id = i.order_id
+          WHERE o.customer_id = v.customer_id AND i.product_id = p.id AND o.status NOT IN (${SALE_SQL})) AS bought
+     FROM customer_product_views v JOIN products p ON p.id = v.product_id
+     WHERE v.customer_id = ? ORDER BY v.views DESC, v.last_viewed_at DESC LIMIT ? OFFSET ?`, [customerId, limit, offset]);
+  const [[t]] = await pool.query(
+    "SELECT COUNT(*) AS products, COALESCE(SUM(views), 0) AS visits, MAX(last_viewed_at) AS last FROM customer_product_views WHERE customer_id = ?", [customerId]);
+  const image = (r) => { try { const a = typeof r.images === "string" ? JSON.parse(r.images) : r.images; return Array.isArray(a) ? a[0] || null : null; } catch { return null; } };
+  return {
+    total: t.products,
+    stats: { viewedProducts: t.products, productVisits: Number(t.visits), lastViewedAt: t.last },
+    rows: rows.map(({ images, code_no, ...r }) => ({ ...r, code: productCode(code_no), image: image({ images }), price: Number(r.price), bought: Number(r.bought) })),
+  };
+}
+
+const customerExists = async (id) => {
+  const [[c]] = await pool.query("SELECT id, name FROM customers WHERE id = ?", [id]);
+  if (!c) throw new HttpError(404, "Customer not found");
+  return c;
+};
+
+router.get("/customers/:id/sessions", requirePerm("customers.view"), ah(async (req, res) => {
+  const c = await customerExists(req.params.id);
+  const { page, limit, offset } = paging(req.query, { defLimit: 25 });
+  const [rows] = await pool.query(
+    `SELECT id, method, ip, user_agent, remember, created_at, last_seen_at, expires_at, revoked_at, revoke_reason
+     FROM customer_sessions WHERE customer_id = ? ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`, [c.id, limit, offset]);
+  const [[t]] = await pool.query(
+    `SELECT COUNT(*) AS total, SUM(revoked_at IS NULL AND expires_at > NOW()) AS active, MIN(created_at) AS first, MAX(created_at) AS last
+     FROM customer_sessions WHERE customer_id = ?`, [c.id]);
+  const [methods] = await pool.query("SELECT COALESCE(method, 'unknown') AS method, COUNT(*) AS n FROM customer_sessions WHERE customer_id = ? GROUP BY method", [c.id]);
+  res.json({ customer: c, rows: rows.map(sessionRow), total: t.total, page, limit,
+    summary: { active: Number(t.active || 0), first: t.first, last: t.last, methods: Object.fromEntries(methods.map((m) => [m.method, m.n])) } });
+}));
+
+router.get("/customers/:id/views", requirePerm("customers.view"), ah(async (req, res) => {
+  const c = await customerExists(req.params.id);
+  const { page, limit, offset } = paging(req.query, { defLimit: 25 });
+  const v = await viewedProducts(c.id, limit, offset);
+  res.json({ customer: c, rows: v.rows, total: v.total, page, limit, stats: v.stats });
 }));
 
 router.patch("/customers/:id", requirePerm("customers.view"), ah(async (req, res) => {

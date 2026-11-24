@@ -1,6 +1,8 @@
 /* Product detail page. Call after initStorefront with the product id from the URL; returns a cleanup function. */
 import { actions, ordered, inr, off, art, catName, check, stars, wish, ratingHtml } from "./storefront.js";
 import { productCard } from "./card.js";
+import { trackProductView } from "../services/customerApi.js";
+import { getConsent } from "./consent.js";
 
 const $ = id => document.getElementById(id);
 
@@ -83,6 +85,7 @@ export function initProduct(id){
   /* ---------- Basic info ---------- */
   const cat = catName(p.cat);
   document.title = `${p.name} | NawaraTrend`;
+  trackProductView(p.id, getConsent());
   $("pCrumbs").insertAdjacentHTML("beforeend", `<span aria-hidden="true">/</span><a href="/shop/${p.cat}">${cat}</a><span aria-hidden="true">/</span><span aria-current="page"></span>`);
   $("pCrumbs").lastElementChild.textContent = p.name;
   $("gMain").style.background = `var(--${p.cat}-bg)`;

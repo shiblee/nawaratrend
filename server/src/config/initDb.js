@@ -350,6 +350,20 @@ const TABLES = [
     CONSTRAINT fk_csess_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
   )`,
 
+  /* Products a signed-in customer opened: one row per customer and product, with a visit count.
+     Opening the same product again within 10 minutes doesn't count as a new visit. */
+  `CREATE TABLE IF NOT EXISTS customer_product_views (
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    views INT NOT NULL DEFAULT 1,
+    first_viewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_viewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (customer_id, product_id),
+    INDEX idx_cpv_product (product_id),
+    CONSTRAINT fk_cpv_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_cpv_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+  )`,
+
   // last number handed out, e.g. for product codes
   `CREATE TABLE IF NOT EXISTS counters (
     name VARCHAR(40) PRIMARY KEY,
@@ -515,6 +529,8 @@ export async function initDatabase() {
   if (await addColumn("customers", "google_sub", "VARCHAR(64) DEFAULT NULL AFTER password")) {
     await pool.query("ALTER TABLE customers ADD UNIQUE KEY uq_customers_google (google_sub)");
   }
+  // how each sign-in happened (password, code, google…), for the admin's sign-in history
+  await addColumn("customer_sessions", "method", "VARCHAR(12) DEFAULT NULL AFTER remember");
   // one account per mobile number: tables made before the column was UNIQUE get the rule added here
   const [phoneKey] = await pool.query("SHOW INDEX FROM customers WHERE Column_name = 'phone' AND Non_unique = 0");
   if (!phoneKey.length) {

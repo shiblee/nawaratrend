@@ -7,22 +7,24 @@ export default function Orders() {
   const [params, setParams] = useSearchParams();
   const toast = useToast();
   const status = params.get("status") || "";
+  const customer = params.get("customer") || "";   // opened from a customer: only their orders
   const [search, setSearch] = useState(params.get("search") || "");
   const [filters, setFilters] = useState({ payment_method: "", payment_status: "", from: "", to: "" });
   const [page, setPage] = useState(1);
   const [exporting, setExporting] = useState(false);
   const q = useDebounced(search);
-  const query = { status, search: q, ...filters, page, limit: 20 };
-  const { data, error, loading } = useLoad(() => adminApi.getOrders(query), [status, q, filters, page]);
+  const query = { status, customer, search: q, ...filters, page, limit: 20 };
+  const { data, error, loading } = useLoad(() => adminApi.getOrders(query), [status, customer, q, filters, page]);
 
   const set = (k, v) => { setFilters((f) => ({ ...f, [k]: v })); setPage(1); };
-  const setStatus = (s) => { setPage(1); setParams(s ? { status: s } : {}); };
+  const setStatus = (s) => { setPage(1); setParams({ ...(s ? { status: s } : {}), ...(customer ? { customer } : {}) }); };
+  const clearCustomer = () => { setPage(1); setParams(status ? { status } : {}); };
   const counts = data?.statusCounts || {};
   const all = Object.values(counts).reduce((a, b) => a + b, 0);
 
   const exportCsv = async () => {
     setExporting(true);
-    try { await adminApi.exportOrders({ status, search: q, ...filters }); }
+    try { await adminApi.exportOrders({ status, customer, search: q, ...filters }); }
     catch (e) { toast(e.message, "error"); }
     finally { setExporting(false); }
   };
@@ -31,6 +33,13 @@ export default function Orders() {
     <div>
       <PageHeader title="Orders" sub="Every order placed on the store. Open one to update its status, payment or tracking."
         actions={<Button variant="outline" onClick={exportCsv} loading={exporting}>Download spreadsheet (CSV)</Button>} />
+      {customer && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
+          <span className="text-amber-900">Showing orders for <b>{data?.customer ? data.customer.name : `customer #${customer}`}</b>{data?.customer?.phone ? ` · ${phone(data.customer.phone)}` : ""}</span>
+          <Link to={`/admin/customers/${customer}`} className="font-medium text-amber-900 underline underline-offset-2">Customer profile</Link>
+          <button type="button" onClick={clearCustomer} className="ml-auto rounded-lg px-2.5 py-1 font-medium text-amber-900 hover:bg-amber-100">Show all orders ✕</button>
+        </div>
+      )}
       <Card>
         <div className="px-4 pt-2">
           <Tabs value={status} onChange={setStatus}

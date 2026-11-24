@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { adminApi } from "../../services/adminApi.js";
 import { BASE_URL } from "../../services/api.js";
 import { useAdminAuth } from "../../context/AdminAuthContext.jsx";
+import { SignInHistory, ViewedProducts, ViewedRow, MethodBadge, SessionEnd, device } from "../../components/admin/CustomerInsights.jsx";
 import { Alert, Badge, Button, Card, CardHeader, Field, OrderBadge, PageHeader, Pager, PayBadge, SearchBox, Select, Stat, Table, Textarea, Toggle, money, phone, num, dateOnly, dateTime, timeAgo, initials, useConfirm, useDebounced, useLoad, useToast, EmailBadge, PAY_METHOD } from "../../components/admin/ui.jsx";
 
 const STATUS_BADGE = { active: ["Active", "green"], suspended: ["Suspended", "red"], pending: ["Pending", "amber"] };
@@ -19,6 +20,8 @@ export default function Customers() {
   const q = useDebounced(search);
   const { data, error, loading } = useLoad(() => adminApi.getCustomers({ search: q, status, mobile_verified: verified, sort, page, limit: 25 }), [q, status, verified, sort, page]);
   const pending = status === "pending";
+  const [history, setHistory] = useState(null);   // { id, name } whose sign-in history is open
+  const [viewed, setViewed] = useState(null);
   return (
     <div>
       <PageHeader title="Registered users" sub="Customers with an account. Sign-ups waiting for their mobile code are under Pending; guest orders are under Orders." />
@@ -33,7 +36,7 @@ export default function Customers() {
             <option value="">Mobile: any</option><option value="1">Mobile verified</option><option value="0">Mobile not verified</option>
           </Select>
           <Select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort" disabled={pending}>
-            <option value="newest">Newest first</option><option value="login">Last sign-in</option><option value="spent">Top spenders</option><option value="orders">Most orders</option><option value="name">Name A–Z</option>
+            <option value="newest">Newest first</option><option value="login">Last sign-in</option><option value="spent">Top spenders</option><option value="orders">Most orders</option><option value="views">Most product visits</option><option value="name">Name A–Z</option>
           </Select>
         </div>
         <Alert>{error}</Alert>
@@ -53,18 +56,29 @@ export default function Customers() {
           </Table>
         ) : (
           <Table loading={loading && !data} empty={data && !data.rows.length && "No customers match."}
-            head={["ID", "Customer", "Mobile", "Mobile verified", "Email", "Email verified", "Registered", "Last sign-in", { label: "Orders", right: true }, "Status"]}>
+            head={["ID", "Customer", "Mobile", "Email", "Registered", "Last sign-in", "Most viewed", { label: "Orders", right: true }, "Status"]}>
             {data?.rows.map((c) => (
               <tr key={c.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3 text-xs tabular-nums text-slate-400">#{c.id}</td>
-                <td className="px-4 py-3"><Link to={`/admin/customers/${c.id}`} className="font-medium hover:underline">{c.name}</Link>{c.spent > 0 && <div className="text-xs text-slate-500">{money(c.spent)} spent</div>}</td>
-                <td className="whitespace-nowrap px-4 py-3 tabular-nums">{c.phone ? phone(c.phone) : <span className="text-xs text-slate-400">None</span>}</td>
-                <td className="px-4 py-3"><Yes on={c.mobile_verified} /></td>
-                <td className="max-w-[200px] truncate px-4 py-3 text-slate-600">{c.email || <span className="text-slate-400">—</span>}</td>
-                <td className="px-4 py-3"><EmailVerified v={c.email_verified} /></td>
+                <td className="min-w-[140px] px-4 py-3"><Link to={`/admin/customers/${c.id}`} className="font-medium hover:underline">{c.name}</Link>{c.spent > 0 && <div className="text-xs text-slate-500">{money(c.spent)} spent</div>}</td>
+                <td className="whitespace-nowrap px-4 py-3 tabular-nums">{c.phone ? <>{phone(c.phone)}<div className="mt-0.5">{c.mobile_verified ? <Badge tone="green">Verified</Badge> : <Badge>Not verified</Badge>}</div></> : <span className="text-xs text-slate-400">None</span>}</td>
+                <td className="max-w-[190px] px-4 py-3 text-slate-600">{c.email ? <><div className="truncate" title={c.email}>{c.email}</div><div className="mt-0.5">{c.email_verified === "yes" ? <Badge tone="green">Verified</Badge> : <Badge>Not verified</Badge>}</div></> : <span className="text-slate-400">—</span>}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-slate-500">{dateOnly(c.created_at)}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-slate-500">{c.last_login_at ? timeAgo(c.last_login_at) : "Never"}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{num(c.orders)}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  {c.last_login_at ? <button type="button" onClick={() => setHistory(c)} title="See every sign-in and sign-out"
+                    className="rounded-md text-slate-600 underline decoration-slate-300 decoration-dotted underline-offset-4 hover:text-slate-900 hover:decoration-slate-500">{timeAgo(c.last_login_at)}</button>
+                    : <span className="text-slate-400">Never</span>}
+                </td>
+                <td className="max-w-[180px] px-4 py-3">
+                  {c.top_product ? <button type="button" onClick={() => setViewed(c)} title="See every product this customer viewed" className="block max-w-full text-left hover:underline">
+                    <span className="block truncate text-slate-700">{c.top_product}</span><span className="text-xs text-slate-500">{num(c.product_views)} visit{c.product_views === 1 ? "" : "s"} in total</span></button>
+                    : <span className="text-xs text-slate-400">None yet</span>}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums">
+                  {c.orders > 0 ? <Link to={`/admin/orders?customer=${c.id}`} title={`See ${c.name}'s orders`}
+                    className="inline-flex min-w-[2.25rem] items-center justify-center rounded-full bg-[#410309]/5 px-2.5 py-0.5 font-semibold text-[#410309] hover:bg-[#410309] hover:text-white">{num(c.orders)}</Link>
+                    : <span className="text-slate-400">0</span>}
+                </td>
                 <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
               </tr>
             ))}
@@ -72,9 +86,22 @@ export default function Customers() {
         )}
         {data && <Pager page={data.page} limit={data.limit} total={data.total} onPage={setPage} />}
       </Card>
+      <SignInHistory open={!!history} customerId={history?.id} name={history?.name} onClose={() => setHistory(null)} />
+      <ViewedProducts open={!!viewed} customerId={viewed?.id} name={viewed?.name} onClose={() => setViewed(null)} />
     </div>
   );
 }
+
+/* A stat tile that opens something (the orders list, the sign-in history…). */
+const StatLink = ({ label, value, sub, to, onClick }) => {
+  const cls = "group block rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:border-[#410309]/40 hover:shadow-md";
+  const body = (<>
+    <div className="flex items-center justify-between text-sm text-slate-500">{label}<span className="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#410309]">→</span></div>
+    <div className="mt-1.5 truncate text-2xl font-semibold text-slate-900">{value}</div>
+    {sub && <div className="mt-1 truncate text-xs text-slate-500">{sub}</div>}
+  </>);
+  return to ? <Link to={to} className={cls}>{body}</Link> : <button type="button" onClick={onClick} className={cls}>{body}</button>;
+};
 
 export function CustomerDetail() {
   const { id } = useParams();
@@ -85,6 +112,8 @@ export function CustomerDetail() {
   const canSeeLog = allowed("logs.view"), canStatus = allowed("customers.status");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showViews, setShowViews] = useState(false);
   useEffect(() => { if (c) setNotes(c.notes || ""); }, [c]);
 
   if (loading && !c) return <div className="h-64 animate-pulse rounded-2xl bg-slate-200/60" />;
@@ -115,14 +144,17 @@ export function CustomerDetail() {
           </div>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Orders" value={num(c.stats.orders)} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <StatLink label="Orders" value={num(c.stats.orders)} sub="Open in Orders" to={`/admin/orders?customer=${c.id}`} />
         <Stat label="Total spent" value={money(c.stats.spent)} sub="Excludes cancelled and returned" />
         <Stat label="Average order" value={money(c.stats.average)} />
+        <StatLink label="Sign-ins" value={num(c.stats.signIns)} sub={c.last_login_at ? `Last ${timeAgo(c.last_login_at)}` : "Never signed in"} onClick={() => setShowHistory(true)} />
+        <StatLink label="Products viewed" value={num(c.stats.viewedProducts)} sub={`${num(c.stats.productVisits)} visits${c.stats.lastViewedAt ? ` · last ${timeAgo(c.stats.lastViewedAt)}` : ""}`} onClick={() => setShowViews(true)} />
       </div>
-      <div className="grid gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader title="Order history" />
+      <div className="grid items-start gap-6 xl:grid-cols-3">
+        <div className="space-y-6 xl:col-span-2">
+        <Card>
+          <CardHeader title="Order history" action={c.orders.length > 0 && <Link to={`/admin/orders?customer=${c.id}`} className="text-sm font-medium text-slate-600 hover:underline">Open in Orders →</Link>} />
           <Table empty={!c.orders.length && "No orders yet."} head={["Order", "Date", "Payment", "Status", { label: "Total", right: true }]}>
             {c.orders.map((o) => (
               <tr key={o.id} className="hover:bg-slate-50">
@@ -135,13 +167,19 @@ export function CustomerDetail() {
             ))}
           </Table>
         </Card>
+          <Card>
+            <CardHeader title="Most viewed products" sub="What this customer keeps coming back to" action={c.views.length > 0 && <button type="button" onClick={() => setShowViews(true)} className="text-sm font-medium text-slate-600 hover:underline">See all →</button>} />
+            {c.views.length ? <ul className="divide-y divide-slate-100 text-sm">{c.views.slice(0, 8).map((v) => <ViewedRow key={v.id} v={v} max={c.views[0].views} />)}</ul>
+              : <p className="px-5 pb-5 text-sm text-slate-500">No product visits yet. Visits are counted while the customer is signed in.</p>}
+          </Card>
+        </div>
         <div className="space-y-6">
           <Card>
             <CardHeader title="Profile & verification" />
             <dl className="divide-y divide-slate-100 text-sm">
               {[["Mobile", c.phone ? phone(c.phone) : "None"], ["Mobile verified", <Yes key="m" on={c.mobile_verified} />], ["Email", c.email || "Not provided"],
                 ["Email verified", <EmailVerified key="e" v={c.email_verified} />], ["Registered", dateTime(c.created_at)],
-                ["Last sign-in", c.last_login_at ? `${dateTime(c.last_login_at)}${c.last_login_ip ? ` from ${c.last_login_ip}` : ""}` : "Never"]]
+                ["Last sign-in", c.last_login_at ? <button key="l" type="button" onClick={() => setShowHistory(true)} className="text-right underline decoration-slate-300 decoration-dotted underline-offset-4 hover:decoration-slate-500">{dateTime(c.last_login_at)}{c.last_login_ip ? ` from ${c.last_login_ip}` : ""}</button> : "Never"]]
                 .map(([k, v]) => <div key={k} className="flex items-center justify-between gap-3 px-5 py-2.5"><dt className="text-slate-500">{k}</dt><dd className="text-right">{v}</dd></div>)}
             </dl>
             <p className="px-5 pb-4 text-xs text-slate-400">Passwords and codes are never visible to the team.</p>
@@ -176,7 +214,9 @@ export function CustomerDetail() {
           </Card>
         </div>
       </div>
-      <SecurityHistory c={c} canSeeLog={canSeeLog} />
+      <SecurityHistory c={c} canSeeLog={canSeeLog} onHistory={() => setShowHistory(true)} />
+      <SignInHistory open={showHistory} customerId={c.id} name={c.name} onClose={() => setShowHistory(false)} />
+      <ViewedProducts open={showViews} customerId={c.id} name={c.name} onClose={() => setShowViews(false)} />
     </div>
   );
 }
@@ -184,10 +224,8 @@ export function CustomerDetail() {
 const PURPOSE = { registration: "Sign-up", password_reset: "Password reset", login: "Sign-in code", google_link: "Google sign-in" };
 const OTP_STATE = { used: ["Verified", "green"], verified: ["Verified", "green"], pending: ["Pending", "amber"], expired: ["Expired", "gray"], locked: ["Rejected", "red"], cancelled: ["Replaced", "gray"] };
 const ADMIN_ACTION = { "customer.disable": "Suspended the account", "customer.enable": "Reactivated the account", "customer.update": "Updated private notes" };
-const REVOKE = { logout: "Signed out", logout_everywhere: "Signed out everywhere", password_reset: "Password reset", password_change: "Password changed", suspended: "Account suspended" };
-const device = (ua = "") => /iPhone|iPad/.test(ua) ? "iPhone / iPad" : /Android/.test(ua) ? "Android" : /Mac OS/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : ua ? "Browser" : "Unknown";
 
-function SecurityHistory({ c, canSeeLog }) {
+function SecurityHistory({ c, canSeeLog, onHistory }) {
   return (
     <div className="grid gap-6 xl:grid-cols-3">
       <Card>
@@ -202,12 +240,12 @@ function SecurityHistory({ c, canSeeLog }) {
         </ul>
       </Card>
       <Card>
-        <CardHeader title="Sign-ins" sub="The latest 20 sessions" />
+        <CardHeader title="Sign-ins" sub={`Latest ${Math.min(5, c.sessions.length)} of ${num(c.stats.signIns)}`} action={c.sessions.length > 0 && <button type="button" onClick={onHistory} className="text-sm font-medium text-slate-600 hover:underline">Full history →</button>} />
         <ul className="divide-y divide-slate-100 text-sm">
           {c.sessions.length ? c.sessions.map((x) => (
-            <li key={x.id} className="flex items-center gap-3 px-5 py-2.5">
-              <div className="min-w-0 flex-1"><div>{device(x.user_agent)}{x.ip ? <span className="text-slate-500"> · {x.ip}</span> : ""}</div><div className="text-xs text-slate-500">{dateTime(x.created_at)}{x.remember ? " · remembered" : ""}{x.revoked_at ? ` · ended: ${REVOKE[x.revoke_reason] || x.revoke_reason}` : ""}</div></div>
-              {x.active ? <Badge tone="green">Active</Badge> : <Badge>Ended</Badge>}
+            <li key={x.id} className="flex items-start gap-3 px-5 py-2.5">
+              <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2">{dateTime(x.created_at)} <MethodBadge m={x.method} /></div><div className="text-xs text-slate-500">{device(x.user_agent)}{x.ip ? ` · ${x.ip}` : ""}</div></div>
+              <div className="text-right text-xs"><SessionEnd s={x} /></div>
             </li>
           )) : <li className="px-5 py-3 text-slate-500">No sign-ins yet.</li>}
         </ul>

@@ -115,7 +115,7 @@ router.post("/auth/register/verify", authLimit, ah(async (req, res) => {
   // the account is active whatever happens to the email: queueEmail never throws and sends in the background
   if (c.email) await queueEmail({ key: "registration_confirmation", to: c.email, vars: customerVars(c), customerId: c.id, trigger: "registration",
     dedupeKey: `registration_confirmation:${c.id}` });
-  await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember) });
+  await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember), method: "signup" });
   res.status(201).json({ customer: publicCustomer(c) });
 }));
 
@@ -149,7 +149,7 @@ router.post("/auth/login", authLimit, ah(async (req, res) => {
   // only someone who knows the password learns that the account is suspended
   if (!c.is_active) throw new HttpError(403, "This account has been suspended. Please contact us for help.", { code: "suspended" });
   await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL WHERE id = ?", [c.id]);
-  await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember) });
+  await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember), method: "password" });
   res.json({ customer: publicCustomer(await loadCustomer(c.id)) });
 }));
 
@@ -157,9 +157,9 @@ router.post("/auth/login", authLimit, ah(async (req, res) => {
    1. POST /auth/login/otp         { mobile }                     → a code is texted to the account's number
    2. POST /auth/login/otp/verify  { session, otp, remember }     → signed in
    Registration already tells people when a number has an account, so this says so too (clearer for customers). */
-const signedIn = async (req, res, id, remember) => {
+const signedIn = async (req, res, id, remember, method) => {
   await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL, phone_verified_at = COALESCE(phone_verified_at, NOW()) WHERE id = ?", [id]);
-  await startCustomerSession(req, res, id, { remember });
+  await startCustomerSession(req, res, id, { remember, method });
   return { customer: publicCustomer(await loadCustomer(id)) };
 };
 const suspended = () => new HttpError(403, "This account has been suspended. Please contact us for help.", { code: "suspended" });
@@ -182,7 +182,7 @@ router.post("/auth/login/otp/verify", authLimit, ah(async (req, res) => {
     if (!c.is_active) throw Object.assign(suspended(), { details: { code: "suspended", commit: true } });
     return c.id;
   });
-  res.json(await signedIn(req, res, id, remembered(req.body?.remember)));
+  res.json(await signedIn(req, res, id, remembered(req.body?.remember), "code"));
 }));
 
 /* ---------- Sign in with Google ----------
@@ -199,7 +199,7 @@ router.post("/auth/google", authLimit, ah(async (req, res) => {
   const [[c]] = await pool.query("SELECT id, is_active FROM customers WHERE google_sub = ?", [g.sub]);
   if (c) {
     if (!c.is_active) throw suspended();
-    return res.json(await signedIn(req, res, c.id, remembered(req.body?.remember)));
+    return res.json(await signedIn(req, res, c.id, remembered(req.body?.remember), "google"));
   }
   res.json({ needMobile: true, ticket: googleTicket(g), name: g.name, email: g.email });
 }));
@@ -247,7 +247,7 @@ router.post("/auth/google/verify", authLimit, ah(async (req, res) => {
     await conn.query("UPDATE sms_logs SET customer_id = ? WHERE otp_id = ?", [r.insertId, otp.id]);
     return { id: r.insertId, created: true };
   });
-  const result = await signedIn(req, res, out.id, remembered(req.body?.remember));
+  const result = await signedIn(req, res, out.id, remembered(req.body?.remember), "google");
   const c = await loadCustomer(out.id);
   if (out.created && c.email) await queueEmail({ key: "registration_confirmation", to: c.email, vars: customerVars(c), customerId: c.id, trigger: "registration",
     dedupeKey: `registration_confirmation:${c.id}` });
@@ -315,7 +315,7 @@ router.post("/auth/forgot/reset", limit(15, 10, "Too many attempts. Please wait 
   const c = await loadCustomer(id);
   await queueEmail({ key: "password_changed", to: c.email, vars: customerVars(c), customerId: id, trigger: "customer",
     dedupeKey: `password_changed:${id}:${c.token_version}` });
-  await startCustomerSession(req, res, id, { remember: false });
+  await startCustomerSession(req, res, id, { remember: false, method: "reset" });
   res.json({ customer: publicCustomer(c) });
 }));
 
@@ -357,7 +357,7 @@ router.put("/account/password", requireCustomer, authLimit, ah(async (req, res) 
   await pool.query("UPDATE customers SET password = ?, token_version = token_version + 1 WHERE id = ?", [await bcrypt.hash(next, 12), c.id]);
   // other devices are signed out; this one gets a fresh session
   await revokeCustomerSessions(c.id, "password_change");
-  await startCustomerSession(req, res, c.id, { remember: false });
+  await startCustomerSession(req, res, c.id, { remember: false, method: "renewed" });
   const fresh = await loadCustomer(c.id);
   await queueEmail({ key: "password_changed", to: fresh.email, vars: customerVars(fresh), customerId: c.id, trigger: "customer",
     dedupeKey: `password_changed:${c.id}:${fresh.token_version}` });
