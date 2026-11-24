@@ -181,7 +181,7 @@ export function CustomerDetail() {
   );
 }
 
-const PURPOSE = { registration: "Sign-up", password_reset: "Password reset" };
+const PURPOSE = { registration: "Sign-up", password_reset: "Password reset", login: "Sign-in code", google_link: "Google sign-in" };
 const OTP_STATE = { used: ["Verified", "green"], verified: ["Verified", "green"], pending: ["Pending", "amber"], expired: ["Expired", "gray"], locked: ["Rejected", "red"], cancelled: ["Replaced", "gray"] };
 const ADMIN_ACTION = { "customer.disable": "Suspended the account", "customer.enable": "Reactivated the account", "customer.update": "Updated private notes" };
 const REVOKE = { logout: "Signed out", logout_everywhere: "Signed out everywhere", password_reset: "Password reset", password_change: "Password changed", suspended: "Account suspended" };

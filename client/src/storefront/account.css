@@ -334,3 +334,15 @@
   .card{padding:20px 18px}
   .fields{grid-template-columns:1fr}
 }
+
+/* sign-in method switch, Google button */
+.lg-method{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lg-method button{display:flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 8px;font-weight:700;font-size:.92rem;color:var(--muted);cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+.lg-method button:hover{color:var(--ink)}
+.lg-method button[aria-checked="true"]{border-color:var(--ink);color:var(--ink);background:var(--marigold-soft)}
+.lg-method button:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+.lg-google{margin-top:16px}
+.g-btn{display:flex;justify-content:center;min-height:44px}
+.lg-or{display:flex;align-items:center;gap:12px;margin:16px 0 2px;color:var(--muted);font-size:.82rem}
+.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.fld.gone{display:none}

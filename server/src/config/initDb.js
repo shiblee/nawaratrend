@@ -278,7 +278,7 @@ const TABLES = [
   `CREATE TABLE IF NOT EXISTS otp_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     public_id CHAR(32) NOT NULL UNIQUE,
-    purpose ENUM('registration','password_reset') NOT NULL,
+    purpose ENUM('registration','password_reset','login','google_link') NOT NULL,
     phone VARCHAR(20) NOT NULL,
     customer_id INT DEFAULT NULL,
     pending_id INT DEFAULT NULL,
@@ -510,6 +510,11 @@ export async function initDatabase() {
   await addColumn("customers", "last_login_ip", "VARCHAR(64) DEFAULT NULL AFTER last_login_at");
   const [moved] = await pool.query("UPDATE customers SET phone = CONCAT('+91', phone) WHERE phone REGEXP '^[6-9][0-9]{9}$'");
   if (moved.affectedRows) console.log(`Stored ${moved.affectedRows} mobile numbers as +91XXXXXXXXXX`);
+  // sign-in with a texted code, and "Sign in with Google" (linked to the account's verified mobile)
+  await pool.query("ALTER TABLE otp_verifications MODIFY purpose ENUM('registration','password_reset','login','google_link') NOT NULL");
+  if (await addColumn("customers", "google_sub", "VARCHAR(64) DEFAULT NULL AFTER password")) {
+    await pool.query("ALTER TABLE customers ADD UNIQUE KEY uq_customers_google (google_sub)");
+  }
   // one account per mobile number: tables made before the column was UNIQUE get the rule added here
   const [phoneKey] = await pool.query("SHOW INDEX FROM customers WHERE Column_name = 'phone' AND Non_unique = 0");
   if (!phoneKey.length) {

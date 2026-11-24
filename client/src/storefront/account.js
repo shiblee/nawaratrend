@@ -184,7 +184,8 @@ export function initAccount({ navigate }){
       const cur = currentCustomer();
       return email.value.trim().toLowerCase() !== (cur.email || "");
     };
-    const syncPw = () => { $("pfPwRow").hidden = !contactChanged(); };
+    const noPw = () => currentCustomer()?.hasPassword === false;   // Google accounts: set a password first
+    const syncPw = () => { $("pfPwRow").hidden = !contactChanged() || noPw(); };
     email.addEventListener("input", syncPw);
     form.addEventListener("submit", e => {
       e.preventDefault();
@@ -193,7 +194,8 @@ export function initAccount({ navigate }){
       const checks = [
         fieldError(name, name.value.trim().length < 2 ? "Please enter your name." : ""),
         fieldError(email, emailProblem(email.value.trim())),
-        contactChanged() ? fieldError(pw, pw.value ? "" : "Enter your current password to change your email.") : true,
+        !contactChanged() ? true : noPw() ? fieldError(email, "To change your email, first set a password under Password & security.")
+          : fieldError(pw, pw.value ? "" : "Enter your current password to change your email."),
       ];
       if(checks.includes(false)){ form.querySelector(".invalid input")?.focus(); return; }
       busy(form.querySelector("button[type=submit]"), async () => {
@@ -211,20 +213,23 @@ export function initAccount({ navigate }){
   }
 
   function securityView(){
+    // accounts made with Google start without a password: they set one (no "current password" to ask for)
+    const noPw = currentCustomer()?.hasPassword === false;
     box.innerHTML = `
       <div class="ac-grid">
         <form class="card" id="pwForm" novalidate>
-          <h2>Change password</h2>
+          <h2>${noPw ? "Set a password" : "Change password"}</h2>
+          ${noPw ? `<p class="sub">You sign in with Google or a code by SMS. Add a password if you'd also like to sign in with your mobile number and password.</p>` : ""}
           <div class="fields one">
-            ${passwordField("pwCur", "Current password", "current-password")}
+            ${noPw ? "" : passwordField("pwCur", "Current password", "current-password")}
             ${passwordField("pwNew", "New password", "new-password", "(8+ characters, with a letter and a number)")}
             ${passwordField("pwAgain", "New password again", "new-password")}
           </div>
-          <p class="sub">Changing your password signs you out on your other devices.</p>
+          ${noPw ? "" : `<p class="sub">Changing your password signs you out on your other devices.</p>`}
           <p class="form-msg" role="alert"></p>
           <p class="ok-msg" role="status"></p>
-          <button type="submit" class="btn btn-ink"><span class="lbl">Change password</span><span class="spin" aria-hidden="true"></span></button>
-          <p class="lg-alt">Forgot your current password? <a class="link" href="/reset-password">Reset it with a code by SMS</a></p>
+          <button type="submit" class="btn btn-ink"><span class="lbl">${noPw ? "Set password" : "Change password"}</span><span class="spin" aria-hidden="true"></span></button>
+          ${noPw ? "" : `<p class="lg-alt">Forgot your current password? <a class="link" href="/reset-password">Reset it with a code by SMS</a></p>`}
         </form>
         <div class="ac-stack">
           <div class="card">
@@ -245,14 +250,14 @@ export function initAccount({ navigate }){
       if(!window.confirm("Sign out of NawaraTrend on all your devices, including this one?")) return;
       busy($("outAll"), async () => { try { await logoutEverywhere(); } catch { /* signed out locally anyway */ } navigate("/login"); });
     };
-    const form = $("pwForm"), cur = $("pwCur"), nw = $("pwNew"), again = $("pwAgain");
+    const form = $("pwForm"), cur = $("pwCur") || { value: "" }, nw = $("pwNew"), again = $("pwAgain");
     form.addEventListener("submit", e => {
       e.preventDefault();
       const msg = form.querySelector(".form-msg"), ok = form.querySelector(".ok-msg");
       msg.textContent = ok.textContent = "";
       const checks = [
-        fieldError(cur, cur.value ? "" : "Enter your current password."),
-        fieldError(nw, passwordProblem(nw.value) || (nw.value && nw.value === cur.value ? "Choose a password different from the current one." : "")),
+        noPw || fieldError(cur, cur.value ? "" : "Enter your current password."),
+        fieldError(nw, passwordProblem(nw.value) || (!noPw && nw.value && nw.value === cur.value ? "Choose a password different from the current one." : "")),
         fieldError(again, again.value !== nw.value ? "The two new passwords don't match." : ""),
       ];
       if(checks.includes(false)){ form.querySelector(".invalid input")?.focus(); return; }
@@ -260,6 +265,7 @@ export function initAccount({ navigate }){
         try {
           await changePassword(cur.value, nw.value, again.value);
           if(!alive) return;
+          if(noPw){ securityView(); $("pwForm").querySelector(".ok-msg").textContent = "Password set. You can now also sign in with your mobile number and password."; return; }
           form.reset();
           ok.textContent = "Password changed. You've been signed out on your other devices.";
         } catch(err){

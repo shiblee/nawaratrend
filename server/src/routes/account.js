@@ -12,6 +12,7 @@ import { getSettings } from "../lib/store.js";
 import { STATUS, PROGRESS, DEFAULT_MESSAGE, PAYMENT_STATUS, PAY_METHOD } from "../lib/orders.js";
 import { queueEmail, customerVars } from "../lib/email/index.js";
 import { startOtp, resendOtp, verifyOtp, otpSettings, sessionInfo, inTransaction, sha256 } from "../lib/otp.js";
+import { googleClientId, verifyGoogleCredential, googleTicket, readGoogleTicket } from "../lib/google.js";
 import { requireCustomer, startCustomerSession, endCustomerSession, revokeCustomerSessions, ensureCsrfCookie } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -31,6 +32,7 @@ export { avatarUrl };
 export const publicCustomer = (c) => ({
   id: c.id, name: c.name, contact: nationalPhone(c.phone) || c.email, email: c.email || null, phone: nationalPhone(c.phone),
   phoneVerified: !!c.phone_verified_at, emailVerified: !!c.email_verified_at, avatar: avatarUrl(c), since: c.created_at || null,
+  hasPassword: !!c.password, google: !!c.google_sub,
 });
 
 const loadCustomer = async (id, conn = pool) => {
@@ -117,7 +119,7 @@ router.post("/auth/register/verify", authLimit, ah(async (req, res) => {
   res.status(201).json({ customer: publicCustomer(c) });
 }));
 
-const OTP_PURPOSES = { registration: "registration", reset: "password_reset", password_reset: "password_reset" };
+const OTP_PURPOSES = { registration: "registration", reset: "password_reset", password_reset: "password_reset", login: "login", google_link: "google_link" };
 router.post("/auth/otp/resend", limit(15, 15, "Too many requests. Please wait a few minutes."), ah(async (req, res) => {
   const purpose = OTP_PURPOSES[req.body?.purpose] || "registration";
   if (purpose === "registration") {
@@ -149,6 +151,107 @@ router.post("/auth/login", authLimit, ah(async (req, res) => {
   await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL WHERE id = ?", [c.id]);
   await startCustomerSession(req, res, c.id, { remember: remembered(req.body?.remember) });
   res.json({ customer: publicCustomer(await loadCustomer(c.id)) });
+}));
+
+/* ---------- sign in with a code by SMS (instead of the password) ----------
+   1. POST /auth/login/otp         { mobile }                     → a code is texted to the account's number
+   2. POST /auth/login/otp/verify  { session, otp, remember }     → signed in
+   Registration already tells people when a number has an account, so this says so too (clearer for customers). */
+const signedIn = async (req, res, id, remember) => {
+  await pool.query("UPDATE customers SET failed_attempts = 0, locked_until = NULL, phone_verified_at = COALESCE(phone_verified_at, NOW()) WHERE id = ?", [id]);
+  await startCustomerSession(req, res, id, { remember });
+  return { customer: publicCustomer(await loadCustomer(id)) };
+};
+const suspended = () => new HttpError(403, "This account has been suspended. Please contact us for help.", { code: "suspended" });
+
+router.post("/auth/login/otp", limit(15, 8, "Too many code requests. Please wait 15 minutes."), ah(async (req, res) => {
+  const phone = parseMobile(req.body?.mobile);
+  const [[c]] = await pool.query("SELECT id FROM customers WHERE phone = ?", [phone.e164]);
+  if (!c) throw new HttpError(404, "No account uses this mobile number yet. Create one in a minute.", { field: "mobile", code: "no_account" });
+  const { row, sent, cfg } = await startOtp({ purpose: "login", phone: phone.e164, customerId: c.id, ip: clientIp(req) });
+  res.status(201).json({ ...sessionInfo(row, cfg), sent,
+    message: sent ? `We've sent a ${cfg.length}-digit code to your mobile.` : "We couldn't send the code just now. Please tap \"Resend code\" in a moment." });
+}));
+
+router.post("/auth/login/otp/verify", authLimit, ah(async (req, res) => {
+  const id = await inTransaction(async (conn) => {
+    const otp = await verifyOtp(conn, req.body?.session, req.body?.otp, { purpose: "login" });
+    const [[c]] = await conn.query("SELECT id, is_active, phone FROM customers WHERE id = ? FOR UPDATE", [otp.customer_id]);
+    if (!c || c.phone !== otp.phone) throw new HttpError(410, "This verification has ended. Please start again.", { code: "otp_session_closed" });
+    await conn.query("UPDATE otp_verifications SET status = 'used' WHERE id = ?", [otp.id]);
+    if (!c.is_active) throw Object.assign(suspended(), { details: { code: "suspended", commit: true } });
+    return c.id;
+  });
+  res.json(await signedIn(req, res, id, remembered(req.body?.remember)));
+}));
+
+/* ---------- Sign in with Google ----------
+   GET  /auth/google/config                                       → { clientId } (empty when not set up)
+   POST /auth/google          { credential, remember }            → signed in, or { needMobile, ticket, name, email }
+   POST /auth/google/mobile   { ticket, mobile, acceptTerms }     → a code is texted to that number
+   POST /auth/google/verify   { ticket, session, otp, remember }  → links Google to that number's account (or creates it)
+   Every account keeps one verified mobile number, so a first Google sign-in confirms the mobile once.
+   Google is never linked by email alone: an email typed at sign-up was never verified. */
+router.get("/auth/google/config", (req, res) => { res.json({ clientId: googleClientId() }); });
+
+router.post("/auth/google", authLimit, ah(async (req, res) => {
+  const g = await verifyGoogleCredential(req.body?.credential);
+  const [[c]] = await pool.query("SELECT id, is_active FROM customers WHERE google_sub = ?", [g.sub]);
+  if (c) {
+    if (!c.is_active) throw suspended();
+    return res.json(await signedIn(req, res, c.id, remembered(req.body?.remember)));
+  }
+  res.json({ needMobile: true, ticket: googleTicket(g), name: g.name, email: g.email });
+}));
+
+router.post("/auth/google/mobile", limit(15, 8, "Too many code requests. Please wait 15 minutes."), ah(async (req, res) => {
+  readGoogleTicket(req.body?.ticket);
+  const phone = parseMobile(req.body?.mobile);
+  const [[c]] = await pool.query("SELECT id, google_sub FROM customers WHERE phone = ?", [phone.e164]);
+  if (c?.google_sub) throw new HttpError(409, "This mobile number's account is already linked to a different Google account. Sign in with your mobile number instead.", { field: "mobile", code: "google_other" });
+  if (!c && !remembered(req.body?.acceptTerms)) throw new HttpError(400, "Please accept the Terms and Privacy Policy to create an account", { field: "acceptTerms" });
+  const { row, sent, cfg } = await startOtp({ purpose: "google_link", phone: phone.e164, customerId: c?.id || null, ip: clientIp(req) });
+  res.status(201).json({ ...sessionInfo(row, cfg), sent, existing: !!c,
+    message: sent ? `We've sent a ${cfg.length}-digit code to your mobile.` : "We couldn't send the code just now. Please tap \"Resend code\" in a moment." });
+}));
+
+router.post("/auth/google/verify", authLimit, ah(async (req, res) => {
+  const g = readGoogleTicket(req.body?.ticket);
+  const out = await inTransaction(async (conn) => {
+    const otp = await verifyOtp(conn, req.body?.session, req.body?.otp, { purpose: "google_link" });
+    await conn.query("UPDATE otp_verifications SET status = 'used' WHERE id = ?", [otp.id]);
+    const [[taken]] = await conn.query("SELECT id FROM customers WHERE google_sub = ? FOR UPDATE", [g.sub]);
+    const [[c]] = await conn.query("SELECT * FROM customers WHERE phone = ? FOR UPDATE", [otp.phone]);
+    if (taken && taken.id !== c?.id) throw new HttpError(409, "This Google account is already linked to another mobile number. Sign in with Google again.", { code: "google_taken", commit: true });
+    // Google's (verified) email is added only if the account has none and nobody else uses it
+    let email = null;
+    if (g.email) {
+      const [[other]] = await conn.query("SELECT id FROM customers WHERE email = ? AND id <> ?", [g.email, c?.id || 0]);
+      if (!other) email = g.email;
+    }
+    if (c) {
+      if (c.google_sub && c.google_sub !== g.sub) throw new HttpError(409, "This mobile number's account is already linked to a different Google account.", { code: "google_other", commit: true });
+      const set = { google_sub: g.sub };
+      if (!c.email && email) Object.assign(set, { email, email_verified_at: new Date() });
+      else if (c.email && c.email === g.email && !c.email_verified_at) set.email_verified_at = new Date();
+      await conn.query("UPDATE customers SET ? WHERE id = ?", [set, c.id]);
+      await conn.query("UPDATE otp_verifications SET customer_id = ? WHERE id = ?", [c.id, otp.id]);
+      if (!c.is_active) throw Object.assign(suspended(), { details: { code: "suspended", commit: true } });
+      return { id: c.id, created: false };
+    }
+    const name = g.name.length >= 2 ? g.name : "Nawara Trend customer";
+    const [r] = await conn.query(
+      "INSERT INTO customers (name, email, email_verified_at, phone, phone_verified_at, google_sub) VALUES (?, ?, ?, ?, NOW(), ?)",
+      [name, email, email ? new Date() : null, otp.phone, g.sub]);
+    await conn.query("UPDATE otp_verifications SET customer_id = ? WHERE id = ?", [r.insertId, otp.id]);
+    await conn.query("UPDATE sms_logs SET customer_id = ? WHERE otp_id = ?", [r.insertId, otp.id]);
+    return { id: r.insertId, created: true };
+  });
+  const result = await signedIn(req, res, out.id, remembered(req.body?.remember));
+  const c = await loadCustomer(out.id);
+  if (out.created && c.email) await queueEmail({ key: "registration_confirmation", to: c.email, vars: customerVars(c), customerId: c.id, trigger: "registration",
+    dedupeKey: `registration_confirmation:${c.id}` });
+  res.status(out.created ? 201 : 200).json({ ...result, created: out.created });
 }));
 
 router.get("/auth/me", requireCustomer, ah(async (req, res) => { res.set("Cache-Control", "no-store"); res.json({ customer: publicCustomer(req.customer) }); }));
@@ -227,6 +330,7 @@ router.put("/account/profile", requireCustomer, authLimit, ah(async (req, res) =
   const emailChanged = email !== (c.email || null);
   if (emailChanged) {
     const current = typeof b.currentPassword === "string" ? b.currentPassword : "";
+    if (!c.password) throw new HttpError(400, "Please set a password first (under Password & security), then change your email.", { field: "email", code: "no_password" });
     if (!current) throw new HttpError(400, "Enter your current password to change your email", { field: "currentPassword" });
     if (!(await bcrypt.compare(current, c.password || DUMMY_HASH))) throw new HttpError(400, "Your current password is wrong", { field: "currentPassword" });
     if (email) {
@@ -248,8 +352,8 @@ router.put("/account/password", requireCustomer, authLimit, ah(async (req, res) 
   const next = password(req.body?.newPassword, "newPassword");
   if (req.body?.confirmPassword !== undefined) confirmMatches(next, req.body.confirmPassword);
   const c = await loadCustomer(req.customer.id);
-  if (!(await bcrypt.compare(current, c.password || DUMMY_HASH))) throw new HttpError(400, "Your current password is wrong", { field: "currentPassword" });
-  if (current === next) throw new HttpError(400, "Choose a password different from the current one", { field: "newPassword" });
+  if (c.password && !(await bcrypt.compare(current, c.password))) throw new HttpError(400, "Your current password is wrong", { field: "currentPassword" });
+  if (c.password && current === next) throw new HttpError(400, "Choose a password different from the current one", { field: "newPassword" });
   await pool.query("UPDATE customers SET password = ?, token_version = token_version + 1 WHERE id = ?", [await bcrypt.hash(next, 12), c.id]);
   // other devices are signed out; this one gets a fresh session
   await revokeCustomerSessions(c.id, "password_change");

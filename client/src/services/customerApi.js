@@ -4,6 +4,8 @@
      POST /api/store/auth/login { mobile, password, remember } | logout | logout-everywhere,  GET /api/store/auth/me
      POST /api/store/auth/forgot { mobile } → /auth/forgot/verify { session, otp } → /auth/forgot/reset
      POST /api/store/auth/otp/resend { session, purpose }
+     POST /api/store/auth/login/otp { mobile } → /auth/login/otp/verify { session, otp, remember }   (sign in with a code)
+     GET  /api/store/auth/google/config, POST /auth/google { credential } → /auth/google/mobile → /auth/google/verify
      PUT  /api/store/account/profile | password | avatar,  DELETE /api/store/account/avatar
      GET  /api/store/orders/mine?status=&q=&page=,  GET /api/store/orders/mine/:number,  POST /api/store/orders/track
      POST /api/store/orders, POST /api/store/contact
@@ -58,7 +60,7 @@ async function request(path, options = {}, retried = false) {
     document.cookie = "nt_csrf=; Max-Age=0; Path=/";
     return request(path, options, true);
   }
-  if (res.status === 401 && currentCustomer() && !path.startsWith("/store/auth/login")) store.del(CUSTOMER_KEY);   // session ended
+  if (res.status === 401 && currentCustomer() && !path.startsWith("/store/auth/login") && !path.startsWith("/store/auth/google")) store.del(CUSTOMER_KEY);   // session ended
   if (!res.ok) {
     const err = new Error(data.message || "Something went wrong. Please try again.");
     Object.assign(err, { field: data.field, status: res.status, code: data.code, data });
@@ -90,6 +92,20 @@ export const register = (data) => send("POST", "/store/auth/register", data);
 /** Step 2: the code from the text message. Creates the account and signs in. */
 export const verifyRegistration = async (session, otp, remember) => saveCustomer(await send("POST", "/store/auth/register/verify", { session, otp, remember }));
 export const resendOtp = (session, purpose) => send("POST", "/store/auth/otp/resend", { session, purpose });
+
+/* ---------- sign in with a code by SMS ---------- */
+export const sendLoginCode = (mobile) => send("POST", "/store/auth/login/otp", { mobile });
+export const verifyLoginCode = async (session, otp, remember) => saveCustomer(await send("POST", "/store/auth/login/otp/verify", { session, otp, remember }));
+
+/* ---------- Sign in with Google ---------- */
+export const googleConfig = () => request("/store/auth/google/config");
+/** Signed in → { customer }; first time → { needMobile, ticket, name, email }. */
+export async function googleSignIn(credential, remember) {
+  const r = await send("POST", "/store/auth/google", { credential, remember });
+  return r.customer ? { customer: saveCustomer(r) } : r;
+}
+export const googleSendCode = (ticket, mobile, acceptTerms) => send("POST", "/store/auth/google/mobile", { ticket, mobile, acceptTerms });
+export const googleVerify = async (ticket, session, otp, remember) => saveCustomer(await send("POST", "/store/auth/google/verify", { ticket, session, otp, remember }));
 
 /* ---------- forgotten password ---------- */
 export const forgotPassword = (mobile) => send("POST", "/store/auth/forgot", { mobile });

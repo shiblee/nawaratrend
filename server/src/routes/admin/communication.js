@@ -73,7 +73,7 @@ const VERIFY_STATUS = { pending: "Pending", verified: "Verified", used: "Verifie
 function logFilters(q) {
   const where = [], args = [];
   if (["queued", "sent", "delivered", "failed"].includes(q.status)) { where.push("l.status = ?"); args.push(q.status); }
-  if (["registration", "password_reset", "test"].includes(q.purpose)) { where.push("l.purpose = ?"); args.push(q.purpose); }
+  if (["registration", "password_reset", "login", "google_link", "test"].includes(q.purpose)) { where.push("l.purpose = ?"); args.push(q.purpose); }
   if (q.verification === "verified") where.push("o.status IN ('verified','used')");
   else if (q.verification === "rejected") where.push("o.status = 'locked'");
   else if (["pending", "expired", "cancelled"].includes(q.verification)) { where.push("o.status = ?"); args.push(q.verification); }

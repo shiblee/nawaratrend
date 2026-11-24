@@ -144,7 +144,7 @@ export const EMAIL_STATUS = { queued: ["Queued", "amber"], sending: ["Sending", 
 export const SMS_STATUS = { queued: ["Queued", "amber"], sent: ["Sent", "green"], delivered: ["Delivered", "green"], failed: ["Failed", "red"] };
 export const SmsBadge = ({ status }) => <Badge tone={(SMS_STATUS[status] || [])[1]}>{(SMS_STATUS[status] || [status])[0]}</Badge>;
 export const VERIFY_TONE = { Verified: "green", Pending: "amber", Expired: "gray", Rejected: "red", Replaced: "gray", Test: "blue" };
-export const OTP_PURPOSE = { registration: "Sign-up", password_reset: "Password reset", test: "Test message" };
+export const OTP_PURPOSE = { registration: "Sign-up", password_reset: "Password reset", login: "Sign-in code", google_link: "Google sign-in", test: "Test message" };
 export const EmailBadge = ({ status }) => <Badge tone={(EMAIL_STATUS[status] || [])[1]}>{(EMAIL_STATUS[status] || [status])[0]}</Badge>;
 export const TRIGGER = { registration: "Sign-up", order: "New order", admin: "Admin update", system: "System", test: "Test", retry: "Resent by admin", customer: "Customer action" };
 export const PRODUCT_STATUS = { active: ["On sale", "green"], draft: ["Draft", "gray"], archived: ["Archived", "red"] };
