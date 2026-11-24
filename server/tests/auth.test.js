@@ -66,6 +66,23 @@ test("duplicate mobile number is refused and the existing account is untouched",
   assert.equal(c.name, "Test Customer");
 });
 
+test("the same mobile number written differently is still refused", async () => {
+  const { phone } = await registered();
+  for (const typed of [`+91${phone}`, `+91 ${phone.slice(0, 5)} ${phone.slice(5)}`, `0${phone}`, `91${phone}`]) {
+    const b = browser(); await b.csrf();
+    const r = await b.post("/store/auth/register", form(typed, { name: "Someone Else" }));
+    assert.equal(r.status, 409, typed);
+    assert.equal(r.data.code, "mobile_taken");
+  }
+  const [[{ n }]] = await pool.query("SELECT COUNT(*) AS n FROM customers WHERE phone = ?", [e164(phone)]);
+  assert.equal(n, 1);
+});
+
+test("the database itself refuses a second account with the same mobile", async () => {
+  const { phone } = await registered();
+  await assert.rejects(pool.query("INSERT INTO customers (name, phone) VALUES ('Copy', ?)", [e164(phone)]), { code: "ER_DUP_ENTRY" });
+});
+
 test("a number registered by someone else mid-sign-up can't be overwritten (race)", async () => {
   const b = browser(); await b.csrf();
   const phone = mobile();
