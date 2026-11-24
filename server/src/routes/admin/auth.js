@@ -7,6 +7,7 @@ import { ah, HttpError, str, EMAIL, password, clientIp } from "../../lib/http.js
 import { audit } from "../../lib/store.js";
 import { permissionsFor } from "../../lib/permissions.js";
 import { requireAdmin, signAdminToken } from "../../middleware/auth.js";
+import { newCaptcha, checkCaptcha } from "../../lib/captcha.js";
 
 const router = express.Router();
 const MAX_FAILS = 5, LOCK_MINUTES = 15;
@@ -19,7 +20,10 @@ const loginLimit = rateLimit({
 
 const safe = ({ password: _p, failed_attempts, locked_until, token_version, ...a }) => a;
 
+router.get("/captcha", (req, res) => { res.set("Cache-Control", "no-store"); res.json(newCaptcha()); });
+
 router.post("/login", loginLimit, ah(async (req, res) => {
+  checkCaptcha(req.body?.captchaToken, req.body?.captchaAnswer);
   const email = str(req.body?.email, "email", { max: 150 }).toLowerCase();
   const pw = typeof req.body?.password === "string" ? req.body.password : "";
   const [rows] = await pool.query("SELECT * FROM admins WHERE email = ?", [email]);

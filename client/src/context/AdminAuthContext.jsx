@@ -25,8 +25,8 @@ export function AdminAuthProvider({ children }) {
     return () => window.removeEventListener("admin:signed-out", onOut);
   }, []);
 
-  const login = async (email, password) => {
-    const { token: t, admin: a } = await adminApi.login(email, password);
+  const login = async (email, password, captcha) => {
+    const { token: t, admin: a } = await adminApi.login(email, password, captcha);
     setAdmin(a);
     applyToken(t);
     return a;

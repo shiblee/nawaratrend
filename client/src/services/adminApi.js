@@ -49,7 +49,8 @@ const send = (method, path, body) => request(path, { method, body: body === unde
 
 export const adminApi = {
   // session + own account
-  login: (email, password) => send("POST", "/admin/auth/login", { email, password }),
+  captcha: () => request("/admin/auth/captcha"),
+  login: (email, password, captcha) => send("POST", "/admin/auth/login", { email, password, ...captcha }),
   me: () => request("/admin/auth/me"),
   updateProfile: (data) => send("PUT", "/admin/auth/profile", data),
   changePassword: (data) => send("PUT", "/admin/auth/password", data),

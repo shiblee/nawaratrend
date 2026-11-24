@@ -32,7 +32,7 @@ export const { takeTestCode } = await import("../src/lib/sms/providers.js");
 const { default: app } = await import("../src/app.js");
 
 const server = app.listen(0);
-const base = `http://127.0.0.1:${server.address().port}/api`;
+export const base = `http://127.0.0.1:${server.address().port}/api`;
 export const close = async () => { server.close(); await pool.end(); };
 
 let n = 0;
@@ -80,11 +80,16 @@ export async function registered({ email = null, password = "Secret123" } = {}) 
   return { b, phone, password, customer: v.data.customer };
 }
 
+/** Answers the admin sign-in math question, e.g. "7 + 4" or "9 − 3". */
+export const solveCaptcha = (q) => { const [a, op, b] = q.split(" "); return op === "+" ? +a + +b : a - b; };
+
 /** Admin panel bearer token for the seeded owner (or a new admin of the given role). */
 export async function adminToken(role = "owner") {
   const login = async (email, password) => {
+    const { question, token: captchaToken } = await (await fetch(base + "/admin/auth/captcha")).json();
+    const captchaAnswer = solveCaptcha(question);
     const r = await fetch(base + "/admin/auth/login", { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": "10.250.0." + crypto.randomInt(1, 255) },
-      body: JSON.stringify({ email, password }) });
+      body: JSON.stringify({ email, password, captchaToken, captchaAnswer }) });
     return (await r.json()).token;
   };
   if (role === "owner") return login("admin@nawaratrend.com", "Admin@123");
