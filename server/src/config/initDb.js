@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { pathToFileURL } from "url";
 import { pool } from "./db.js";
 import { assignProductCodes } from "../lib/codes.js";
+import { applyContentUpdates } from "./contentUpdates.js";
 
 const DEFAULT_ADMIN_EMAIL = "admin@nawaratrend.com";
 const DEFAULT_ADMIN_PASSWORD = "Admin@123";
@@ -571,6 +572,7 @@ export async function initDatabase() {
     }
     console.log(`Seeded ${PRODUCTS.length} products`);
   }
+  await applyContentUpdates();   // new products and SEO wording, once each
   const coded = await assignProductCodes();
   if (coded) console.log(`Gave ${coded} products a permanent code`);
 

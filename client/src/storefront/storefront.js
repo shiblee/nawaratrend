@@ -73,7 +73,12 @@ const products = [
   {id:"burger-panda-keychain-pouch", code:"NT-12", cat:"accessories", name:"Cute Burger Keychain Pouch with 3D Panda, Soft Silicone Mini Storage Pouch & Bag Charm for Coins, Earbuds & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
    desc:"A burger-shaped soft silicone keychain pouch with an adorable 3D panda on top: a keychain, bag charm and mini pouch for coins and earbuds in one.",
    points:["Adorable 3D panda on top","Mini pouch for coins and earbuds","Soft, durable and flexible silicone","Keychain and bag charm in one"],
-   img:"https://nawaratrend.com/products/burger-panda-keychain-pouch/1.jpg"}
+   img:"https://nawaratrend.com/products/burger-panda-keychain-pouch/1.jpg"},
+  {id:"taj-mahal-pocket-watch-keychain", code:"NT-13", cat:"accessories", name:"Taj Mahal Pocket Watch Keychain, Antique Brass Finish Quartz Watch with Push-Open Cover & Gift Box", price:449, mrp:641, rate:0, reviews:0, stock:50,
+   desc:"Carry a piece of India's most loved monument wherever you go. Press the crown and the engraved Taj Mahal cover springs open to reveal a classic quartz watch.",
+   points:["Engraved Taj Mahal cover with fine 3D detailing","Push the crown to open: a working quartz watch inside","Antique brass finish with a smooth plain back","Arrives in a black gift box with satin lining"],
+   images:["https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-1.jpg","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-2.webp","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-3.webp","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-4.webp","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-5.webp"],
+   img:"https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-1.jpg"}
 ];
 
 const ICON = {
