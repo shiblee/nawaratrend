@@ -8,6 +8,7 @@ const SITE = "https://nawaratrend.com";
 const img = (slug, files) => files.map((f) => `${SITE}/products/${slug}/${f}`);
 
 const TAJ = "taj-mahal-pocket-watch-keychain";
+const CREST = "heritage-crest-pocket-watch-keychain";
 
 const UPDATES = [
   {
@@ -33,6 +34,32 @@ const UPDATES = [
       images: img(TAJ, [`${TAJ}-1.jpg`, `${TAJ}-2.webp`, `${TAJ}-3.webp`, `${TAJ}-4.webp`, `${TAJ}-5.webp`]),
       seo_title: "Taj Mahal Pocket Watch Keychain, Antique Brass",
       seo_description: "Engraved Taj Mahal keychain that opens to a working quartz pocket watch. Antique brass finish, sturdy chain, gift box. ₹449 (30% off), COD in India.",
+    },
+  },
+  {
+    // the crest is a well-known film design: the listing deliberately names no franchise, school or characters
+    id: "2026-11-24-heritage-crest-watch-keychain",
+    product: {
+      slug: CREST, category: "accessories",
+      name: "Heritage Crest Pocket Watch Keychain, Antique Brass Quartz Watch with Flip-Open Cover & Gift Box",
+      description: [
+        "A pocket watch with a story on its cover.",
+        "The flip-open lid carries a richly embossed heraldic crest, with every curl, feather and shield line raised in antique brass. Press the crown and it opens to a classic quartz watch with a crisp white dial and bold numerals, protected by a textured inner cover.",
+        "Clip it to your keys or bag with the sturdy chain and solid key ring, and it's a conversation starter wherever you take it. It arrives in a gift box lined with golden satin, ready for birthdays, Diwali, Father's Day or anyone who loves a vintage piece.",
+        "How to use: remove the small white plastic lock from the crown before first use. Press the crown to open the cover; the watch starts. To set the time, lift the crown to stop the watch, turn it to the right time, then press it back in to start again.",
+      ].join("\n\n"),
+      price: 449, mrp: 641, stock: 50,
+      highlights: [
+        "Richly embossed heraldic crest on the cover",
+        "Press the crown to flip open: a working quartz watch inside",
+        "Clear white dial with bold, easy-to-read numerals",
+        "Antique brass finish and textured inner cover",
+        "Sturdy metal chain and solid key ring",
+        "Arrives in a gift box with satin lining",
+      ],
+      images: img(CREST, [`${CREST}-1.jpg`, `${CREST}-2.webp`, `${CREST}-3.webp`, `${CREST}-4.webp`]),
+      seo_title: "Heritage Crest Pocket Watch Keychain, Brass",
+      seo_description: "Vintage pocket watch keychain with an embossed heraldic crest, flip-open cover and quartz dial. Antique brass finish, gift box. ₹449 (30% off), COD.",
     },
   },
   {

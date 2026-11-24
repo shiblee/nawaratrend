@@ -44,3 +44,15 @@ test("the product page carries the SEO title, description and Google product dat
   assert.equal(product.offers.price, "449.00");
   assert.equal(product.image.length, 5);
 });
+
+test("the Heritage Crest watch keychain is listed under a generic name, with no franchise names anywhere", async () => {
+  const [[p]] = await pool.query("SELECT name, description, highlights, seo_title, seo_description, price, mrp, stock, images FROM products WHERE slug = 'heritage-crest-pocket-watch-keychain'");
+  assert.ok(p);
+  assert.deepEqual([Number(p.price), Number(p.mrp), p.stock], [449, 641, 50]);
+  const text = [p.name, p.description, JSON.stringify(p.highlights), p.seo_title, p.seo_description].join(" ");
+  assert.doesNotMatch(text, /hogwarts|harry|potter|gryffindor|slytherin|hufflepuff|ravenclaw|wizard/i);
+  assert.match(p.description, /How to use/);
+  assert.ok(p.seo_title.length + " | NawaraTrend".length <= 60);
+  assert.ok(p.seo_description.length <= 155);
+  assert.equal((typeof p.images === "string" ? JSON.parse(p.images) : p.images).length, 4);
+});

@@ -78,7 +78,12 @@ const products = [
    desc:"Carry a piece of India's most loved monument wherever you go. Press the crown and the engraved Taj Mahal cover springs open to reveal a classic quartz watch.",
    points:["Engraved Taj Mahal cover with fine 3D detailing","Push the crown to open: a working quartz watch inside","Antique brass finish with a smooth plain back","Arrives in a black gift box with satin lining"],
    images:["https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-1.jpg","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-2.webp","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-3.webp","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-4.webp","https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-5.webp"],
-   img:"https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-1.jpg"}
+   img:"https://nawaratrend.com/products/taj-mahal-pocket-watch-keychain/taj-mahal-pocket-watch-keychain-1.jpg"},
+  {id:"heritage-crest-pocket-watch-keychain", code:"NT-18", cat:"accessories", name:"Heritage Crest Pocket Watch Keychain, Antique Brass Quartz Watch with Flip-Open Cover & Gift Box", price:449, mrp:641, rate:0, reviews:0, stock:50,
+   desc:"A pocket watch with a story on its cover: a richly embossed heraldic crest that flips open to a classic quartz watch with a crisp white dial.",
+   points:["Richly embossed heraldic crest on the cover","Press the crown to flip open: a working quartz watch inside","Antique brass finish and textured inner cover","Arrives in a gift box with satin lining"],
+   images:["https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-1.jpg","https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-2.webp","https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-3.webp","https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-4.webp"],
+   img:"https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-1.jpg"}
 ];
 
 const ICON = {
