@@ -104,6 +104,18 @@ const UPDATES = [
       to: img("burger-panda-keychain-pouch", ["1.jpg", ...[2, 3, 4, 5, 6].map((n) => `burger-panda-keychain-pouch-${n}.webp`)]),
     }],
   },
+  {
+    // it's a keychain, not a pouch: the title now matches the photos (the page address stays the same)
+    id: "2026-11-25-burger-keychain-title",
+    fields: [{
+      slug: "burger-panda-keychain-pouch",
+      name: {
+        from: "Cute Burger Keychain Pouch with 3D Panda, Soft Silicone Mini Storage Pouch & Bag Charm for Coins, Earbuds & Keys",
+        to: "Cute Panda Burger Keychain, Soft Silicone 3D Panda Bag Charm with Gold-Tone Metal Keyring for Keys, Bags & Cars",
+      },
+      seo_title: { from: "Burger Panda Keychain Pouch, Silicone", to: "Cute Panda Burger Keychain, Silicone Bag Charm" },
+    }],
+  },
 ];
 
 async function done(id) {
@@ -147,11 +159,24 @@ async function updateImages(rows) {
   return n;
 }
 
+// each field changes only while it still has its old value, so edits made in the admin panel are kept
+async function updateFields(rows) {
+  let n = 0;
+  for (const { slug, ...fields } of rows) {
+    for (const [col, { from, to }] of Object.entries(fields)) {
+      const [r] = await pool.query(`UPDATE products SET \`${col}\` = ? WHERE slug = ? AND \`${col}\` = ?`, [to, slug, from]);
+      n += r.affectedRows;
+    }
+  }
+  return n;
+}
+
 export async function applyContentUpdates() {
   for (const u of UPDATES) {
     if (await done(u.id)) continue;
     if (u.product && await addProduct(u.product)) console.log(`Added product: ${u.product.slug}`);
     if (u.seo) { const n = await updateSeo(u.seo); if (n) console.log(`Updated SEO titles for ${n} products`); }
+    if (u.fields) { const n = await updateFields(u.fields); if (n) console.log(`Updated ${n} product fields`); }
     if (u.images) { const n = await updateImages(u.images); if (n) console.log(`Updated photos for ${n} products`); }
     await pool.query("INSERT INTO settings (`key`, value) VALUES (?, ?)", [`content.${u.id}`, new Date().toISOString()]);
   }
