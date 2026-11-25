@@ -231,6 +231,15 @@ const UPDATES = [
       seo_description: "Blue cup keychain pouch with a 3D bunny-hood doll that pops up when pressed. Soft silicone, mini storage for coins, metal keyring. ₹199 (30% off), COD.",
     },
   },
+  {
+    // the owner chose to show the supplier's original photos (brand monogram included) instead of the painted-out one
+    id: "2026-11-26-bear-cup-original-photos",
+    images: [{
+      slug: BEAR_CUP,
+      from: img(BEAR_CUP, [`${BEAR_CUP}-1.jpg`]),
+      to: img(BEAR_CUP, [`${BEAR_CUP}-2.jpg`, `${BEAR_CUP}-3.webp`, `${BEAR_CUP}-4.webp`]),
+    }],
+  },
 ];
 
 async function done(id) {
