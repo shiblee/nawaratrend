@@ -84,7 +84,12 @@ const products = [
    desc:"A pocket watch with a story on its cover: a richly embossed heraldic crest that flips open to a classic quartz watch with a crisp white dial.",
    points:["Richly embossed heraldic crest on the cover","Press the crown to flip open: a working quartz watch inside","Antique brass finish and textured inner cover","Arrives in a gift box with satin lining"],
    images:["https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-1.jpg","https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-2.webp","https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-3.webp","https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-4.webp"],
-   img:"https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-1.jpg"}
+   img:"https://nawaratrend.com/products/heritage-crest-pocket-watch-keychain/heritage-crest-pocket-watch-keychain-1.jpg"},
+  {id:"animal-cup-keychain-pouch", code:"NT-19", cat:"accessories", name:"Cute Animal Cup Keychain Pouch, Soft Silicone Mini Storage Mug with 3D Character Lid & Gold-Tone Keyring for Bags & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
+   desc:"A cute coffee-cup keychain pouch in soft silicone with a yellow 3D animal on the lid, which opens to a mini storage space for coins and earbuds.",
+   points:["Adorable 3D animal sitting on the lid","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain and metal keyring"],
+   images:["https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-1.jpg","https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-2.webp","https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-3.webp"],
+   img:"https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-1.jpg"}
 ];
 
 const ICON = {

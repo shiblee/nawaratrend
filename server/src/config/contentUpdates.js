@@ -9,6 +9,7 @@ const img = (slug, files) => files.map((f) => `${SITE}/products/${slug}/${f}`);
 
 const TAJ = "taj-mahal-pocket-watch-keychain";
 const CREST = "heritage-crest-pocket-watch-keychain";
+const CUP = "animal-cup-keychain-pouch";
 
 const UPDATES = [
   {
@@ -140,6 +141,35 @@ const UPDATES = [
         to: "Cute panda burger keychain in soft silicone with a 3D panda on top and a gold-tone metal keyring. For keys, bags and cars. ₹199 (30% off), COD in India.",
       },
     }],
+  },
+  {
+    // the cup carries a printed emblem and the figure is a generic yellow animal: the listing names no tournament, film or character
+    id: "2026-11-25-animal-cup-keychain-pouch",
+    product: {
+      slug: CUP, category: "accessories",
+      name: "Cute Animal Cup Keychain Pouch, Soft Silicone Mini Storage Mug with 3D Character Lid & Gold-Tone Keyring for Bags & Keys",
+      description: [
+        "A tiny mug with a big personality! This cute keychain pouch is shaped like a white coffee cup, with an adorable yellow 3D animal sitting on the lid, waving hello.",
+        "Lift the soft lid and there's a mini storage space inside, handy for coins, earbuds, hair ties and other little things. Close it, and it's a charming keychain and bag charm that gets noticed.",
+        "It is made of soft, durable and flexible silicone that's comfortable to hold, with bright colours and fine detailing. The sturdy gold-tone chain and metal keyring attach it to keys, car keys, school bags, backpacks and handbags, and it's light enough to carry every day.",
+        "A cute, trendy accessory and a lovely birthday or return gift for kids, friends and family.",
+        "Includes: 1 keychain pouch.",
+      ].join("\n\n"),
+      price: 199, mrp: 284, stock: 50,
+      highlights: [
+        "Adorable 3D animal sitting on the lid",
+        "Cute coffee-cup shape with a handle",
+        "Openable lid with a mini storage space",
+        "Keeps coins, earbuds and small things",
+        "Soft, durable and flexible silicone",
+        "Sturdy gold-tone chain and metal keyring",
+        "For keys, school bags, backpacks and handbags",
+        "Perfect gift for kids",
+      ],
+      images: img(CUP, [`${CUP}-1.jpg`, `${CUP}-2.webp`, `${CUP}-3.webp`]),
+      seo_title: "Cute Animal Cup Keychain Pouch, Silicone",
+      seo_description: "Cute cup-shaped keychain pouch with a 3D animal on the lid: soft silicone mini storage for coins and earbuds, gold-tone keyring. ₹199 (30% off), COD.",
+    },
   },
 ];
 
