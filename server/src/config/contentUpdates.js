@@ -116,6 +116,31 @@ const UPDATES = [
       seo_title: { from: "Burger Panda Keychain Pouch, Silicone", to: "Cute Panda Burger Keychain, Silicone Bag Charm" },
     }],
   },
+  {
+    // keychain, not a pouch: description, highlights and Google snippet rewritten to match the photos
+    id: "2026-11-25-burger-keychain-text",
+    fields: [{
+      slug: "burger-panda-keychain-pouch",
+      description: {
+        from: "A keychain, a bag charm and a mini pouch in one! This cute burger keychain pouch is shaped like a colourful burger, with an adorable 3D panda on top. Sesame seeds, lettuce, cheese and a juicy patty make it look good enough to eat.\n\nIt is made of soft, durable and flexible silicone, and the small storage space is handy for coins, earbuds and other little things. The gold-tone chain and ring attach it to keys, school bags, backpacks and handbags.\n\nA cute, trendy accessory for school and everyday use, and a lovely birthday or return gift for kids.\n\nIncludes: 1 keychain pouch.",
+        to: [
+          "Meet the cutest keychain in town! This panda burger keychain is shaped like a colourful burger, with an adorable 3D panda sitting on top. Sesame seeds, lettuce, cheese and a juicy patty make it look good enough to eat.",
+          "Give it a gentle squeeze and the little panda pops up out of the bun: a fun fidget that kids and adults love.",
+          "It is made of soft, durable and flexible silicone, with bright colours and fine detailing. A sturdy gold-tone metal clasp and keyring attach it to keys, car keys, school bags, backpacks and handbags, and it is light enough to carry every day.",
+          "A cute, trendy accessory and a lovely birthday or return gift for kids, friends and family.",
+          "Includes: 1 keychain.",
+        ].join("\n\n"),
+      },
+      highlights: {
+        from: ["Adorable 3D panda on top", "Colourful burger design with lettuce, cheese and patty layers", "Mini storage pouch for coins, earbuds and more", "Keychain and bag charm in one", "Soft, durable and flexible silicone", "Gold-tone chain and ring", "Attach to keys, school bags and backpacks", "Perfect gift for kids"],
+        to: ["Adorable 3D panda on top", "Squeeze it and the panda pops up", "Colourful burger design with lettuce, cheese and patty layers", "Soft, durable and flexible silicone", "Sturdy gold-tone metal clasp and keyring", "Lightweight and easy to carry", "For keys, car keys, bags and backpacks", "Perfect gift for everyone"],
+      },
+      seo_description: {
+        from: "Cute Burger keychain pouch with 3D panda: soft silicone mini pouch for coins and earbuds, with chain and ring. Bag charm and gift for kids. ₹199 (30% off).",
+        to: "Cute panda burger keychain in soft silicone with a 3D panda on top and a gold-tone metal keyring. For keys, bags and cars. ₹199 (30% off), COD in India.",
+      },
+    }],
+  },
 ];
 
 async function done(id) {
@@ -159,13 +184,19 @@ async function updateImages(rows) {
   return n;
 }
 
-// each field changes only while it still has its old value, so edits made in the admin panel are kept
+// each field changes only while it still has its old value, so edits made in the admin panel are kept;
+// lists (highlights, a JSON column) are compared and stored as JSON
 async function updateFields(rows) {
+  const norm = (v) => (typeof v === "string" ? v : JSON.stringify(v));
   let n = 0;
   for (const { slug, ...fields } of rows) {
     for (const [col, { from, to }] of Object.entries(fields)) {
-      const [r] = await pool.query(`UPDATE products SET \`${col}\` = ? WHERE slug = ? AND \`${col}\` = ?`, [to, slug, from]);
-      n += r.affectedRows;
+      const [[p]] = await pool.query(`SELECT id, \`${col}\` AS v FROM products WHERE slug = ?`, [slug]);
+      if (!p) continue;
+      const cur = Array.isArray(from) && typeof p.v === "string" ? JSON.parse(p.v) : p.v;
+      if (norm(cur) !== norm(from)) continue;
+      await pool.query(`UPDATE products SET \`${col}\` = ? WHERE id = ?`, [norm(to), p.id]);
+      n++;
     }
   }
   return n;
