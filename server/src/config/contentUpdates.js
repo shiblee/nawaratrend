@@ -95,6 +95,15 @@ const UPDATES = [
       to: img("burger-panda-keychain-pouch", ["1.jpg"]),
     }],
   },
+  {
+    // five new branded photos added after the main one
+    id: "2026-11-25-burger-pouch-new-photos",
+    images: [{
+      slug: "burger-panda-keychain-pouch",
+      from: img("burger-panda-keychain-pouch", ["1.jpg"]),
+      to: img("burger-panda-keychain-pouch", ["1.jpg", ...[2, 3, 4, 5, 6].map((n) => `burger-panda-keychain-pouch-${n}.webp`)]),
+    }],
+  },
 ];
 
 async function done(id) {
