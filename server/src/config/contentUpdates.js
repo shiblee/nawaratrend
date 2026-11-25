@@ -86,6 +86,15 @@ const UPDATES = [
         title: "Pink Bunny Kids Water Bottle 500ml, Straw" },
     ],
   },
+  {
+    // the owner asked to drop photos 2 and 3; only applied while the listing still has the original three
+    id: "2026-11-25-burger-pouch-photos",
+    images: [{
+      slug: "burger-panda-keychain-pouch",
+      from: img("burger-panda-keychain-pouch", ["1.jpg", "2.webp", "3.webp"]),
+      to: img("burger-panda-keychain-pouch", ["1.jpg"]),
+    }],
+  },
 ];
 
 async function done(id) {
@@ -116,11 +125,25 @@ async function updateSeo(rows) {
   return n;
 }
 
+async function updateImages(rows) {
+  let n = 0;
+  for (const r of rows) {
+    const [[p]] = await pool.query("SELECT id, images FROM products WHERE slug = ?", [r.slug]);
+    if (!p) continue;
+    const cur = typeof p.images === "string" ? JSON.parse(p.images) : p.images;
+    if (JSON.stringify(cur) !== JSON.stringify(r.from)) continue;   // edited in the admin panel since: leave it
+    await pool.query("UPDATE products SET images = ? WHERE id = ?", [JSON.stringify(r.to), p.id]);
+    n++;
+  }
+  return n;
+}
+
 export async function applyContentUpdates() {
   for (const u of UPDATES) {
     if (await done(u.id)) continue;
     if (u.product && await addProduct(u.product)) console.log(`Added product: ${u.product.slug}`);
     if (u.seo) { const n = await updateSeo(u.seo); if (n) console.log(`Updated SEO titles for ${n} products`); }
+    if (u.images) { const n = await updateImages(u.images); if (n) console.log(`Updated photos for ${n} products`); }
     await pool.query("INSERT INTO settings (`key`, value) VALUES (?, ?)", [`content.${u.id}`, new Date().toISOString()]);
   }
 }
