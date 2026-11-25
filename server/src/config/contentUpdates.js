@@ -11,6 +11,7 @@ const TAJ = "taj-mahal-pocket-watch-keychain";
 const CREST = "heritage-crest-pocket-watch-keychain";
 const CUP = "animal-cup-keychain-pouch";
 const BEAR_CUP = "bear-cup-keychain-pouch";
+const BLUE_CUP = "blue-cup-keychain-pouch";
 
 const UPDATES = [
   {
@@ -199,6 +200,35 @@ const UPDATES = [
       images: img(BEAR_CUP, [`${BEAR_CUP}-1.jpg`]),
       seo_title: "Cute Bear Cup Keychain Pouch, Press & Pop",
       seo_description: "Cute cup keychain pouch with a 3D bear that pops up when pressed. Soft silicone, mini storage for coins and earbuds, metal keyring. ₹199 (30% off), COD.",
+    },
+  },
+  {
+    // the cup carries a soft-drink brand's logo (photos published as they are, at the owner's choice): the text names no brand
+    id: "2026-11-25-blue-cup-keychain-pouch",
+    product: {
+      slug: BLUE_CUP, category: "accessories",
+      name: "Cute Blue Cup Keychain Pouch, Press & Pop 3D Bunny-Hood Doll, Soft Silicone Mini Storage Mug with Gold-Tone Keyring",
+      description: [
+        "A tiny blue mug with a playful surprise! This cute keychain pouch is shaped like a coffee cup with a fluffy white top, and a sweet 3D doll in a blue bunny-ear hoodie peeking out from inside.",
+        "Press the doll down and it pops right back up: a fun fidget that kids and adults can't stop playing with. Lift the soft lid and there's a mini storage space inside, handy for coins, earbuds, hair ties and other little things.",
+        "It is made of soft, durable and flexible silicone, with bright colours and fine detailing. The sturdy gold-tone chain, clasp and metal keyring attach it to handbags, car keys, home keys, backpacks, pencil pouches, water bottles, luggage, phone lanyards and ID card holders, and it's light enough to carry every day.",
+        "A cute, trendy accessory and a lovely birthday or return gift for kids, friends and family.",
+        "Includes: 1 keychain pouch.",
+      ].join("\n\n"),
+      price: 199, mrp: 284, stock: 50,
+      highlights: [
+        "Adorable 3D doll in a blue bunny-ear hoodie",
+        "Press the doll and it pops back up",
+        "Openable lid with a mini storage space",
+        "Keeps coins, earbuds and small things",
+        "Soft, durable and flexible silicone",
+        "Sturdy gold-tone chain, clasp and metal keyring",
+        "For bags, keys, backpacks, bottles and luggage",
+        "Perfect gift for kids",
+      ],
+      images: img(BLUE_CUP, [`${BLUE_CUP}-1.jpg`, `${BLUE_CUP}-2.webp`, `${BLUE_CUP}-3.webp`, `${BLUE_CUP}-4.webp`]),
+      seo_title: "Cute Blue Cup Keychain Pouch, Press & Pop",
+      seo_description: "Blue cup keychain pouch with a 3D bunny-hood doll that pops up when pressed. Soft silicone, mini storage for coins, metal keyring. ₹199 (30% off), COD.",
     },
   },
 ];
