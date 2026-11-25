@@ -89,7 +89,11 @@ const products = [
    desc:"A cute coffee-cup keychain pouch in soft silicone with a yellow 3D animal on the lid, which opens to a mini storage space for coins and earbuds.",
    points:["Adorable 3D animal sitting on the lid","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain and metal keyring"],
    images:["https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-1.jpg","https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-2.webp","https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-3.webp"],
-   img:"https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-1.jpg"}
+   img:"https://nawaratrend.com/products/animal-cup-keychain-pouch/animal-cup-keychain-pouch-1.jpg"},
+  {id:"bear-cup-keychain-pouch", code:"NT-20", cat:"accessories", name:"Cute Bear Cup Keychain Pouch, Press & Pop 3D Bear, Soft Silicone Mini Storage Mug with Gold-Tone Keyring for Bags & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
+   desc:"A cute coffee-cup keychain pouch in soft silicone with a pink 3D bear that pops back up when you press it, and a lid that opens to a mini storage space.",
+   points:["Press the bear and it pops back up","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain and metal keyring"],
+   img:"https://nawaratrend.com/products/bear-cup-keychain-pouch/bear-cup-keychain-pouch-1.jpg"}
 ];
 
 const ICON = {

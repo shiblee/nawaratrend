@@ -10,6 +10,7 @@ const img = (slug, files) => files.map((f) => `${SITE}/products/${slug}/${f}`);
 const TAJ = "taj-mahal-pocket-watch-keychain";
 const CREST = "heritage-crest-pocket-watch-keychain";
 const CUP = "animal-cup-keychain-pouch";
+const BEAR_CUP = "bear-cup-keychain-pouch";
 
 const UPDATES = [
   {
@@ -169,6 +170,35 @@ const UPDATES = [
       images: img(CUP, [`${CUP}-1.jpg`, `${CUP}-2.webp`, `${CUP}-3.webp`]),
       seo_title: "Cute Animal Cup Keychain Pouch, Silicone",
       seo_description: "Cute cup-shaped keychain pouch with a 3D animal on the lid: soft silicone mini storage for coins and earbuds, gold-tone keyring. ₹199 (30% off), COD.",
+    },
+  },
+  {
+    // the supplier's cup carries a luxury-brand monogram: it's painted out of the photo and the listing names no brand or character
+    id: "2026-11-25-bear-cup-keychain-pouch",
+    product: {
+      slug: BEAR_CUP, category: "accessories",
+      name: "Cute Bear Cup Keychain Pouch, Press & Pop 3D Bear, Soft Silicone Mini Storage Mug with Gold-Tone Keyring for Bags & Keys",
+      description: [
+        "A tiny mug with a playful surprise! This cute keychain pouch is shaped like a brown coffee cup with a fluffy white top, and a little pink 3D bear peeking out from inside.",
+        "Press the bear down and it pops right back up: a fun fidget that kids and adults can't stop playing with. Lift the soft lid and there's a mini storage space inside, handy for coins, earbuds, hair ties and other little things.",
+        "It is made of soft, durable and flexible silicone that's comfortable to hold, with bright colours and fine detailing. The sturdy gold-tone chain and metal keyring attach it to keys, car keys, school bags, backpacks and handbags, and it's light enough to carry every day.",
+        "A cute, trendy accessory and a lovely birthday or return gift for kids, friends and family.",
+        "Includes: 1 keychain pouch.",
+      ].join("\n\n"),
+      price: 199, mrp: 284, stock: 50,
+      highlights: [
+        "Adorable 3D bear peeking out of the cup",
+        "Press the bear and it pops back up",
+        "Openable lid with a mini storage space",
+        "Keeps coins, earbuds and small things",
+        "Soft, durable and flexible silicone",
+        "Sturdy gold-tone chain and metal keyring",
+        "For keys, school bags, backpacks and handbags",
+        "Perfect gift for kids",
+      ],
+      images: img(BEAR_CUP, [`${BEAR_CUP}-1.jpg`]),
+      seo_title: "Cute Bear Cup Keychain Pouch, Press & Pop",
+      seo_description: "Cute cup keychain pouch with a 3D bear that pops up when pressed. Soft silicone, mini storage for coins and earbuds, metal keyring. ₹199 (30% off), COD.",
     },
   },
 ];
