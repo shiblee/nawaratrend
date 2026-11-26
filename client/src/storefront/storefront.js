@@ -135,7 +135,13 @@ const products = [
    desc:"An alcohol-free attar inspired by the CR7 fragrance (not an official CR7 product): fresh lime and lavender with warm woods and amber, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
    points:["Inspired fragrance: modelled on the CR7 fragrance","100% alcohol-free perfume oil","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
    images:["https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-1.jpg","https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-6ml-2.webp","https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-12ml-3.webp"],
-   img:"https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-1.jpg"}
+   img:"https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-1.jpg"},
+  {id:"nawara-oudh-attar", code:"NT-29", cat:"beauty", name:"Nawara Oudh Attar, Signature Alcohol-Free Oud Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml", price:360, mrp:400, rate:0, reviews:0, stock:50,
+   sizes:["6 ml","12 ml"], sizePrices:{"6 ml":{price:360, mrp:400, image:"https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-6ml-2.webp"}, "12 ml":{price:720, mrp:800, image:"https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-12ml-3.webp"}},
+   desc:"Nawara Oudh, our signature alcohol-free oud attar: rich, deep and smoky agarwood in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
+   points:["Nawara Trend's own signature oud fragrance","Rich, deep and smoky agarwood aroma","100% alcohol-free perfume oil","Two sizes: 6 ml and 12 ml"],
+   images:["https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-1.jpg","https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-6ml-2.webp","https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-12ml-3.webp"],
+   img:"https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-1.jpg"}
 ];
 
 const ICON = {

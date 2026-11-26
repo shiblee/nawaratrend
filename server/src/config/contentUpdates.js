@@ -18,6 +18,7 @@ const OUDH = "white-oudh-attar";
 const QAHWA = "khamrah-qahwa-attar";
 const AVENTUS = "aventus-inspired-attar";
 const CR7 = "cr7-inspired-attar";
+const NOUDH = "nawara-oudh-attar";
 
 const UPDATES = [
   {
@@ -436,6 +437,38 @@ const UPDATES = [
       images: img(CR7, [`${CR7}-1.jpg`, `${CR7}-6ml-2.webp`, `${CR7}-12ml-3.webp`]),
       seo_title: "CR7 Attar, Inspired by the CR7 Fragrance",
       seo_description: "Alcohol-free attar inspired by the CR7 fragrance: fresh lime, lavender, woods and amber, gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD.",
+    },
+  },
+  {
+    // the photos spell the brand "Naawara Trend": published as they are at the owner's choice, to be swapped for corrected ones
+    id: "2026-11-27-nawara-oudh-attar",
+    product: {
+      slug: NOUDH, category: "beauty",
+      name: "Nawara Oudh Attar, Signature Alcohol-Free Oud Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml",
+      description: [
+        "Nawara Oudh is our own signature oud attar: deep, rich and smoky agarwood with a warm, slightly sweet, resinous glow. A royal, classic fragrance for those who love real oud.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant gold crown bottle with a gift box, in two sizes: 6 ml and 12 ml. A perfect gift for Eid, Ramadan, weddings and special occasions.",
+        "Includes: 1 attar bottle (6 ml or 12 ml, as chosen) with gift box.",
+      ].join("\n\n"),
+      price: 360, mrp: 400, stock: 50,
+      sizes: ["6 ml", "12 ml"],
+      size_prices: [
+        { size: "6 ml", price: 360, mrp: 400, image: img(NOUDH, [`${NOUDH}-6ml-2.webp`])[0] },
+        { size: "12 ml", price: 720, mrp: 800, image: img(NOUDH, [`${NOUDH}-12ml-3.webp`])[0] },
+      ],
+      highlights: [
+        "Nawara Trend's own signature oud fragrance",
+        "Rich, deep and smoky agarwood aroma",
+        "100% alcohol-free concentrated perfume oil",
+        "Long-lasting: a few dabs are enough",
+        "Two sizes: 6 ml and 12 ml",
+        "Elegant gold crown bottle with gift box",
+        "Perfect gift for Eid, Ramadan and weddings",
+      ],
+      images: img(NOUDH, [`${NOUDH}-1.jpg`, `${NOUDH}-6ml-2.webp`, `${NOUDH}-12ml-3.webp`]),
+      seo_title: "Nawara Oudh Attar, Alcohol-Free, 6 & 12 ml",
+      seo_description: "Nawara Oudh, our signature alcohol-free oud attar: rich, smoky agarwood in a gold crown bottle with gift box. 6 ml ₹360, 12 ml ₹720 (10% off), COD.",
     },
   },
 ];
