@@ -117,7 +117,13 @@ const products = [
    desc:"White Oudh attar, an alcohol-free concentrated perfume oil with smooth woody oud and soft white florals, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
    points:["100% alcohol-free perfume oil","Smooth woody oud with soft white florals","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
    images:["https://nawaratrend.com/products/white-oudh-attar/white-oudh-attar-1.jpg","https://nawaratrend.com/products/white-oudh-attar/white-oudh-attar-6ml-2.webp","https://nawaratrend.com/products/white-oudh-attar/white-oudh-attar-12ml-3.webp"],
-   img:"https://nawaratrend.com/products/white-oudh-attar/white-oudh-attar-1.jpg"}
+   img:"https://nawaratrend.com/products/white-oudh-attar/white-oudh-attar-1.jpg"},
+  {id:"khamrah-qahwa-attar", code:"NT-26", cat:"beauty", name:"Khamrah Qahwa Attar, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml", price:252, mrp:280, rate:0, reviews:0, stock:50,
+   sizes:["6 ml","12 ml"], sizePrices:{"6 ml":{price:252, mrp:280, image:"https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-6ml-2.webp"}, "12 ml":{price:514, mrp:571, image:"https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-12ml-3.webp"}},
+   desc:"Khamrah Qahwa attar, an alcohol-free concentrated perfume oil with warm coffee, cinnamon, sweet amber and oud, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
+   points:["100% alcohol-free perfume oil","Warm coffee, cinnamon, sweet amber and oud","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
+   images:["https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-1.jpg","https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-6ml-2.webp","https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-12ml-3.webp"],
+   img:"https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-1.jpg"}
 ];
 
 const ICON = {

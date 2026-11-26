@@ -15,6 +15,7 @@ const BLUE_CUP = "blue-cup-keychain-pouch";
 const RED_CUP = "red-cup-keychain-pouch";
 const ATTAR = "jannatul-firdaus-attar";
 const OUDH = "white-oudh-attar";
+const QAHWA = "khamrah-qahwa-attar";
 
 const UPDATES = [
   {
@@ -335,6 +336,38 @@ const UPDATES = [
       images: img(OUDH, [`${OUDH}-1.jpg`, `${OUDH}-6ml-2.webp`, `${OUDH}-12ml-3.webp`]),
       seo_title: "White Oudh Attar, Alcohol-Free, 6 ml & 12 ml",
       seo_description: "White Oudh attar, alcohol-free perfume oil: smooth woody oud with soft white florals, gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD in India.",
+    },
+  },
+  {
+    // the name is the one on the owner's photos; the text names no perfume house
+    id: "2026-11-26-khamrah-qahwa-attar",
+    product: {
+      slug: QAHWA, category: "beauty",
+      name: "Khamrah Qahwa Attar, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml",
+      description: [
+        "Khamrah Qahwa is a warm, rich attar: roasted coffee and cinnamon spice wrapped in sweet amber and soft oud wood, with a light touch of white florals. Cosy, bold and perfect for evenings and winter.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant gold crown bottle with a gift box, in two sizes: 6 ml and 12 ml. A lovely gift for Eid, Ramadan, weddings and special occasions.",
+        "Includes: 1 attar bottle (6 ml or 12 ml, as chosen) with gift box.",
+      ].join("\n\n"),
+      price: 252, mrp: 280, stock: 50,
+      sizes: ["6 ml", "12 ml"],
+      size_prices: [
+        { size: "6 ml", price: 252, mrp: 280, image: img(QAHWA, [`${QAHWA}-6ml-2.webp`])[0] },
+        { size: "12 ml", price: 514, mrp: 571, image: img(QAHWA, [`${QAHWA}-12ml-3.webp`])[0] },
+      ],
+      highlights: [
+        "100% alcohol-free concentrated perfume oil",
+        "Warm coffee, cinnamon, sweet amber and oud",
+        "Long-lasting: a few dabs are enough",
+        "Gentle on skin, suitable for prayer",
+        "Two sizes: 6 ml and 12 ml",
+        "Elegant gold crown bottle with gift box",
+        "Perfect gift for Eid, Ramadan and weddings",
+      ],
+      images: img(QAHWA, [`${QAHWA}-1.jpg`, `${QAHWA}-6ml-2.webp`, `${QAHWA}-12ml-3.webp`]),
+      seo_title: "Khamrah Qahwa Attar, Alcohol-Free, 6 & 12 ml",
+      seo_description: "Khamrah Qahwa attar, alcohol-free perfume oil: warm coffee, cinnamon, amber and oud in a gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD.",
     },
   },
 ];
