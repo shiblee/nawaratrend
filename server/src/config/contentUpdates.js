@@ -17,6 +17,7 @@ const ATTAR = "jannatul-firdaus-attar";
 const OUDH = "white-oudh-attar";
 const QAHWA = "khamrah-qahwa-attar";
 const AVENTUS = "aventus-inspired-attar";
+const CR7 = "cr7-inspired-attar";
 
 const UPDATES = [
   {
@@ -402,6 +403,39 @@ const UPDATES = [
       images: img(AVENTUS, [`${AVENTUS}-1.jpg`, `${AVENTUS}-6ml-2.webp`, `${AVENTUS}-12ml-3.webp`]),
       seo_title: "Aventus Attar, Inspired by Creed Aventus",
       seo_description: "Alcohol-free attar inspired by Creed Aventus: pineapple, blackcurrant, smoky birch and woods, gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD.",
+    },
+  },
+  {
+    // an inspired fragrance named after a famous person's perfume line: the text says plainly it is not theirs
+    id: "2026-11-27-cr7-inspired-attar",
+    product: {
+      slug: CR7, category: "beauty",
+      name: "CR7 Attar, Inspired by the CR7 Fragrance, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml",
+      description: [
+        "A bold and sporty attar inspired by the iconic CR7 fragrance: fresh lime and lavender up top, a clean, light floral heart, and a warm base of woods and amber. Energetic, masculine and fresh all day.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant gold crown bottle with a gift box, in two sizes: 6 ml and 12 ml. A great gift for Eid, birthdays and special occasions.",
+        "Please note: this is a Nawara Trend attar inspired by the CR7 fragrance. It is not made by or connected with Cristiano Ronaldo or the CR7 brand; the name is used only to describe the scent.",
+        "Includes: 1 attar bottle (6 ml or 12 ml, as chosen) with gift box.",
+      ].join("\n\n"),
+      price: 252, mrp: 280, stock: 50,
+      sizes: ["6 ml", "12 ml"],
+      size_prices: [
+        { size: "6 ml", price: 252, mrp: 280, image: img(CR7, [`${CR7}-6ml-2.webp`])[0] },
+        { size: "12 ml", price: 514, mrp: 571, image: img(CR7, [`${CR7}-12ml-3.webp`])[0] },
+      ],
+      highlights: [
+        "Inspired fragrance: modelled on the CR7 fragrance",
+        "100% alcohol-free concentrated perfume oil",
+        "Fresh lime and lavender with warm woods and amber",
+        "Bold, sporty, masculine and long-lasting",
+        "Two sizes: 6 ml and 12 ml",
+        "Elegant gold crown bottle with gift box",
+        "Great gift for Eid and birthdays",
+      ],
+      images: img(CR7, [`${CR7}-1.jpg`, `${CR7}-6ml-2.webp`, `${CR7}-12ml-3.webp`]),
+      seo_title: "CR7 Attar, Inspired by the CR7 Fragrance",
+      seo_description: "Alcohol-free attar inspired by the CR7 fragrance: fresh lime, lavender, woods and amber, gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD.",
     },
   },
 ];

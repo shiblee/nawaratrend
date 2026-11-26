@@ -129,7 +129,13 @@ const products = [
    desc:"An alcohol-free attar inspired by Creed Aventus (not a Creed product): fresh pineapple and blackcurrant with smoky birch and warm woods, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
    points:["Inspired fragrance: modelled on Creed Aventus","100% alcohol-free perfume oil","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
    images:["https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-1.jpg","https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-6ml-2.webp","https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-12ml-3.webp"],
-   img:"https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-1.jpg"}
+   img:"https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-1.jpg"},
+  {id:"cr7-inspired-attar", code:"NT-28", cat:"beauty", name:"CR7 Attar, Inspired by the CR7 Fragrance, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml", price:252, mrp:280, rate:0, reviews:0, stock:50,
+   sizes:["6 ml","12 ml"], sizePrices:{"6 ml":{price:252, mrp:280, image:"https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-6ml-2.webp"}, "12 ml":{price:514, mrp:571, image:"https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-12ml-3.webp"}},
+   desc:"An alcohol-free attar inspired by the CR7 fragrance (not an official CR7 product): fresh lime and lavender with warm woods and amber, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
+   points:["Inspired fragrance: modelled on the CR7 fragrance","100% alcohol-free perfume oil","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
+   images:["https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-1.jpg","https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-6ml-2.webp","https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-12ml-3.webp"],
+   img:"https://nawaratrend.com/products/cr7-inspired-attar/cr7-inspired-attar-1.jpg"}
 ];
 
 const ICON = {
