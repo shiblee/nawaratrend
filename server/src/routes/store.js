@@ -23,18 +23,32 @@ const publicProduct = (r) => {
     points: jsonList(r.highlights), sizes: jsonList(r.sizes).length ? jsonList(r.sizes) : undefined,
     colors: jsonList(r.colors).length ? jsonList(r.colors) : undefined,
     img: images[0], images: images.length > 1 ? images : undefined, featured: !!r.is_featured,
+    // for the home page's mixed order: how well it sells (0 to 1, rounded so no sales figures leak) and whether it's new
+    pop: r.pop || undefined, isNew: r.is_new ? true : undefined,
   };
 };
+
+/** Units sold per product over the last 60 days (cancelled and returned orders don't count), scaled 0 to 1 and rounded. */
+async function popularity() {
+  const [rows] = await pool.query(
+    `SELECT oi.product_id AS id, SUM(oi.qty) AS units FROM order_items oi JOIN orders o ON o.id = oi.order_id
+     WHERE o.created_at >= NOW() - INTERVAL 60 DAY AND o.status NOT IN ('cancelled','returned') AND oi.product_id IS NOT NULL
+     GROUP BY oi.product_id`);
+  const top = Math.max(0, ...rows.map((r) => Number(r.units)));
+  return new Map(rows.map((r) => [r.id, top ? Math.round((Number(r.units) / top) * 10) / 10 : 0]));
+}
 
 router.get("/catalog", ah(async (req, res) => {
   const [cats] = await pool.query("SELECT slug, name FROM categories WHERE is_active = 1 ORDER BY sort_order, name");
   const load = async () => (await pool.query(
-    `SELECT p.*, c.slug AS category_slug FROM products p
+    `SELECT p.*, c.slug AS category_slug, p.created_at >= NOW() - INTERVAL 21 DAY AS is_new FROM products p
      JOIN categories c ON c.id = p.category_id AND c.is_active = 1
      WHERE p.status = 'active' ORDER BY p.sort_order, p.id`
   ))[0];
   let rows = await load();
   if (rows.some((r) => !r.code_no) && await assignProductCodes()) rows = await load();   // added straight into the database
+  const pop = await popularity();
+  rows.forEach((r) => { r.pop = pop.get(r.id) || 0; });
   const s = await getSettings();
   res.set("Cache-Control", "no-store");
   res.json({

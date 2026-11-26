@@ -2,6 +2,7 @@
    Call after the page markup is in the DOM; returns a cleanup function that removes global
    listeners, timers and observers (needed when React unmounts the page). */
 
+import { homeOrder } from "./homeOrder.js";
 import { BASE_URL } from "../services/api.js";
 import { initConsent } from "./consent.js";
 import { currentCustomer, assetUrl } from "../services/customerApi.js";
@@ -404,16 +405,18 @@ export function initStorefront(){
   /* ---------- Catalogue (homepage only) ---------- */
   let spy = null;
   if($("groups")){
-  $("index").innerHTML = used.map(c => {
-    const items = ordered.filter(p => p.cat===c.k);
+  // a fresh, weighted mix on each visit (see homeOrder.js); the Shop page keeps the admin's order
+  const home = homeOrder(ordered, used, [...wish, ...Object.keys(cart).map(k => parseKey(k).id)]);
+  $("index").innerHTML = home.cats.map(c => {
+    const items = home.list.filter(p => p.cat===c.k);
     return `<li><a class="ix-cat" href="#g-${c.k}"><span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.9)}</span>${c.n}</a>
       <ul class="ix-items">${items.map(p => `<li><a href="#p-${p.id}" data-ix="${p.id}"><span>${p.name}</span><span>${inr(p.price)}</span></a></li>`).join("")}</ul></li>`;
   }).join("");
-  $("chipbar").innerHTML = used.map(c => `<a href="#g-${c.k}" data-chip="${c.k}">${c.n}</a>`).join("");
+  $("chipbar").innerHTML = home.cats.map(c => `<a href="#g-${c.k}" data-chip="${c.k}">${c.n}</a>`).join("");
 
   const groups = $("groups");
-  used.forEach(c => {
-    const items = ordered.filter(p => p.cat===c.k);
+  home.cats.forEach(c => {
+    const items = home.list.filter(p => p.cat===c.k);
     const g = document.createElement("section");
     g.className = "group"; g.id = `g-${c.k}`; g.dataset.cat = c.k;
     g.innerHTML = `<div class="group-head"><span class="ic" style="background:var(--${c.k}-bg);color:var(--${c.k})">${svg(c.k,1.8)}</span><h3>${c.n}</h3><span class="rule"></span></div>`;
@@ -459,9 +462,9 @@ export function initStorefront(){
       if(!en.isIntersecting) return;
       const id = en.target.dataset.id, cat = products.find(p=>p.id===id).cat;
       document.querySelectorAll("[data-ix]").forEach(a => a.classList.toggle("on", a.dataset.ix===id));
-      const pos = ordered.findIndex(p => p.id===id) + 1;
-      $("ixCount").innerHTML = `<b>${pad(pos)}</b> / ${pad(ordered.length)}`;
-      $("ixBar").style.width = (pos/ordered.length*100) + "%";
+      const pos = home.list.findIndex(p => p.id===id) + 1;
+      $("ixCount").innerHTML = `<b>${pad(pos)}</b> / ${pad(home.list.length)}`;
+      $("ixBar").style.width = (pos/home.list.length*100) + "%";
       document.querySelectorAll("[data-chip]").forEach(a => {
         const on = a.dataset.chip===cat; a.classList.toggle("on", on);
         if(on) a.scrollIntoView({block:"nearest", inline:"center", behavior: reduce ? "auto" : "smooth"});

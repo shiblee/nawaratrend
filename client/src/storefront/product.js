@@ -3,6 +3,7 @@ import { actions, ordered, inr, off, art, catName, check, stars, wish, ratingHtm
 import { productCard } from "./card.js";
 import { trackProductView } from "../services/customerApi.js";
 import { getConsent } from "./consent.js";
+import { rememberSeen } from "./homeOrder.js";
 
 const $ = id => document.getElementById(id);
 
@@ -86,6 +87,7 @@ export function initProduct(id){
   const cat = catName(p.cat);
   document.title = `${p.name} | NawaraTrend`;
   trackProductView(p.id, getConsent());
+  rememberSeen(p.id, getConsent());   // the home page shows similar products earlier next time
   $("pCrumbs").insertAdjacentHTML("beforeend", `<span aria-hidden="true">/</span><a href="/shop/${p.cat}">${cat}</a><span aria-hidden="true">/</span><span aria-current="page"></span>`);
   $("pCrumbs").lastElementChild.textContent = p.name;
   $("gMain").style.background = `var(--${p.cat}-bg)`;
