@@ -13,7 +13,7 @@ const CUP = "animal-cup-keychain-pouch";
 const BEAR_CUP = "bear-cup-keychain-pouch";
 const BLUE_CUP = "blue-cup-keychain-pouch";
 const RED_CUP = "red-cup-keychain-pouch";
-const ATTAR = (ml) => `jannatul-firdaus-attar-${ml}ml`;
+const ATTAR = "jannatul-firdaus-attar";
 
 const UPDATES = [
   {
@@ -272,57 +272,37 @@ const UPDATES = [
     },
   },
   {
-    id: "2026-11-26-jannatul-firdaus-attar-6ml",
+    // one attar product with two sizes, each with its own price and photo. It replaces the two separate
+    // 6 ml and 12 ml products listed earlier the same day: the 6 ml one becomes this product, the 12 ml one is archived.
+    id: "2026-11-26-jannatul-firdaus-attar",
+    merge: { from: `${ATTAR}-6ml`, archive: [`${ATTAR}-12ml`] },
     product: {
-      slug: ATTAR(6), category: "beauty",
-      name: "Jannatul Firdaus Attar 6 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box",
+      slug: ATTAR, category: "beauty",
+      name: "Jannatul Firdaus Attar, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml",
       description: [
         "Jannatul Firdaus, the garden of paradise, is one of the best-loved attars: a soft, sweet floral fragrance that feels fresh, clean and calming.",
         "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
-        "It comes in an elegant 6 ml gold crown bottle with a gift box, a lovely gift for Eid, Ramadan, weddings and special occasions.",
-        "Also available in a 12 ml bottle.",
-        "Includes: 1 attar bottle (6 ml) with gift box.",
+        "It comes in an elegant gold crown bottle with a gift box, in two sizes: 6 ml and 12 ml. A lovely gift for Eid, Ramadan, weddings and special occasions.",
+        "Includes: 1 attar bottle (6 ml or 12 ml, as chosen) with gift box.",
       ].join("\n\n"),
       price: 252, mrp: 280, stock: 50,
+      sizes: ["6 ml", "12 ml"],
+      size_prices: [
+        { size: "6 ml", price: 252, mrp: 280, image: img(ATTAR, [`${ATTAR}-6ml-2.webp`])[0] },
+        { size: "12 ml", price: 514, mrp: 571, image: img(ATTAR, [`${ATTAR}-12ml-3.webp`])[0] },
+      ],
       highlights: [
         "100% alcohol-free concentrated perfume oil",
         "Soft, sweet and calming floral fragrance",
         "Long-lasting: a few dabs are enough",
         "Gentle on skin, suitable for prayer",
-        "Elegant gold crown bottle, 6 ml",
-        "Comes in a gift box",
+        "Two sizes: 6 ml and 12 ml",
+        "Elegant gold crown bottle with gift box",
         "Perfect gift for Eid, Ramadan and weddings",
       ],
-      images: img(ATTAR(6), [`${ATTAR(6)}-1.jpg`]),
-      seo_title: "Jannatul Firdaus Attar 6 ml, Alcohol-Free",
-      seo_description: "Jannatul Firdaus attar, alcohol-free perfume oil with a soft floral fragrance in a 6 ml gold crown bottle with gift box. ₹252 (10% off), COD in India.",
-    },
-  },
-  {
-    id: "2026-11-26-jannatul-firdaus-attar-12ml",
-    product: {
-      slug: ATTAR(12), category: "beauty",
-      name: "Jannatul Firdaus Attar 12 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box",
-      description: [
-        "Jannatul Firdaus, the garden of paradise, is one of the best-loved attars: a soft, sweet floral fragrance that feels fresh, clean and calming.",
-        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
-        "It comes in an elegant 12 ml gold crown bottle with a gift box, a lovely gift for Eid, Ramadan, weddings and special occasions.",
-        "Also available in a 6 ml bottle.",
-        "Includes: 1 attar bottle (12 ml) with gift box.",
-      ].join("\n\n"),
-      price: 514, mrp: 571, stock: 50,
-      highlights: [
-        "100% alcohol-free concentrated perfume oil",
-        "Soft, sweet and calming floral fragrance",
-        "Long-lasting: a few dabs are enough",
-        "Gentle on skin, suitable for prayer",
-        "Elegant gold crown bottle, 12 ml",
-        "Comes in a gift box",
-        "Perfect gift for Eid, Ramadan and weddings",
-      ],
-      images: img(ATTAR(12), [`${ATTAR(12)}-1.jpg`]),
-      seo_title: "Jannatul Firdaus Attar 12 ml, Alcohol-Free",
-      seo_description: "Jannatul Firdaus attar, alcohol-free perfume oil with a soft floral fragrance in a 12 ml gold crown bottle with gift box. ₹514 (10% off), COD in India.",
+      images: img(ATTAR, [`${ATTAR}-1.jpg`, `${ATTAR}-6ml-2.webp`, `${ATTAR}-12ml-3.webp`]),
+      seo_title: "Jannatul Firdaus Attar, Alcohol-Free, 6 & 12 ml",
+      seo_description: "Jannatul Firdaus attar, alcohol-free perfume oil with a soft floral fragrance in a gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD in India.",
     },
   },
 ];
@@ -332,6 +312,22 @@ async function done(id) {
   return !!r;
 }
 
+const json = (v) => (v ? JSON.stringify(v) : null);
+
+/** Turns an existing product into p (keeping its id, code, stock and sales) and archives the ones it replaces.
+    False when the product to turn isn't there, so p is added as new instead. */
+async function mergeProduct({ from, archive = [] }, p) {
+  const [[old]] = await pool.query("SELECT id FROM products WHERE slug = ?", [from]);
+  if (archive.length) await pool.query("UPDATE products SET status = 'archived' WHERE slug IN (?)", [archive]);
+  if (!old) return false;
+  await pool.query(
+    `UPDATE products SET slug = ?, name = ?, description = ?, price = ?, mrp = ?, highlights = ?, sizes = ?, size_prices = ?, images = ?,
+       seo_title = ?, seo_description = ? WHERE id = ?`,
+    [p.slug, p.name, p.description, p.price, p.mrp, JSON.stringify(p.highlights), json(p.sizes), json(p.size_prices),
+     JSON.stringify(p.images), p.seo_title, p.seo_description, old.id]);
+  return true;
+}
+
 async function addProduct(p) {
   const [[exists]] = await pool.query("SELECT id FROM products WHERE slug = ?", [p.slug]);
   if (exists) return false;
@@ -339,9 +335,10 @@ async function addProduct(p) {
   if (!cat) return false;   // a database without this category (e.g. a fresh demo) doesn't get the product
   const [[{ next }]] = await pool.query("SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM products");
   await pool.query(
-    `INSERT INTO products (slug, category_id, name, description, price, mrp, stock, highlights, images, status, sort_order, seo_title, seo_description)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)`,
-    [p.slug, cat.id, p.name, p.description, p.price, p.mrp, p.stock, JSON.stringify(p.highlights), JSON.stringify(p.images), next, p.seo_title, p.seo_description]);
+    `INSERT INTO products (slug, category_id, name, description, price, mrp, stock, highlights, sizes, size_prices, images, status, sort_order, seo_title, seo_description)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)`,
+    [p.slug, cat.id, p.name, p.description, p.price, p.mrp, p.stock, JSON.stringify(p.highlights), json(p.sizes), json(p.size_prices),
+     JSON.stringify(p.images), next, p.seo_title, p.seo_description]);
   return true;
 }
 
@@ -389,7 +386,8 @@ async function updateFields(rows) {
 export async function applyContentUpdates() {
   for (const u of UPDATES) {
     if (await done(u.id)) continue;
-    if (u.product && await addProduct(u.product)) console.log(`Added product: ${u.product.slug}`);
+    if (u.merge && await mergeProduct(u.merge, u.product)) console.log(`Merged into one product: ${u.product.slug}`);
+    else if (u.product && await addProduct(u.product)) console.log(`Added product: ${u.product.slug}`);
     if (u.seo) { const n = await updateSeo(u.seo); if (n) console.log(`Updated SEO titles for ${n} products`); }
     if (u.fields) { const n = await updateFields(u.fields); if (n) console.log(`Updated ${n} product fields`); }
     if (u.images) { const n = await updateImages(u.images); if (n) console.log(`Updated photos for ${n} products`); }

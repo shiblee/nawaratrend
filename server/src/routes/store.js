@@ -14,6 +14,12 @@ const limit = (windowMin, max, message) =>
   rateLimit({ windowMs: windowMin * 60 * 1000, max, standardHeaders: true, legacyHeaders: false, message: { message } });
 
 /* ---------- Catalogue ---------- */
+/** Sizes with their own price, as { "6 ml": { price, mrp, image } }; undefined when every size costs the same. */
+const sizePrices = (r) => {
+  const sizes = jsonList(r.sizes), list = jsonList(r.size_prices).filter((x) => sizes.includes(x?.size) && Number(x.price) > 0);
+  if (!list.length) return undefined;
+  return Object.fromEntries(list.map((x) => [x.size, { price: Number(x.price), mrp: Math.max(Number(x.mrp) || 0, Number(x.price)), ...(x.image ? { image: x.image } : {}) }]));
+};
 const publicProduct = (r) => {
   const images = jsonList(r.images);
   return {
@@ -22,6 +28,7 @@ const publicProduct = (r) => {
     stock: r.stock, left: r.stock > 0 && r.stock <= r.low_stock_threshold ? r.stock : undefined,
     points: jsonList(r.highlights), sizes: jsonList(r.sizes).length ? jsonList(r.sizes) : undefined,
     colors: jsonList(r.colors).length ? jsonList(r.colors) : undefined,
+    sizePrices: sizePrices(r),
     img: images[0], images: images.length > 1 ? images : undefined, featured: !!r.is_featured,
     // for the home page's mixed order: how well it sells (0 to 1, rounded so no sales figures leak) and whether it's new
     pop: r.pop || undefined, isNew: r.is_new ? true : undefined,
@@ -133,7 +140,7 @@ router.post("/orders", limit(60, 20, "Too many orders from this connection. Plea
         throw new HttpError(400, it.color ? `${p.name} isn't available in ${it.color} any more. Please choose another colour.` : `Please choose a colour for ${p.name}`);
       }
       need[p.id] = (need[p.id] || 0) + it.qty;
-      const unit = Number(p.price);
+      const unit = sizePrices(p)?.[it.size]?.price ?? Number(p.price);   // a size with its own price
       return { p, qty: it.qty, size: sizes.length ? it.size : null, color: colors.length ? it.color : null, unit, total: unit * it.qty };
     });
     for (const p of rows) {

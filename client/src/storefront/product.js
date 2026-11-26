@@ -1,5 +1,5 @@
 /* Product detail page. Call after initStorefront with the product id from the URL; returns a cleanup function. */
-import { actions, ordered, inr, off, art, catName, check, stars, wish, ratingHtml } from "./storefront.js";
+import { actions, ordered, inr, off, sized, art, catName, check, stars, wish, ratingHtml } from "./storefront.js";
 import { productCard } from "./card.js";
 import { trackProductView } from "../services/customerApi.js";
 import { getConsent } from "./consent.js";
@@ -91,7 +91,6 @@ export function initProduct(id){
   $("pCrumbs").insertAdjacentHTML("beforeend", `<span aria-hidden="true">/</span><a href="/shop/${p.cat}">${cat}</a><span aria-hidden="true">/</span><span aria-current="page"></span>`);
   $("pCrumbs").lastElementChild.textContent = p.name;
   $("gMain").style.background = `var(--${p.cat}-bg)`;
-  if(off(p) > 0) $("gOff").textContent = `${off(p)}% off`; else $("gOff").hidden = true;
   const showPhoto = gallery(p, reduce);
   const catTag = $("pCat");
   catTag.textContent = cat; catTag.href = `/shop/${p.cat}`;
@@ -101,9 +100,16 @@ export function initProduct(id){
   const fresh = !!ratingHtml(p);
   $("pRating").innerHTML = fresh ? `${ratingHtml(p, true)}<u>Be the first to review</u>`
     : `<span class="st" aria-hidden="true">${stars(p.rate)}</span><b>${p.rate}</b><u>${p.reviews} reviews</u>`;
-  $("pPrice").textContent = inr(p.price);
-  $("pMrp").textContent = inr(p.mrp);
-  $("pSave").textContent = `Save ${inr(p.mrp - p.price)}`;
+  // the price shown: the product's, or the chosen size's when sizes have their own price
+  let cur = p;
+  const showPrice = () => {
+    $("pPrice").textContent = inr(cur.price);
+    $("pMrp").textContent = inr(cur.mrp);
+    $("pSave").textContent = `Save ${inr(cur.mrp - cur.price)}`;
+    if(off(cur) > 0){ $("gOff").hidden = false; $("gOff").textContent = `${off(cur)}% off`; } else $("gOff").hidden = true;
+    $("sbPrice").textContent = inr(cur.price);
+  };
+  showPrice();
   $("pDesc").textContent = p.desc;
   const st = $("pStock");
   const soldOut = p.stock === 0;
@@ -125,13 +131,20 @@ export function initProduct(id){
   if(p.sizes){
     $("sizeBox").hidden = false;
     $("sizes").innerHTML = p.sizes.map(s => `<button type="button" role="radio" aria-checked="false" data-s="${s}">${s}</button>`).join("");
-    $("sizes").addEventListener("click", e => {
-      const b = e.target.closest("[data-s]"); if(!b) return;
+    const pick = (b, photo) => {
       size = b.dataset.s;
       $("sizes").querySelectorAll("button").forEach(x => x.setAttribute("aria-checked", x===b));
       const sel = $("sizeSel"); sel.textContent = `Selected: ${size}`; sel.classList.add("chosen");
       $("sizeErr").hidden = true; $("sizeBox").classList.remove("invalid");
-    });
+      cur = sized(p, size); showPrice();
+      if(!photo) return;   // the first pick, at load: the main photo stays, and setQ(1) below fills in the delivery note
+      ship();
+      const img = p.sizePrices?.[size]?.image;
+      if(img) showPhoto(img);
+    };
+    $("sizes").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if(b) pick(b, true); });
+    // sizes with their own price: the first is chosen from the start, so a price is always shown (the main photo stays)
+    if(p.sizePrices) pick($("sizes").firstElementChild, false);
   }
   function needSize(){
     if(!p.sizes || size) return false;
@@ -200,7 +213,7 @@ export function initProduct(id){
 
   /* ---------- Free delivery note ---------- */
   function ship(){
-    const sum = p.price * Math.max(1, total()), left = 999 - sum, el = $("pShip");
+    const sum = cur.price * Math.max(1, total()), left = 999 - sum, el = $("pShip");
     el.classList.toggle("free", left <= 0);
     el.innerHTML = left <= 0
       ? `✓ This order qualifies for free delivery`
@@ -230,7 +243,9 @@ export function initProduct(id){
   const rows = [...(p.code ? [["Product code", p.code]] : []), ["Category", `<a href="/shop/${p.cat}">${cat}</a>`]]
     .concat(p.sizes ? [["Sizes", p.sizes.join(", ")]] : [])
     .concat(p.colors ? [["Colours", p.colors.map(c => c.name).join(", ")]] : [])
-    .concat([["MRP", inr(p.mrp)], ["Our price", `${inr(p.price)} (${off(p)}% off)`], ["Ships from", "Lucknow, Uttar Pradesh"],
+    .concat(p.sizePrices ? p.sizes.filter(s => p.sizePrices[s]).map(s => { const x = sized(p, s); return [`Price, ${s}`, `${inr(x.price)} <s>${inr(x.mrp)}</s> (${off(x)}% off)`]; })
+      : [["MRP", inr(p.mrp)], ["Our price", `${inr(p.price)} (${off(p)}% off)`]])
+    .concat([["Ships from", "Lucknow, Uttar Pradesh"],
              ["Delivery", p.price >= 999 ? "Free delivery" : "Free on orders above ₹999"], ["Returns", `<a href="/refund-policy">7-day returns, see our policy</a>`]]);
   $("pDetails").innerHTML = rows.map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
   if(fresh){ $("rvScore").textContent = "New"; $("rvStars").textContent = ""; $("rvCount").textContent = "No reviews yet"; }
@@ -246,7 +261,7 @@ export function initProduct(id){
   same.concat(others).slice(0,4).forEach((r,i) => $("related").appendChild(productCard(r, {later, delay: reduce ? 0 : i*60})));
 
   /* ---------- Sticky buy bar (phones) ---------- */
-  $("sbName").textContent = p.name; $("sbPrice").textContent = inr(p.price);
+  $("sbName").textContent = p.name;
   const sb = $("stickyBuy"), ma = $("mainActions");
   let sbShown = null;
   const checkSticky = () => {

@@ -12,9 +12,23 @@ const canEdit = requireRole("owner", "manager");
 /* ---------- Products ---------- */
 const shape = (r) => ({
   ...r, price: Number(r.price), mrp: Number(r.mrp), cost_price: r.cost_price == null ? null : Number(r.cost_price),
-  rating: Number(r.rating), highlights: jsonList(r.highlights), sizes: jsonList(r.sizes), colors: jsonList(r.colors), images: jsonList(r.images),
+  rating: Number(r.rating), highlights: jsonList(r.highlights), sizes: jsonList(r.sizes), size_prices: jsonList(r.size_prices), colors: jsonList(r.colors), images: jsonList(r.images),
   is_featured: !!r.is_featured, code: productCode(r.code_no),
 });
+
+/** [{ size, price, mrp, image }]: a price per size; sizes without one sell at the product's price. */
+function sizePriceList(v) {
+  if (!Array.isArray(v) || v.length > 15) throw new HttpError(400, "Check the prices per size", { field: "size_prices" });
+  return v.map((x, i) => {
+    const f = `size_prices[${i + 1}]`;
+    const size = str(x?.size, f, { max: 20 });
+    const price = num(x?.price, `${f} price`, { min: 1, max: 10000000 });
+    const mrp = num(x?.mrp === "" || x?.mrp == null ? price : x.mrp, `${f} MRP`, { min: 1, max: 10000000 });
+    if (mrp < price) throw new HttpError(400, `MRP for ${size} can't be lower than its price`, { field: "size_prices" });
+    const image = str(x?.image, `${f} photo`, { optional: true, max: 500, pattern: URL_RE });
+    return { size, price, mrp, ...(image ? { image } : {}) };
+  });
+}
 
 function readProduct(b) {
   const name = str(b.name, "name", { min: 2, max: 150 });
@@ -34,7 +48,8 @@ function readProduct(b) {
     review_count: num(b.review_count ?? 0, "review count", { int: true, min: 0, max: 10000000 }),
     highlights: JSON.stringify(strList(b.highlights, "highlights", { maxItems: 8, maxLen: 120 })),
     sizes: JSON.stringify(strList(b.sizes, "sizes", { maxItems: 15, maxLen: 20 })),
-    // left alone when not sent, so an older open copy of the form can't wipe the colours
+    // left alone when not sent, so an older open copy of the form can't wipe them
+    ...(b.size_prices === undefined ? {} : { size_prices: JSON.stringify(sizePriceList(b.size_prices)) }),
     ...(b.colors === undefined ? {} : { colors: JSON.stringify(colorList(b.colors)) }),
     images: JSON.stringify(strList(b.images, "images", { maxItems: 20, maxLen: 500, pattern: URL_RE })),
     status: oneOf(b.status ?? "active", "status", ["active", "draft", "archived"]),

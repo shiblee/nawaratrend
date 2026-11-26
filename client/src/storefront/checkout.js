@@ -1,6 +1,6 @@
 /* Checkout page: account step, delivery address, payment choice and order summary.
    Orders go through services/customerApi.js (a blueprint until the database is connected). */
-import { actions, ordered, inr, cart, parseKey, optsText, lineThumb, FREE_SHIP, DELIVERY_FEE, COD_ENABLED } from "./storefront.js";
+import { actions, ordered, inr, cart, parseKey, sized, optsText, lineThumb, FREE_SHIP, DELIVERY_FEE, COD_ENABLED } from "./storefront.js";
 import { currentCustomer, logout, placeOrder, MOCK } from "../services/customerApi.js";
 
 const $ = id => document.getElementById(id);
@@ -29,7 +29,7 @@ const RULES = {
 export function initCheckout(){
   const ac = new AbortController();
   const lines = () => Object.keys(cart).filter(k => cart[k] > 0)
-    .map(k => ({...parseKey(k), qty: cart[k]})).map(l => ({...l, p: ordered.find(x => x.id === l.id)})).filter(l => l.p);
+    .map(k => ({...parseKey(k), qty: cart[k]})).map(l => ({...l, p: sized(ordered.find(x => x.id === l.id), l.size)})).filter(l => l.p);
   const totals = () => {
     const sub = lines().reduce((s, l) => s + l.p.price * l.qty, 0);
     const ship = sub >= FREE_SHIP ? 0 : DELIVERY_FEE;

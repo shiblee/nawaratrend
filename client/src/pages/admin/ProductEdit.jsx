@@ -5,7 +5,7 @@ import { useAdminAuth } from "../../context/AdminAuthContext.jsx";
 import { Alert, Button, Card, CardHeader, Field, Input, Select, Stat, Textarea, Toggle, money, num, useLoad, useToast, PRODUCT_STATUS } from "../../components/admin/ui.jsx";
 
 const EMPTY = { name: "", slug: "", category_id: "", description: "", price: "", mrp: "", cost_price: "", sku: "", stock: 0, low_stock_threshold: 5,
-  rating: 0, review_count: 0, highlights: "", sizes: "", colors: [], images: "", status: "active", is_featured: false, sort_order: 0, seo_title: "", seo_description: "" };
+  rating: 0, review_count: 0, highlights: "", sizes: "", size_prices: [], colors: [], images: "", status: "active", is_featured: false, sort_order: 0, seo_title: "", seo_description: "" };
 const lines = (s) => s.split("\n").map((x) => x.trim()).filter(Boolean);
 
 export default function ProductEdit() {
@@ -34,13 +34,18 @@ export default function ProductEdit() {
   const discount = mrp > price && price ? Math.round((1 - price / mrp) * 100) : 0;
   const profit = cost != null && price ? price - cost : null;
 
+  // a price per size (optional): rows for the sizes typed above; an empty price means the size sells at the product's price
+  const sizeList = f.sizes.split(",").map((s) => s.trim()).filter(Boolean);
+  const sizePrice = (s) => f.size_prices.find((x) => x.size === s) || { size: s, price: "", mrp: "" };
+  const setSizePrice = (s, k, v) => setF({ ...f, size_prices: [...f.size_prices.filter((x) => x.size !== s), { ...sizePrice(s), [k]: v }] });
   const setColor = (i, k, v) => setF({ ...f, colors: f.colors.map((c, j) => (j === i ? { ...c, [k]: v } : c)) });
 
   const submit = async (e) => {
     e.preventDefault();
     setErr({ field: "", message: "" }); setSaving(true);
     const body = { ...f, category_id: f.category_id || null, cost_price: f.cost_price === "" ? null : f.cost_price, sku: f.sku || null,
-      highlights: lines(f.highlights), sizes: f.sizes.split(",").map((s) => s.trim()).filter(Boolean), images: lines(f.images) };
+      highlights: lines(f.highlights), sizes: sizeList, images: lines(f.images),
+      size_prices: f.size_prices.filter((x) => sizeList.includes(x.size) && String(x.price).trim() !== "") };
     try {
       if (isNew) { const r = await adminApi.createProduct(body); toast("Product added"); navigate(`/admin/products/${r.id}`, { replace: true }); }
       else { await adminApi.updateProduct(id, body); toast("Product saved"); existing.reload(); }
@@ -97,6 +102,19 @@ export default function ProductEdit() {
               <Field label="Sizes" hint="(comma-separated; leave empty if the product has no sizes)" error={fe("sizes")} className="sm:col-span-2">
                 <Input value={f.sizes} onChange={set("sizes")} placeholder="S, M, L, XL" />
               </Field>
+              {sizeList.length > 0 && (
+                <Field label="Price per size" hint="(optional: fill in only when sizes cost different amounts, e.g. 6 ml and 12 ml)" error={fe("size_prices")} className="sm:col-span-2">
+                  <div className="space-y-2">
+                    {sizeList.map((s) => (
+                      <div key={s} className="grid grid-cols-[6rem_1fr_1fr] items-center gap-2">
+                        <span className="text-sm font-medium text-slate-700">{s}</span>
+                        <Input type="number" min="1" step="0.01" placeholder={`Price (${f.price || "same"})`} value={sizePrice(s).price} onChange={(e) => setSizePrice(s, "price", e.target.value)} />
+                        <Input type="number" min="1" step="0.01" placeholder="MRP" value={sizePrice(s).mrp} onChange={(e) => setSizePrice(s, "mrp", e.target.value)} />
+                      </div>
+                    ))}
+                  </div>
+                </Field>
+              )}
             </div>
           </Card>
 

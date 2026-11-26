@@ -106,16 +106,12 @@ const products = [
    points:["Press the bear and it pops back up","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain, clasp and metal keyrings"],
    images:["https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-1.jpg","https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-2.webp","https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-3.webp"],
    img:"https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-1.jpg"},
-  {id:"jannatul-firdaus-attar-6ml", code:"NT-23", cat:"beauty", name:"Jannatul Firdaus Attar 6 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box", price:252, mrp:280, rate:0, reviews:0, stock:50,
-   desc:"Jannatul Firdaus attar, an alcohol-free concentrated perfume oil with a soft, sweet floral fragrance, in a 6 ml gold crown bottle with a gift box.",
-   points:["100% alcohol-free perfume oil","Soft, sweet and long-lasting floral fragrance","Elegant gold crown bottle, 6 ml","Comes in a gift box"],
-   images:["https://nawaratrend.com/products/jannatul-firdaus-attar-6ml/jannatul-firdaus-attar-6ml-1.jpg"],
-   img:"https://nawaratrend.com/products/jannatul-firdaus-attar-6ml/jannatul-firdaus-attar-6ml-1.jpg"},
-  {id:"jannatul-firdaus-attar-12ml", code:"NT-24", cat:"beauty", name:"Jannatul Firdaus Attar 12 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box", price:514, mrp:571, rate:0, reviews:0, stock:50,
-   desc:"Jannatul Firdaus attar, an alcohol-free concentrated perfume oil with a soft, sweet floral fragrance, in a 12 ml gold crown bottle with a gift box.",
-   points:["100% alcohol-free perfume oil","Soft, sweet and long-lasting floral fragrance","Elegant gold crown bottle, 12 ml","Comes in a gift box"],
-   images:["https://nawaratrend.com/products/jannatul-firdaus-attar-12ml/jannatul-firdaus-attar-12ml-1.jpg"],
-   img:"https://nawaratrend.com/products/jannatul-firdaus-attar-12ml/jannatul-firdaus-attar-12ml-1.jpg"}
+  {id:"jannatul-firdaus-attar", code:"NT-23", cat:"beauty", name:"Jannatul Firdaus Attar, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml", price:252, mrp:280, rate:0, reviews:0, stock:50,
+   sizes:["6 ml","12 ml"], sizePrices:{"6 ml":{price:252, mrp:280, image:"https://nawaratrend.com/products/jannatul-firdaus-attar/jannatul-firdaus-attar-6ml-2.webp"}, "12 ml":{price:514, mrp:571, image:"https://nawaratrend.com/products/jannatul-firdaus-attar/jannatul-firdaus-attar-12ml-3.webp"}},
+   desc:"Jannatul Firdaus attar, an alcohol-free concentrated perfume oil with a soft, sweet floral fragrance, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
+   points:["100% alcohol-free perfume oil","Soft, sweet and long-lasting floral fragrance","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
+   images:["https://nawaratrend.com/products/jannatul-firdaus-attar/jannatul-firdaus-attar-1.jpg","https://nawaratrend.com/products/jannatul-firdaus-attar/jannatul-firdaus-attar-6ml-2.webp","https://nawaratrend.com/products/jannatul-firdaus-attar/jannatul-firdaus-attar-12ml-3.webp"],
+   img:"https://nawaratrend.com/products/jannatul-firdaus-attar/jannatul-firdaus-attar-1.jpg"}
 ];
 
 const ICON = {
@@ -201,6 +197,8 @@ export const ratingHtml = (p, long) => p.reviews > 0 && p.rate > 0
 const cart = {}; // key -> qty
 const wish = new Set();
 export const cartKey = (id, size, color) => color ? `${id}|${size || ""}|${color}` : size ? `${id}|${size}` : id;
+/** The product with the price and MRP of the size chosen, for sizes that have their own price (an attar in 6 ml and 12 ml). */
+export const sized = (p, size) => p && size && p.sizePrices?.[size] ? {...p, price: p.sizePrices[size].price, mrp: p.sizePrices[size].mrp} : p;
 export const parseKey = key => { const [id, size, color] = key.split("|"); return {id, size: size || null, color: color || null}; };
 /** "Size M · Yellow · " in front of a price or quantity; empty when the product has no options. */
 export const optsText = ({size, color}) => [size && `Size ${size}`, color].filter(Boolean).map(x => x + " · ").join("");
@@ -306,7 +304,7 @@ export function initStorefront(){
   }
   function renderCart(){
     const keys = Object.keys(cart).filter(k => cart[k] > 0 && products.some(p => p.id === parseKey(k).id));
-    const line = k => ({...parseKey(k), p: products.find(p => p.id === parseKey(k).id), q: cart[k]});
+    const line = k => ({...parseKey(k), p: sized(products.find(p => p.id === parseKey(k).id), parseKey(k).size), q: cart[k]});
     const count = keys.reduce((s,k)=>s+cart[k],0);
     const total = keys.map(line).reduce((s,l)=>s+l.q*l.p.price,0);
     bump($("cartCount"), count);

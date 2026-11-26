@@ -501,6 +501,8 @@ export async function initDatabase() {
   // colour options: [{ name, hex, image }] on the product, and the colour chosen on each order line
   await addColumn("products", "colors", "JSON DEFAULT NULL AFTER sizes");
   await addColumn("order_items", "color", "VARCHAR(40) DEFAULT NULL AFTER size");
+  // a price (and optionally a photo) per size, e.g. an attar in 6 ml and 12 ml: [{ size, price, mrp, image }]
+  await addColumn("products", "size_prices", "JSON DEFAULT NULL AFTER sizes");
   // permanent product codes (see lib/codes.js)
   await addColumn("products", "code_no", "INT DEFAULT NULL UNIQUE AFTER slug");
   await pool.query("INSERT IGNORE INTO counters (name, value) VALUES ('product_code', 0)");
