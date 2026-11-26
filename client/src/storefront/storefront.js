@@ -105,7 +105,17 @@ const products = [
    desc:"A cute red coffee-cup keychain pouch in soft silicone with a pink 3D bear that pops back up when you press it, and a lid that opens to a mini storage space.",
    points:["Press the bear and it pops back up","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain, clasp and metal keyrings"],
    images:["https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-1.jpg","https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-2.webp","https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-3.webp"],
-   img:"https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-1.jpg"}
+   img:"https://nawaratrend.com/products/red-cup-keychain-pouch/red-cup-keychain-pouch-1.jpg"},
+  {id:"jannatul-firdaus-attar-6ml", code:"NT-23", cat:"beauty", name:"Jannatul Firdaus Attar 6 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box", price:252, mrp:280, rate:0, reviews:0, stock:50,
+   desc:"Jannatul Firdaus attar, an alcohol-free concentrated perfume oil with a soft, sweet floral fragrance, in a 6 ml gold crown bottle with a gift box.",
+   points:["100% alcohol-free perfume oil","Soft, sweet and long-lasting floral fragrance","Elegant gold crown bottle, 6 ml","Comes in a gift box"],
+   images:["https://nawaratrend.com/products/jannatul-firdaus-attar-6ml/jannatul-firdaus-attar-6ml-1.jpg"],
+   img:"https://nawaratrend.com/products/jannatul-firdaus-attar-6ml/jannatul-firdaus-attar-6ml-1.jpg"},
+  {id:"jannatul-firdaus-attar-12ml", code:"NT-24", cat:"beauty", name:"Jannatul Firdaus Attar 12 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box", price:514, mrp:571, rate:0, reviews:0, stock:50,
+   desc:"Jannatul Firdaus attar, an alcohol-free concentrated perfume oil with a soft, sweet floral fragrance, in a 12 ml gold crown bottle with a gift box.",
+   points:["100% alcohol-free perfume oil","Soft, sweet and long-lasting floral fragrance","Elegant gold crown bottle, 12 ml","Comes in a gift box"],
+   images:["https://nawaratrend.com/products/jannatul-firdaus-attar-12ml/jannatul-firdaus-attar-12ml-1.jpg"],
+   img:"https://nawaratrend.com/products/jannatul-firdaus-attar-12ml/jannatul-firdaus-attar-12ml-1.jpg"}
 ];
 
 const ICON = {

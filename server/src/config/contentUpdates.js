@@ -13,6 +13,7 @@ const CUP = "animal-cup-keychain-pouch";
 const BEAR_CUP = "bear-cup-keychain-pouch";
 const BLUE_CUP = "blue-cup-keychain-pouch";
 const RED_CUP = "red-cup-keychain-pouch";
+const ATTAR = (ml) => `jannatul-firdaus-attar-${ml}ml`;
 
 const UPDATES = [
   {
@@ -268,6 +269,60 @@ const UPDATES = [
       images: img(RED_CUP, [`${RED_CUP}-1.jpg`, `${RED_CUP}-2.webp`, `${RED_CUP}-3.webp`]),
       seo_title: "Cute Red Cup Keychain Pouch, Press & Pop Bear",
       seo_description: "Red cup keychain pouch with a 3D bear that pops up when pressed. Soft silicone, mini storage for coins, gold-tone keyring. ₹199 (30% off), COD in India.",
+    },
+  },
+  {
+    id: "2026-11-26-jannatul-firdaus-attar-6ml",
+    product: {
+      slug: ATTAR(6), category: "beauty",
+      name: "Jannatul Firdaus Attar 6 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box",
+      description: [
+        "Jannatul Firdaus, the garden of paradise, is one of the best-loved attars: a soft, sweet floral fragrance that feels fresh, clean and calming.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant 6 ml gold crown bottle with a gift box, a lovely gift for Eid, Ramadan, weddings and special occasions.",
+        "Also available in a 12 ml bottle.",
+        "Includes: 1 attar bottle (6 ml) with gift box.",
+      ].join("\n\n"),
+      price: 252, mrp: 280, stock: 50,
+      highlights: [
+        "100% alcohol-free concentrated perfume oil",
+        "Soft, sweet and calming floral fragrance",
+        "Long-lasting: a few dabs are enough",
+        "Gentle on skin, suitable for prayer",
+        "Elegant gold crown bottle, 6 ml",
+        "Comes in a gift box",
+        "Perfect gift for Eid, Ramadan and weddings",
+      ],
+      images: img(ATTAR(6), [`${ATTAR(6)}-1.jpg`]),
+      seo_title: "Jannatul Firdaus Attar 6 ml, Alcohol-Free",
+      seo_description: "Jannatul Firdaus attar, alcohol-free perfume oil with a soft floral fragrance in a 6 ml gold crown bottle with gift box. ₹252 (10% off), COD in India.",
+    },
+  },
+  {
+    id: "2026-11-26-jannatul-firdaus-attar-12ml",
+    product: {
+      slug: ATTAR(12), category: "beauty",
+      name: "Jannatul Firdaus Attar 12 ml, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box",
+      description: [
+        "Jannatul Firdaus, the garden of paradise, is one of the best-loved attars: a soft, sweet floral fragrance that feels fresh, clean and calming.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant 12 ml gold crown bottle with a gift box, a lovely gift for Eid, Ramadan, weddings and special occasions.",
+        "Also available in a 6 ml bottle.",
+        "Includes: 1 attar bottle (12 ml) with gift box.",
+      ].join("\n\n"),
+      price: 514, mrp: 571, stock: 50,
+      highlights: [
+        "100% alcohol-free concentrated perfume oil",
+        "Soft, sweet and calming floral fragrance",
+        "Long-lasting: a few dabs are enough",
+        "Gentle on skin, suitable for prayer",
+        "Elegant gold crown bottle, 12 ml",
+        "Comes in a gift box",
+        "Perfect gift for Eid, Ramadan and weddings",
+      ],
+      images: img(ATTAR(12), [`${ATTAR(12)}-1.jpg`]),
+      seo_title: "Jannatul Firdaus Attar 12 ml, Alcohol-Free",
+      seo_description: "Jannatul Firdaus attar, alcohol-free perfume oil with a soft floral fragrance in a 12 ml gold crown bottle with gift box. ₹514 (10% off), COD in India.",
     },
   },
 ];
