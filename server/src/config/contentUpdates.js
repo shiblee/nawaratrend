@@ -14,6 +14,7 @@ const BEAR_CUP = "bear-cup-keychain-pouch";
 const BLUE_CUP = "blue-cup-keychain-pouch";
 const RED_CUP = "red-cup-keychain-pouch";
 const ATTAR = "jannatul-firdaus-attar";
+const OUDH = "white-oudh-attar";
 
 const UPDATES = [
   {
@@ -303,6 +304,37 @@ const UPDATES = [
       images: img(ATTAR, [`${ATTAR}-1.jpg`, `${ATTAR}-6ml-2.webp`, `${ATTAR}-12ml-3.webp`]),
       seo_title: "Jannatul Firdaus Attar, Alcohol-Free, 6 & 12 ml",
       seo_description: "Jannatul Firdaus attar, alcohol-free perfume oil with a soft floral fragrance in a gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD in India.",
+    },
+  },
+  {
+    id: "2026-11-26-white-oudh-attar",
+    product: {
+      slug: OUDH, category: "beauty",
+      name: "White Oudh Attar, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml",
+      description: [
+        "White Oudh is a smooth, elegant attar: the rich, woody warmth of oud softened with clean white florals, for a fragrance that feels both royal and gentle.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant gold crown bottle with a gift box, in two sizes: 6 ml and 12 ml. A lovely gift for Eid, Ramadan, weddings and special occasions.",
+        "Includes: 1 attar bottle (6 ml or 12 ml, as chosen) with gift box.",
+      ].join("\n\n"),
+      price: 252, mrp: 280, stock: 50,
+      sizes: ["6 ml", "12 ml"],
+      size_prices: [
+        { size: "6 ml", price: 252, mrp: 280, image: img(OUDH, [`${OUDH}-6ml-2.webp`])[0] },
+        { size: "12 ml", price: 514, mrp: 571, image: img(OUDH, [`${OUDH}-12ml-3.webp`])[0] },
+      ],
+      highlights: [
+        "100% alcohol-free concentrated perfume oil",
+        "Smooth woody oud with soft white florals",
+        "Long-lasting: a few dabs are enough",
+        "Gentle on skin, suitable for prayer",
+        "Two sizes: 6 ml and 12 ml",
+        "Elegant gold crown bottle with gift box",
+        "Perfect gift for Eid, Ramadan and weddings",
+      ],
+      images: img(OUDH, [`${OUDH}-1.jpg`, `${OUDH}-6ml-2.webp`, `${OUDH}-12ml-3.webp`]),
+      seo_title: "White Oudh Attar, Alcohol-Free, 6 ml & 12 ml",
+      seo_description: "White Oudh attar, alcohol-free perfume oil: smooth woody oud with soft white florals, gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD in India.",
     },
   },
 ];
