@@ -123,7 +123,13 @@ const products = [
    desc:"Khamrah Qahwa attar, an alcohol-free concentrated perfume oil with warm coffee, cinnamon, sweet amber and oud, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
    points:["100% alcohol-free perfume oil","Warm coffee, cinnamon, sweet amber and oud","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
    images:["https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-1.jpg","https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-6ml-2.webp","https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-12ml-3.webp"],
-   img:"https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-1.jpg"}
+   img:"https://nawaratrend.com/products/khamrah-qahwa-attar/khamrah-qahwa-attar-1.jpg"},
+  {id:"aventus-inspired-attar", code:"NT-27", cat:"beauty", name:"Aventus Attar, Inspired by Creed Aventus, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml", price:252, mrp:280, rate:0, reviews:0, stock:50,
+   sizes:["6 ml","12 ml"], sizePrices:{"6 ml":{price:252, mrp:280, image:"https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-6ml-2.webp"}, "12 ml":{price:514, mrp:571, image:"https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-12ml-3.webp"}},
+   desc:"An alcohol-free attar inspired by Creed Aventus (not a Creed product): fresh pineapple and blackcurrant with smoky birch and warm woods, in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
+   points:["Inspired fragrance: modelled on Creed Aventus","100% alcohol-free perfume oil","Two sizes: 6 ml and 12 ml","Elegant gold crown bottle with gift box"],
+   images:["https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-1.jpg","https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-6ml-2.webp","https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-12ml-3.webp"],
+   img:"https://nawaratrend.com/products/aventus-inspired-attar/aventus-inspired-attar-1.jpg"}
 ];
 
 const ICON = {

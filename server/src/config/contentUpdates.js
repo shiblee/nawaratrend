@@ -16,6 +16,7 @@ const RED_CUP = "red-cup-keychain-pouch";
 const ATTAR = "jannatul-firdaus-attar";
 const OUDH = "white-oudh-attar";
 const QAHWA = "khamrah-qahwa-attar";
+const AVENTUS = "aventus-inspired-attar";
 
 const UPDATES = [
   {
@@ -368,6 +369,39 @@ const UPDATES = [
       images: img(QAHWA, [`${QAHWA}-1.jpg`, `${QAHWA}-6ml-2.webp`, `${QAHWA}-12ml-3.webp`]),
       seo_title: "Khamrah Qahwa Attar, Alcohol-Free, 6 & 12 ml",
       seo_description: "Khamrah Qahwa attar, alcohol-free perfume oil: warm coffee, cinnamon, amber and oud in a gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD.",
+    },
+  },
+  {
+    // an inspired fragrance: the photos name the perfume it is modelled on, so the text says plainly it is not that house's product
+    id: "2026-11-26-aventus-inspired-attar",
+    product: {
+      slug: AVENTUS, category: "beauty",
+      name: "Aventus Attar, Inspired by Creed Aventus, Alcohol-Free Concentrated Perfume Oil in Gold Crown Roll-On Bottle with Gift Box, 6 ml & 12 ml",
+      description: [
+        "A bold, fresh and elegant attar inspired by the famous Creed Aventus: juicy pineapple and blackcurrant up top, a soft floral heart, and a smoky base of birch, warm woods and amber. Confident, classy and loved for every occasion.",
+        "This is a pure, concentrated perfume oil with no alcohol, so it is gentle on the skin and suitable to wear for prayer and every day. A few dabs on the wrists, neck or behind the ears are enough, and the fragrance stays with you for hours.",
+        "It comes in an elegant gold crown bottle with a gift box, in two sizes: 6 ml and 12 ml. A lovely gift for Eid, weddings, birthdays and special occasions.",
+        "Please note: this is a Nawara Trend attar inspired by the Creed Aventus fragrance. It is not made by or connected with Creed; the name is used only to describe the scent.",
+        "Includes: 1 attar bottle (6 ml or 12 ml, as chosen) with gift box.",
+      ].join("\n\n"),
+      price: 252, mrp: 280, stock: 50,
+      sizes: ["6 ml", "12 ml"],
+      size_prices: [
+        { size: "6 ml", price: 252, mrp: 280, image: img(AVENTUS, [`${AVENTUS}-6ml-2.webp`])[0] },
+        { size: "12 ml", price: 514, mrp: 571, image: img(AVENTUS, [`${AVENTUS}-12ml-3.webp`])[0] },
+      ],
+      highlights: [
+        "Inspired fragrance: modelled on Creed Aventus",
+        "100% alcohol-free concentrated perfume oil",
+        "Fresh pineapple and blackcurrant, smoky birch and woods",
+        "Bold, elegant and long-lasting",
+        "Two sizes: 6 ml and 12 ml",
+        "Elegant gold crown bottle with gift box",
+        "Perfect gift for Eid, weddings and birthdays",
+      ],
+      images: img(AVENTUS, [`${AVENTUS}-1.jpg`, `${AVENTUS}-6ml-2.webp`, `${AVENTUS}-12ml-3.webp`]),
+      seo_title: "Aventus Attar, Inspired by Creed Aventus",
+      seo_description: "Alcohol-free attar inspired by Creed Aventus: pineapple, blackcurrant, smoky birch and woods, gold crown bottle with gift box. 6 ml ₹252, 12 ml ₹514, COD.",
     },
   },
 ];
