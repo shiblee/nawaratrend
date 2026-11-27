@@ -141,7 +141,12 @@ const products = [
    desc:"Nawara Oudh, our signature alcohol-free oud attar: rich, deep and smoky agarwood in a gold crown bottle with a gift box. Choose 6 ml or 12 ml.",
    points:["Nawara Trend's own signature oud fragrance","Rich, deep and smoky agarwood aroma","100% alcohol-free perfume oil","Two sizes: 6 ml and 12 ml"],
    images:["https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-1.jpg","https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-6ml-2.webp","https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-12ml-3.webp"],
-   img:"https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-1.jpg"}
+   img:"https://nawaratrend.com/products/nawara-oudh-attar/nawara-oudh-attar-1.jpg"},
+  {id:"choco-cup-keychain-pouch", code:"NT-30", cat:"accessories", name:"Cute Choco Cup Keychain Pouch, 3D Character Lid, Soft Silicone Mini Storage Mug with Gold-Tone Keyring for Bags & Keys", price:199, mrp:284, rate:0, reviews:0, stock:50,
+   desc:"A cute caramel coffee-cup keychain pouch in soft silicone with a chocolate lid, a 3D character on top and a mini storage space inside.",
+   points:["Adorable 3D character on a chocolate lid","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain and metal keyrings"],
+   images:["https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-1.jpg","https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-2.webp","https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-3.webp"],
+   img:"https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-1.jpg"}
 ];
 
 const ICON = {

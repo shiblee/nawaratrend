@@ -19,6 +19,7 @@ const QAHWA = "khamrah-qahwa-attar";
 const AVENTUS = "aventus-inspired-attar";
 const CR7 = "cr7-inspired-attar";
 const NOUDH = "nawara-oudh-attar";
+const CHOCO_CUP = "choco-cup-keychain-pouch";
 
 const UPDATES = [
   {
@@ -177,7 +178,7 @@ const UPDATES = [
       ],
       images: img(CUP, [`${CUP}-1.jpg`, `${CUP}-2.webp`, `${CUP}-3.webp`]),
       seo_title: "Cute Animal Cup Keychain Pouch, Silicone",
-      seo_description: "Cute cup-shaped keychain pouch with a 3D animal on the lid: soft silicone mini storage for coins and earbuds, gold-tone keyring. ₹199 (30% off), COD.",
+      seo_description: "Cute cup-shaped keychain pouch with a 3D animal on the lid: soft silicone mini storage for coins and earbuds, gold keyring. ₹199 (30% off), COD.",
     },
   },
   {
@@ -469,6 +470,35 @@ const UPDATES = [
       images: img(NOUDH, [`${NOUDH}-1.jpg`, `${NOUDH}-6ml-2.webp`, `${NOUDH}-12ml-3.webp`]),
       seo_title: "Nawara Oudh Attar, Alcohol-Free, 6 & 12 ml",
       seo_description: "Nawara Oudh, our signature alcohol-free oud attar: rich, smoky agarwood in a gold crown bottle with gift box. 6 ml ₹360, 12 ml ₹720 (10% off), COD.",
+    },
+  },
+  {
+    // the figure is a licensed-looking character and one supplier photo carried a coffee-chain logo (left out at the owner's choice): the text names no brand or character
+    id: "2026-11-28-choco-cup-keychain-pouch",
+    product: {
+      slug: CHOCO_CUP, category: "accessories",
+      name: "Cute Choco Cup Keychain Pouch, 3D Character Lid, Soft Silicone Mini Storage Mug with Gold-Tone Keyring for Bags & Keys",
+      description: [
+        "A tiny mug that looks good enough to eat! This cute keychain pouch is shaped like a creamy caramel coffee cup topped with a rich chocolate lid, with an adorable 3D character in a black hood and pink skull charm peeking out on top.",
+        "Lift the soft lid and there's a mini storage space inside, handy for coins, earbuds, hair ties and other little things. The cup carries the Nawara Trend logo.",
+        "It is made of soft, durable and flexible silicone, with bright colours and fine detailing. The sturdy gold-tone chain and metal keyrings attach it to handbags, car keys, home keys, backpacks, school bags, water bottles, pencil pouches and luggage, and it's light enough to carry every day.",
+        "A cute, trendy accessory and a lovely birthday or return gift for kids, friends and family.",
+        "Includes: 1 keychain pouch.",
+      ].join("\n\n"),
+      price: 199, mrp: 284, stock: 50,
+      highlights: [
+        "Adorable 3D character on a chocolate lid",
+        "Openable lid with a mini storage space",
+        "Keeps coins, earbuds and small things",
+        "Soft, durable and flexible silicone",
+        "Sturdy gold-tone chain and metal keyrings",
+        "For bags, keys, backpacks, bottles and luggage",
+        "Lightweight and portable",
+        "Perfect gift for kids",
+      ],
+      images: img(CHOCO_CUP, [`${CHOCO_CUP}-1.jpg`, `${CHOCO_CUP}-2.webp`, `${CHOCO_CUP}-3.webp`]),
+      seo_title: "Cute Choco Cup Keychain Pouch, 3D Character",
+      seo_description: "Caramel cup keychain pouch with a chocolate lid and 3D character. Soft silicone, mini storage for coins and earbuds, gold keyring. ₹199 (30% off), COD.",
     },
   },
 ];
