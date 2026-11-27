@@ -22,6 +22,7 @@ const NOUDH = "nawara-oudh-attar";
 const CHOCO_CUP = "choco-cup-keychain-pouch";
 const DOLL = "fashion-doll-keychain";
 const PURPLE_DOLL = "purple-fashion-doll-keychain";
+const PINK_DOLL = "pink-fashion-doll-keychain";
 
 const UPDATES = [
   {
@@ -557,6 +558,34 @@ const UPDATES = [
       images: img(PURPLE_DOLL, [`${PURPLE_DOLL}-1.jpg`, `${PURPLE_DOLL}-2.webp`, `${PURPLE_DOLL}-3.webp`, `${PURPLE_DOLL}-4.webp`, `${PURPLE_DOLL}-5.webp`]),
       seo_title: "Cute Purple Fashion Doll Keychain",
       seo_description: "Purple mini fashion doll keychain with a knitted cap, lace dress and silky hair, on a metal keyring for bags, bottles and keys. ₹149 (30% off), COD.",
+    },
+  },
+  {
+    id: "2026-11-28-pink-fashion-doll-keychain",
+    product: {
+      slug: PINK_DOLL, category: "accessories",
+      name: "Cute Pink Fashion Doll Keychain, Mini Doll with Knitted Cap, Yellow Lace Dress & Long Silky Hair, Metal Keyring for Bags & Keys",
+      description: [
+        "Meet the cutest companion for every day! This mini fashion doll keychain wears a soft pink knitted cap with a sparkly pink glitter bow, a sunny yellow polka-dot dress with white lace layers and a turquoise bow with a sparkling stud, long soft silky pink-blonde hair and little white shoes.",
+        "Her big sparkling eyes and sweet face are finely detailed, and the doll is light enough to carry anywhere without weighing your bag down.",
+        "The sturdy silver-tone metal keyring attaches her to school bags, water bottles, car keys, scooty keys, handbags and purses, pencil pouches, luggage, mobile covers, diaries and zips.",
+        "A cute, trendy accessory and a lovely birthday or return gift for kids, friends, family and doll collectors.",
+        "Includes: 1 doll keychain.",
+      ].join("\n\n"),
+      price: 149, mrp: 213, stock: 50,
+      highlights: [
+        "Cute mini doll with big sparkling eyes",
+        "Pink knitted cap with a pink glitter bow",
+        "Yellow polka-dot lace dress with turquoise bow and stud",
+        "Long, soft and silky hair",
+        "Sturdy silver-tone metal keyring",
+        "For bags, bottles, keys, pouches and luggage",
+        "Lightweight and durable",
+        "Perfect gift for kids",
+      ],
+      images: img(PINK_DOLL, [`${PINK_DOLL}-1.jpg`, `${PINK_DOLL}-2.webp`, `${PINK_DOLL}-3.webp`]),
+      seo_title: "Cute Pink Fashion Doll Keychain, Knitted Cap",
+      seo_description: "Pink-cap mini doll keychain with a yellow lace dress and silky hair, on a metal keyring for bags, bottles and keys. ₹149 (30% off), COD.",
     },
   },
 ];
