@@ -151,7 +151,12 @@ const products = [
    desc:"A cute mini fashion doll keychain with a maroon knitted cap, pink lace dress and long silky hair, on a gold-tone chain and keyring.",
    points:["Cute mini doll with big sparkling eyes","Knitted cap and pink lace dress","Long, soft and silky hair","Sturdy gold-tone chain and metal keyring"],
    images:["https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-1.jpg","https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-2.webp","https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-3.webp"],
-   img:"https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-1.jpg"}
+   img:"https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-1.jpg"},
+  {id:"purple-fashion-doll-keychain", code:"NT-32", cat:"accessories", name:"Cute Purple Fashion Doll Keychain, Mini Doll with Knitted Cap, Lace Dress & Long Silky Hair, Metal Keyring for Bags & Keys", price:149, mrp:213, rate:0, reviews:0, stock:50,
+   desc:"A cute mini fashion doll keychain with a lavender knitted cap, purple polka-dot lace dress and long silky hair, on a silver-tone chain and keyring.",
+   points:["Cute mini doll with big sparkling eyes","Lavender knitted cap with a red glitter bow","Purple polka-dot lace dress","Sturdy silver-tone chain and metal keyring"],
+   images:["https://nawaratrend.com/products/purple-fashion-doll-keychain/purple-fashion-doll-keychain-1.jpg","https://nawaratrend.com/products/purple-fashion-doll-keychain/purple-fashion-doll-keychain-2.webp","https://nawaratrend.com/products/purple-fashion-doll-keychain/purple-fashion-doll-keychain-3.webp","https://nawaratrend.com/products/purple-fashion-doll-keychain/purple-fashion-doll-keychain-4.webp","https://nawaratrend.com/products/purple-fashion-doll-keychain/purple-fashion-doll-keychain-5.webp"],
+   img:"https://nawaratrend.com/products/purple-fashion-doll-keychain/purple-fashion-doll-keychain-1.jpg"}
 ];
 
 const ICON = {
