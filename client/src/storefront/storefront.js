@@ -146,7 +146,12 @@ const products = [
    desc:"A cute caramel coffee-cup keychain pouch in soft silicone with a chocolate lid, a 3D character on top and a mini storage space inside.",
    points:["Adorable 3D character on a chocolate lid","Openable lid with a mini storage space","Soft, durable and flexible silicone","Sturdy gold-tone chain and metal keyrings"],
    images:["https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-1.jpg","https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-2.webp","https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-3.webp"],
-   img:"https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-1.jpg"}
+   img:"https://nawaratrend.com/products/choco-cup-keychain-pouch/choco-cup-keychain-pouch-1.jpg"},
+  {id:"fashion-doll-keychain", code:"NT-31", cat:"accessories", name:"Cute Fashion Doll Keychain, Mini Doll with Knitted Cap, Lace Dress & Long Silky Hair, Gold-Tone Keyring for Bags & Keys", price:149, mrp:213, rate:0, reviews:0, stock:50,
+   desc:"A cute mini fashion doll keychain with a maroon knitted cap, pink lace dress and long silky hair, on a gold-tone chain and keyring.",
+   points:["Cute mini doll with big sparkling eyes","Knitted cap and pink lace dress","Long, soft and silky hair","Sturdy gold-tone chain and metal keyring"],
+   images:["https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-1.jpg","https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-2.webp","https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-3.webp"],
+   img:"https://nawaratrend.com/products/fashion-doll-keychain/fashion-doll-keychain-1.jpg"}
 ];
 
 const ICON = {

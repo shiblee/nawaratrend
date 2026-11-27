@@ -20,6 +20,7 @@ const AVENTUS = "aventus-inspired-attar";
 const CR7 = "cr7-inspired-attar";
 const NOUDH = "nawara-oudh-attar";
 const CHOCO_CUP = "choco-cup-keychain-pouch";
+const DOLL = "fashion-doll-keychain";
 
 const UPDATES = [
   {
@@ -499,6 +500,34 @@ const UPDATES = [
       images: img(CHOCO_CUP, [`${CHOCO_CUP}-1.jpg`, `${CHOCO_CUP}-2.webp`, `${CHOCO_CUP}-3.webp`]),
       seo_title: "Cute Choco Cup Keychain Pouch, 3D Character",
       seo_description: "Caramel cup keychain pouch with a chocolate lid and 3D character. Soft silicone, mini storage for coins and earbuds, gold keyring. ₹199 (30% off), COD.",
+    },
+  },
+  {
+    id: "2026-11-28-fashion-doll-keychain",
+    product: {
+      slug: DOLL, category: "accessories",
+      name: "Cute Fashion Doll Keychain, Mini Doll with Knitted Cap, Lace Dress & Long Silky Hair, Gold-Tone Keyring for Bags & Keys",
+      description: [
+        "Meet the cutest companion for every day! This mini fashion doll keychain wears a cosy maroon knitted cap with a yellow bow, a pink polka-dot lace dress with an orange bow and sparkling stud, long soft silky hair and little white shoes.",
+        "Her big sparkling eyes and sweet face are finely detailed, and the doll is light enough to carry anywhere without weighing your bag down.",
+        "The sturdy gold-tone chain and metal keyring attach her to school bags, water bottles, car keys, scooty keys, handbags and purses, pencil pouches, luggage, mobile covers, diaries and zips.",
+        "A cute, trendy accessory and a lovely birthday or return gift for kids, friends and family.",
+        "Includes: 1 doll keychain.",
+      ].join("\n\n"),
+      price: 149, mrp: 213, stock: 50,
+      highlights: [
+        "Cute mini doll with big sparkling eyes",
+        "Maroon knitted cap with a yellow bow",
+        "Pink polka-dot lace dress with bow and stud",
+        "Long, soft and silky hair",
+        "Sturdy gold-tone chain and metal keyring",
+        "For bags, bottles, keys, pouches and luggage",
+        "Lightweight and durable",
+        "Perfect gift for kids",
+      ],
+      images: img(DOLL, [`${DOLL}-1.jpg`, `${DOLL}-2.webp`, `${DOLL}-3.webp`]),
+      seo_title: "Cute Fashion Doll Keychain, Knitted Cap",
+      seo_description: "Mini fashion doll keychain with a knitted cap, lace dress and silky hair, on a gold-tone keyring for bags, bottles and keys. ₹149 (30% off), COD.",
     },
   },
 ];
